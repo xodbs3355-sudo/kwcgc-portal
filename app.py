@@ -186,63 +186,79 @@ st.markdown('<p style="font-size:13px;color:#6b6f7a;margin-bottom:20px;">각 항
 
 uploaded = {}   # doc_id → list of (filename, bytes)
 na_flags = {}   # doc_id → bool
+notes    = {}   # doc_id → str
 
-# 2열 그리드로 서류 슬롯 배치
-left_docs  = DOCUMENTS[0::2]   # 홀수 인덱스 → 왼쪽
-right_docs = DOCUMENTS[1::2]   # 짝수 인덱스 → 오른쪽
 
 def render_doc_slot(doc):
     did  = doc["id"]
     req  = doc["required"]
     cond = doc["condition"]
-    badge_cls = "doc-required" if req else "doc-optional"
-    badge_txt = "필수" if req else "선택"
-    cond_html = f'<div class="doc-condition">대상: {cond}</div>' if cond else ""
 
-    st.markdown(
-        f'<div class="doc-card">'
-        f'  <div class="doc-header">'
-        f'    <span class="doc-num">{doc["num"]}</span>'
-        f'    <span class="doc-name">{doc["name"]}</span>'
-        f'    <span class="{badge_cls}">{badge_txt}</span>'
-        f'  </div>'
-        f'  {cond_html}'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
+    with st.container(border=True):
+        # ── 헤더 행: 번호 | 서류명 | [해당없음 체크] | 필수/선택 ──
+        c_num, c_name, c_na, c_badge = st.columns([0.5, 5, 2, 1.2])
 
-    na = False
-    if not req:
-        na = st.checkbox("해당없음", key=f"na_{did}")
-    na_flags[did] = na
+        with c_num:
+            st.markdown(
+                f'<div style="background:#eef0fb;color:#5e6ad2;font-size:11px;'
+                f'font-weight:600;border-radius:4px;padding:2px 6px;text-align:center;'
+                f'margin-top:4px">{doc["num"]}</div>',
+                unsafe_allow_html=True,
+            )
+        with c_name:
+            st.markdown(
+                f'<div style="font-size:13px;font-weight:600;color:#1a1a1a;'
+                f'margin-top:3px">{doc["name"]}</div>'
+                + (f'<div style="font-size:11px;color:#9b9fa8;margin-top:1px">대상: {cond}</div>' if cond else ""),
+                unsafe_allow_html=True,
+            )
+        with c_na:
+            na = st.checkbox("해당없음", key=f"na_{did}") if not req else False
+        with c_badge:
+            bc = ("background:#fff0f0;color:#e5484d" if req
+                  else "background:#f2f3f4;color:#6b6f7a")
+            st.markdown(
+                f'<div style="{bc};font-size:10px;font-weight:600;border-radius:4px;'
+                f'padding:2px 6px;text-align:center;margin-top:4px">'
+                f'{"필수" if req else "선택"}</div>',
+                unsafe_allow_html=True,
+            )
 
-    if not na:
-        files = st.file_uploader(
-            f"{doc['name']}",
-            type=["pdf", "jpg", "jpeg", "png"],
-            accept_multiple_files=True,
-            key=f"files_{did}",
-            label_visibility="collapsed",
-        )
-        uploaded[did] = [(f.name, f.read()) for f in files] if files else []
-    else:
-        uploaded[did] = None
+        na_flags[did] = na
+
+        # ── 파일 업로더 ──────────────────────────────────────────
+        if not na:
+            files = st.file_uploader(
+                f"{doc['name']}",
+                type=["pdf", "jpg", "jpeg", "png"],
+                accept_multiple_files=True,
+                key=f"files_{did}",
+                label_visibility="collapsed",
+            )
+            uploaded[did] = [(f.name, f.read()) for f in files] if files else []
+
+            # ── 특기사항 ─────────────────────────────────────────
+            note = st.text_input(
+                "특기사항",
+                key=f"note_{did}",
+                placeholder="특기사항 입력 (선택)",
+                label_visibility="collapsed",
+            )
+            notes[did] = note
+        else:
+            uploaded[did] = None
+            notes[did]    = ""
 
 
-col_left, col_right = st.columns(2, gap="medium")
-
-for i, (ldoc, rdoc) in enumerate(zip(left_docs, right_docs)):
-    with col_left:
-        render_doc_slot(ldoc)
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-    with col_right:
-        render_doc_slot(rdoc)
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-
-# 마지막 홀수 서류 처리 (총 18개라 짝수이므로 해당없지만 안전장치)
-if len(DOCUMENTS) % 2 != 0:
-    with col_left:
-        render_doc_slot(DOCUMENTS[-1])
+# 행 단위로 컬럼 생성 → 좌우 높이 자동 정렬
+for i in range(0, len(DOCUMENTS), 2):
+    col_l, col_r = st.columns(2, gap="medium")
+    with col_l:
+        render_doc_slot(DOCUMENTS[i])
+    with col_r:
+        if i + 1 < len(DOCUMENTS):
+            render_doc_slot(DOCUMENTS[i + 1])
+    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
 
 # ── 검토 시작 ─────────────────────────────────────────────────────
