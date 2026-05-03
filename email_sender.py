@@ -37,18 +37,17 @@ def _build_html(company: str, all_results: dict, timestamp: str) -> str:
     ng   = sum(1 for r in all_items if r['결과'] == 'NG')
     warn = sum(1 for r in all_items if r['결과'] == 'WARN')
     skip = sum(1 for r in all_items if r['결과'] == 'SKIP')
-    overall = '✅ 이상 없음' if ng == 0 else f'❌ NG {ng}건 확인 필요'
+    overall = '이상 없음' if ng == 0 else f'NG {ng}건 확인 필요'
 
     rows_html = ''
     for sheet_name, items in all_results.items():
-        rows_html += f'<tr style="background:#343a40;color:white;"><td colspan="3" style="padding:8px 12px;font-weight:bold;">📄 {sheet_name}</td></tr>'
+        rows_html += f'<tr style="background:#343a40;color:white;"><td colspan="3" style="padding:8px 12px;font-weight:bold;">{sheet_name}</td></tr>'
         for item in items:
             s = item['결과']
             bg = {'OK': '#d5f5e3', 'NG': '#fadbd8', 'WARN': '#fef9e7', 'SKIP': '#f2f3f4'}.get(s, '#fff')
-            ic = {'OK': '✅', 'NG': '❌', 'WARN': '⚠️', 'SKIP': '➖'}.get(s, '?')
             rows_html += (
                 f'<tr style="background:{bg};">'
-                f'<td style="padding:7px 12px;border:1px solid #ddd;">{ic} {s}</td>'
+                f'<td style="padding:7px 12px;border:1px solid #ddd;">{s}</td>'
                 f'<td style="padding:7px 12px;border:1px solid #ddd;">{item["항목"]}</td>'
                 f'<td style="padding:7px 12px;border:1px solid #ddd;">{item.get("비고","")}</td>'
                 f'</tr>'
@@ -56,7 +55,7 @@ def _build_html(company: str, all_results: dict, timestamp: str) -> str:
 
     return f'''
 <html><body style="font-family:'Malgun Gothic',Arial,sans-serif;padding:20px;color:#222;">
-<h2 style="color:#2c3e50;">📋 준공서류 검토 결과</h2>
+<h2 style="color:#2c3e50;">준공서류 검토 결과</h2>
 <table style="border-collapse:collapse;margin-bottom:20px;">
   <tr><td style="padding:5px 12px;"><b>업체명</b></td><td><b>{company}</b></td></tr>
   <tr><td style="padding:5px 12px;"><b>제출일시</b></td><td>{timestamp}</td></tr>
@@ -64,13 +63,13 @@ def _build_html(company: str, all_results: dict, timestamp: str) -> str:
 </table>
 <table style="border-collapse:collapse;margin-bottom:20px;">
   <tr>
-    <td style="background:#d5f5e3;padding:12px 20px;border-radius:6px;text-align:center;">✅ OK<br><b style="font-size:22px;">{ok}</b></td>
+    <td style="background:#d5f5e3;padding:12px 20px;border-radius:6px;text-align:center;">OK<br><b style="font-size:22px;">{ok}</b></td>
     <td style="width:8px;"></td>
-    <td style="background:#fadbd8;padding:12px 20px;border-radius:6px;text-align:center;">❌ NG<br><b style="font-size:22px;">{ng}</b></td>
+    <td style="background:#fadbd8;padding:12px 20px;border-radius:6px;text-align:center;">NG<br><b style="font-size:22px;">{ng}</b></td>
     <td style="width:8px;"></td>
-    <td style="background:#fef9e7;padding:12px 20px;border-radius:6px;text-align:center;">⚠️ WARN<br><b style="font-size:22px;">{warn}</b></td>
+    <td style="background:#fef9e7;padding:12px 20px;border-radius:6px;text-align:center;">WARN<br><b style="font-size:22px;">{warn}</b></td>
     <td style="width:8px;"></td>
-    <td style="background:#f2f3f4;padding:12px 20px;border-radius:6px;text-align:center;">➖ SKIP<br><b style="font-size:22px;">{skip}</b></td>
+    <td style="background:#f2f3f4;padding:12px 20px;border-radius:6px;text-align:center;">SKIP<br><b style="font-size:22px;">{skip}</b></td>
   </tr>
 </table>
 <h3>시트별 상세 결과</h3>

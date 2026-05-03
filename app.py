@@ -11,7 +11,7 @@ from documents import DOCUMENTS
 
 st.set_page_config(
     page_title="준공서류 검토 포털",
-    page_icon="📋",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -143,7 +143,7 @@ if 'company' not in st.session_state:
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
         st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("### 📋 준공서류 검토 포털")
+        st.markdown("### 준공서류 검토 포털")
         st.markdown('<p style="color:#6b6f7a;font-size:13px;margin-bottom:24px;">업체 계정으로 로그인하세요</p>', unsafe_allow_html=True)
         username = st.text_input("아이디", placeholder="업체 아이디", label_visibility="collapsed")
         password = st.text_input("비밀번호", type="password", placeholder="비밀번호", label_visibility="collapsed")
@@ -162,7 +162,7 @@ col_h, col_btn = st.columns([8, 1])
 with col_h:
     st.markdown(
         f'<div class="portal-header">'
-        f'<span class="portal-logo">📋 준공서류 검토 포털</span>'
+        f'<span class="portal-logo">준공서류 검토 포털</span>'
         f'<span class="company-badge">{company}</span>'
         f'</div>',
         unsafe_allow_html=True,
@@ -176,14 +176,14 @@ with col_btn:
 
 # ── Gemini 설정 (사이드바) ────────────────────────────────────────
 with st.sidebar:
-    st.markdown("**⚙️ AI 검토 설정**")
+    st.markdown("**AI 검토 설정**")
     key_input = st.text_input("Gemini API Key", value=config.GEMINI_API_KEY,
                                type="password", placeholder="AIza...",
                                help="없으면 첨부 여부만 확인됩니다")
     if key_input:
         config.GEMINI_API_KEY = key_input
         config.USE_MOCK = False
-    st.caption("🟢 AI 검토 활성" if not config.USE_MOCK else "🟡 첨부 여부만 확인")
+    st.caption("AI 검토 활성" if not config.USE_MOCK else "첨부 여부만 확인")
 
 
 # ── 서류 업로드 폼 ────────────────────────────────────────────────
@@ -277,7 +277,7 @@ for i in range(0, len(DOCUMENTS), 2):
 st.markdown("---")
 col_run, _ = st.columns([2, 5])
 with col_run:
-    run = st.button("🔍  검토 시작", use_container_width=True)
+    run = st.button("검토 시작", use_container_width=True)
 
 if run:
     all_results = {}
@@ -302,9 +302,9 @@ if run:
 
     sent = send_review_email(company, all_results)
     if sent:
-        st.success("✅ 검토 완료 — 결과가 담당자 메일로 발송되었습니다.")
+        st.success("검토 완료 — 결과가 담당자 메일로 발송되었습니다.")
     else:
-        st.success("✅ 검토 완료")
+        st.success("검토 완료")
 
 
 # ── 결과 표시 ─────────────────────────────────────────────────────
@@ -344,8 +344,8 @@ st.markdown(f"""
 
 vc  = "verdict-pass" if ng == 0 else "verdict-fail"
 vt  = "이상 없음" if ng == 0 else f"NG {ng}건 확인 필요"
-vi  = "✓" if ng == 0 else "✕"
-st.markdown(f'<div class="{vc}">{vi}&nbsp; 최종 판정 — {vt}</div>', unsafe_allow_html=True)
+vi  = "" if ng == 0 else ""
+st.markdown(f'<div class="{vc}">최종 판정 — {vt}</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # 서류별 결과 탭
@@ -354,8 +354,7 @@ for tab, (doc_name, rows) in zip(tabs, all_results.items()):
     with tab:
         for item in rows:
             s    = item['결과']
-            icon = {'OK': '✅', 'NG': '❌', 'WARN': '⚠️', 'SKIP': '➖'}.get(s, '?')
-            with st.expander(f"{icon}  {item['항목']}", expanded=(s == 'NG')):
+            with st.expander(f"{item['항목']}", expanded=(s == 'NG')):
                 st.markdown(f'<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:{"#e8f7ee" if s=="OK" else "#fff0f0" if s=="NG" else "#fffbeb" if s=="WARN" else "#f2f3f4"};color:{"#2d7d52" if s=="OK" else "#c0392b" if s=="NG" else "#92650a" if s=="WARN" else "#6b6f7a"}">{s}</span>', unsafe_allow_html=True)
                 if item.get('추출값') and item['추출값'] not in ('-', ''):
                     st.caption(f"추출값: {item['추출값']}")
@@ -369,7 +368,7 @@ with col_dl:
     with st.spinner("엑셀 생성 중..."):
         excel_bytes = output.results_to_excel(all_results)
     st.download_button(
-        "📊  검토결과 엑셀 다운로드",
+        "검토결과 엑셀 다운로드",
         data=excel_bytes,
         file_name="준공서류검토결과.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
