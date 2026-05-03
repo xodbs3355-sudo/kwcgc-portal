@@ -301,13 +301,13 @@ with st.sidebar:
 # ── 파일 업로드 ───────────────────────────────────────────────────
 st.markdown('<div class="section-title">파일 업로드</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="upload-hint">준공서류 엑셀 파일을 <b>.xlsx</b> 형식으로 저장 후 업로드하세요</div>',
+    '<div class="upload-hint">준공서류 엑셀 파일(.xlsx 또는 .xls)을 업로드하세요</div>',
     unsafe_allow_html=True,
 )
 
 uploaded_file = st.file_uploader(
     "준공서류 엑셀 업로드",
-    type=["xlsx"],
+    type=["xlsx", "xls"],
     label_visibility="collapsed",
 )
 
@@ -317,7 +317,7 @@ if uploaded_file is None:
 file_bytes = uploaded_file.read()
 with st.spinner("파일 읽는 중..."):
     try:
-        wb = xlsx_parser.load_workbook(file_bytes)
+        wb = xlsx_parser.load_workbook(file_bytes, uploaded_file.name)
     except Exception as e:
         st.error(f"파일을 열 수 없습니다: {e}")
         st.stop()
