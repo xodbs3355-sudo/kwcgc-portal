@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ── Linear 스타일 CSS ─────────────────────────────────────────────
-st.markdown("""
+st.html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
@@ -238,7 +238,7 @@ div[data-testid="stProgress"] > div { background: #5e6ad2 !important; }
 div[data-testid="stToolbar"] { display: none; }
 .block-container { padding-top: 24px !important; padding-bottom: 40px !important; }
 </style>
-""", unsafe_allow_html=True)
+""")
 
 
 # ── 로그인 화면 ───────────────────────────────────────────────────
