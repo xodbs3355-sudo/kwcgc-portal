@@ -158,21 +158,24 @@ if 'company' not in st.session_state:
 
 # ── 헤더 ─────────────────────────────────────────────────────────
 company = st.session_state.company
-col_h, col_btn = st.columns([8, 1])
+col_h, col_right = st.columns([1, 1])
 with col_h:
     st.markdown(
-        f'<div class="portal-header">'
+        f'<div style="display:flex;align-items:center;gap:8px;padding:12px 0;">'
         f'<span class="portal-logo">준공서류 검토 포털</span>'
         f'<span class="company-badge">{company}</span>'
         f'</div>',
         unsafe_allow_html=True,
     )
-with col_btn:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("로그아웃", type="secondary"):
-        for k in ['company', 'review_results']:
-            st.session_state.pop(k, None)
-        st.rerun()
+with col_right:
+    _, btn_sub = st.columns([3, 1])
+    with btn_sub:
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        if st.button("로그아웃", type="secondary", use_container_width=True):
+            for k in ['company', 'review_results']:
+                st.session_state.pop(k, None)
+            st.rerun()
+st.markdown("<div style='border-top:1px solid #e5e5e8;margin-bottom:28px;'></div>", unsafe_allow_html=True)
 
 # ── Gemini 설정 (사이드바) ────────────────────────────────────────
 with st.sidebar:
@@ -262,6 +265,8 @@ def render_doc_slot(doc):
             notes[did]    = ""
 
 
+run = False
+
 # 행 단위로 컬럼 생성 → 좌우 높이 자동 정렬
 for i in range(0, len(DOCUMENTS), 2):
     col_l, col_r = st.columns(2, gap="medium")
@@ -270,14 +275,12 @@ for i in range(0, len(DOCUMENTS), 2):
     with col_r:
         if i + 1 < len(DOCUMENTS):
             render_doc_slot(DOCUMENTS[i + 1])
+        if i + 2 >= len(DOCUMENTS):
+            st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+            _, btn_col = st.columns([3, 1])
+            with btn_col:
+                run = st.button("검토 시작", use_container_width=True)
     st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
-
-
-# ── 검토 시작 ─────────────────────────────────────────────────────
-st.markdown("---")
-col_run, _ = st.columns([2, 5])
-with col_run:
-    run = st.button("검토 시작", use_container_width=True)
 
 if run:
     all_results = {}
@@ -344,7 +347,6 @@ st.markdown(f"""
 
 vc  = "verdict-pass" if ng == 0 else "verdict-fail"
 vt  = "이상 없음" if ng == 0 else f"NG {ng}건 확인 필요"
-vi  = "" if ng == 0 else ""
 st.markdown(f'<div class="{vc}">최종 판정 — {vt}</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
