@@ -24,7 +24,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #1a1a1a; }
 .stApp { background: #fff; }
 #MainMenu, footer, header { visibility: hidden; }
 div[data-testid="stToolbar"] { display: none; }
-.block-container { padding-top: 20px !important; max-width: 1100px !important; }
+.block-container { padding-top: 20px !important; padding-left: 2rem !important; padding-right: 2rem !important; max-width: 100% !important; }
 
 /* 헤더 */
 .portal-header {
@@ -40,26 +40,26 @@ div[data-testid="stToolbar"] { display: none; }
 
 /* 서류 카드 */
 .doc-card {
-    border: 1px solid #e5e5e8; border-radius: 8px;
-    padding: 16px 18px; margin-bottom: 10px; background: #fff;
+    border: 1px solid #e5e5e8; border-radius: 7px;
+    padding: 10px 14px; margin-bottom: 0; background: #fff;
 }
 .doc-card:hover { border-color: #c8cbf0; background: #fafafa; }
-.doc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.doc-header { display: flex; align-items: center; gap: 8px; }
 .doc-num {
     font-size: 11px; font-weight: 600; color: #5e6ad2;
-    background: #eef0fb; border-radius: 4px; padding: 2px 7px;
-    min-width: 28px; text-align: center;
+    background: #eef0fb; border-radius: 4px; padding: 1px 6px;
+    min-width: 22px; text-align: center;
 }
-.doc-name { font-size: 14px; font-weight: 600; color: #1a1a1a; flex: 1; }
+.doc-name { font-size: 13px; font-weight: 600; color: #1a1a1a; flex: 1; }
 .doc-required {
-    font-size: 11px; font-weight: 600; color: #e5484d;
-    background: #fff0f0; border-radius: 4px; padding: 2px 7px;
+    font-size: 10px; font-weight: 600; color: #e5484d;
+    background: #fff0f0; border-radius: 4px; padding: 1px 6px;
 }
 .doc-optional {
-    font-size: 11px; color: #6b6f7a;
-    background: #f2f3f4; border-radius: 4px; padding: 2px 7px;
+    font-size: 10px; color: #6b6f7a;
+    background: #f2f3f4; border-radius: 4px; padding: 1px 6px;
 }
-.doc-condition { font-size: 11px; color: #9b9fa8; margin-top: 2px; }
+.doc-condition { font-size: 11px; color: #9b9fa8; margin-top: 1px; padding-left: 30px; }
 
 /* 결과 카드 */
 .result-summary {
@@ -98,14 +98,17 @@ div[data-testid="stButton"] button:hover { background: #4b58c5; }
 /* 파일 업로더 */
 div[data-testid="stFileUploader"] > div {
     border: 1.5px dashed #d0d2e0 !important;
-    border-radius: 8px !important;
+    border-radius: 7px !important;
     background: #fafafa !important;
-    padding: 12px !important;
+    padding: 6px 12px !important;
 }
 div[data-testid="stFileUploader"] > div:hover {
     border-color: #5e6ad2 !important;
     background: #f5f5ff !important;
 }
+/* 업로더 내부 텍스트 줄이기 */
+div[data-testid="stFileUploader"] small { font-size: 11px !important; }
+div[data-testid="stFileUploaderDropzone"] { padding: 6px !important; }
 
 /* 체크박스 */
 div[data-testid="stCheckbox"] label { font-size: 13px; color: #6b6f7a; }
@@ -184,14 +187,17 @@ st.markdown('<p style="font-size:13px;color:#6b6f7a;margin-bottom:20px;">각 항
 uploaded = {}   # doc_id → list of (filename, bytes)
 na_flags = {}   # doc_id → bool
 
-for doc in DOCUMENTS:
+# 2열 그리드로 서류 슬롯 배치
+left_docs  = DOCUMENTS[0::2]   # 홀수 인덱스 → 왼쪽
+right_docs = DOCUMENTS[1::2]   # 짝수 인덱스 → 오른쪽
+
+def render_doc_slot(doc):
     did  = doc["id"]
     req  = doc["required"]
     cond = doc["condition"]
-
-    badge_cls  = "doc-required" if req else "doc-optional"
-    badge_txt  = "필수" if req else "선택"
-    cond_html  = f'<div class="doc-condition">적용 대상: {cond}</div>' if cond else ""
+    badge_cls = "doc-required" if req else "doc-optional"
+    badge_txt = "필수" if req else "선택"
+    cond_html = f'<div class="doc-condition">대상: {cond}</div>' if cond else ""
 
     st.markdown(
         f'<div class="doc-card">'
@@ -205,29 +211,38 @@ for doc in DOCUMENTS:
         unsafe_allow_html=True,
     )
 
-    # 해당없음 체크박스 (조건부 서류만)
     na = False
     if not req:
-        na = st.checkbox("해당없음", key=f"na_{did}", label_visibility="visible")
+        na = st.checkbox("해당없음", key=f"na_{did}")
     na_flags[did] = na
 
-    # 파일 업로더 (해당없음 아닐 때만)
     if not na:
         files = st.file_uploader(
-            f"{doc['name']} 파일 업로드",
+            f"{doc['name']}",
             type=["pdf", "jpg", "jpeg", "png"],
             accept_multiple_files=True,
             key=f"files_{did}",
             label_visibility="collapsed",
         )
-        if files:
-            uploaded[did] = [(f.name, f.read()) for f in files]
-        else:
-            uploaded[did] = []
+        uploaded[did] = [(f.name, f.read()) for f in files] if files else []
     else:
-        uploaded[did] = None  # None = 해당없음
+        uploaded[did] = None
 
-    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+
+col_left, col_right = st.columns(2, gap="medium")
+
+for i, (ldoc, rdoc) in enumerate(zip(left_docs, right_docs)):
+    with col_left:
+        render_doc_slot(ldoc)
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    with col_right:
+        render_doc_slot(rdoc)
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+# 마지막 홀수 서류 처리 (총 18개라 짝수이므로 해당없지만 안전장치)
+if len(DOCUMENTS) % 2 != 0:
+    with col_left:
+        render_doc_slot(DOCUMENTS[-1])
 
 
 # ── 검토 시작 ─────────────────────────────────────────────────────
