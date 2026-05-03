@@ -82,7 +82,7 @@ def sheet_to_image(ws, scale: float = 1.5) -> Image.Image:
     draw = ImageDraw.Draw(img)
 
     try:
-        font = ImageFont.truetype("malgun.ttf", 11)
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11)
     except Exception:
         font = ImageFont.load_default()
 
