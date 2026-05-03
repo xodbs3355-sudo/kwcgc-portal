@@ -106,9 +106,15 @@ div[data-testid="stFileUploader"] > div:hover {
     border-color: #5e6ad2 !important;
     background: #f5f5ff !important;
 }
-/* 업로더 내부 텍스트 줄이기 */
-div[data-testid="stFileUploader"] small { font-size: 11px !important; }
 div[data-testid="stFileUploaderDropzone"] { padding: 6px !important; }
+/* 드롭존 안내 텍스트(200MB 등) 숨김 */
+div[data-testid="stFileUploaderDropzoneInstructions"] small { display: none !important; }
+div[data-testid="stFileUploaderDropzoneInstructions"] span { font-size: 12px !important; }
+/* 첨부된 파일 목록 영역 스크롤 고정 (카드 높이 불변) */
+div[data-testid="stFileUploader"] > div > div:last-child {
+    max-height: 90px !important;
+    overflow-y: auto !important;
+}
 
 /* 체크박스 */
 div[data-testid="stCheckbox"] label { font-size: 13px; color: #6b6f7a; }
@@ -182,7 +188,13 @@ with st.sidebar:
 
 # ── 서류 업로드 폼 ────────────────────────────────────────────────
 st.markdown('<div class="section-title">준공서류 업로드</div>', unsafe_allow_html=True)
-st.markdown('<p style="font-size:13px;color:#6b6f7a;margin-bottom:20px;">각 항목에 PDF 또는 이미지 파일을 업로드하세요. 여러 파일 동시 업로드 가능합니다.</p>', unsafe_allow_html=True)
+st.markdown(
+    '<p style="font-size:13px;color:#6b6f7a;margin-bottom:20px;">'
+    '각 항목에 PDF·JPG·PNG 파일을 업로드하세요. &nbsp;'
+    '한 슬롯에 여러 파일 동시 업로드 가능 &nbsp;|&nbsp; 파일당 최대 200MB'
+    '</p>',
+    unsafe_allow_html=True,
+)
 
 uploaded = {}   # doc_id → list of (filename, bytes)
 na_flags = {}   # doc_id → bool
