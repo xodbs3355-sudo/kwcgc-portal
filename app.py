@@ -195,7 +195,7 @@ uploaded = {}   # doc_id → list of (filename, bytes)
 notes    = {}   # doc_id → str
 
 
-def render_doc_slot(doc):
+def render_doc_row(doc):
     did  = doc["id"]
     cond = doc["condition"]
 
@@ -203,17 +203,14 @@ def render_doc_slot(doc):
 
     with c_num:
         st.markdown(
-            f'<div style="background:#eef0fb;color:#5e6ad2;font-size:11px;'
-            f'font-weight:600;border-radius:4px;padding:2px 6px;text-align:center;'
-            f'margin-top:6px">{doc["num"]}</div>',
+            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;padding:8px 0 0;">{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
     with c_name:
-        st.markdown(
-            f'<div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-top:4px;">{doc["name"]}</div>'
-            + (f'<div style="font-size:11px;color:#9b9fa8;">{cond}</div>' if cond else ""),
-            unsafe_allow_html=True,
-        )
+        label = f'<span style="font-size:13px;font-weight:500;color:#1a1a1a;">{doc["name"]}</span>'
+        if cond:
+            label += f'<br><span style="font-size:11px;color:#9b9fa8;">{cond}</span>'
+        st.markdown(f'<div style="padding:6px 0 0;">{label}</div>', unsafe_allow_html=True)
     with c_upload:
         files = st.file_uploader(
             f"{doc['name']}",
@@ -233,9 +230,21 @@ def render_doc_slot(doc):
         notes[did] = note
 
 
+# 테이블 헤더
+h_num, h_name, h_upload, h_note = st.columns([0.3, 1.6, 3, 2.5])
+with h_num:
+    st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">No.</div>', unsafe_allow_html=True)
+with h_name:
+    st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">서류명</div>', unsafe_allow_html=True)
+with h_upload:
+    st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">파일첨부</div>', unsafe_allow_html=True)
+with h_note:
+    st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">특기사항</div>', unsafe_allow_html=True)
+st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
+
 for doc in DOCUMENTS:
-    render_doc_slot(doc)
-    st.markdown("<hr style='margin:2px 0;border:none;border-top:1px solid #e5e5e8;'>", unsafe_allow_html=True)
+    render_doc_row(doc)
+    st.markdown("<hr style='margin:0;border:none;border-top:1px solid #e5e5e8;'>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 _, btn_col = st.columns([3, 1])
