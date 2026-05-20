@@ -399,7 +399,7 @@ def render_doc_row(doc):
             f'background:#eef0fb;border:1px solid #d8dcf3;border-radius:6px;'
             f'padding:4px 10px;min-width:28px;height:24px;'
             f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;'
-            f'margin-bottom:10px;">'
+            f'margin-bottom:15px;">'
             f'{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
@@ -409,7 +409,7 @@ def render_doc_row(doc):
             f'background:#f7f7f9;border:1px solid #e5e5e8;border-radius:6px;'
             f'padding:4px 12px;height:24px;'
             f'font-size:13px;font-weight:500;color:#1a1a1a;line-height:1;'
-            f'margin-bottom:10px;">'
+            f'margin-bottom:15px;">'
             f'{doc["name"]}</div>',
             unsafe_allow_html=True,
         )
@@ -451,7 +451,7 @@ with btn_area:
 # 테이블 헤더
 h_num, h_name, h_upload, h_files, h_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
 with h_num:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">No.</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;text-align:center;">No.</div>', unsafe_allow_html=True)
 with h_name:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">서류명</div>', unsafe_allow_html=True)
 with h_upload:
