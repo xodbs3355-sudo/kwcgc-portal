@@ -172,8 +172,16 @@ div[data-testid="stFileUploader"] > div {
 }
 
 /* ═════════════════════════════════════════════════════════
-   ★ section 전체 잠금 — 텍스트와 클릭 모두 차단
+   ★ stFileUploader 전체 잠금 — section 셀렉터 못 잡는 경우 대비
    ═════════════════════════════════════════════════════════ */
+div[data-testid="stFileUploader"],
+div[data-testid="stFileUploader"] * {
+    font-size: 0 !important;
+    color: transparent !important;
+}
+div[data-testid="stFileUploader"] {
+    pointer-events: none !important;
+}
 div[data-testid="stFileUploader"] section {
     border: none !important;
     background: transparent !important;
@@ -185,10 +193,6 @@ div[data-testid="stFileUploader"] section {
     align-items: center !important;
     gap: 8px !important;
     overflow: visible !important;
-    /* ★ 텍스트 무력화 + 클릭 차단 */
-    font-size: 0 !important;
-    color: transparent !important;
-    pointer-events: none !important;
 }
 
 /* dropzone — 작은 박스 (높이 22px, 28의 80%) */
@@ -212,41 +216,58 @@ div[data-testid="stFileUploaderDropzone"]:hover {
     border-color: #5e6ad2 !important;
 }
 
-/* ★ button 만 클릭 가능 + 텍스트 복원 */
-div[data-testid="stFileUploader"] section button {
+/* ★ button 과 자식 — 클릭 가능 + 텍스트 복원 */
+div[data-testid="stFileUploader"] button,
+div[data-testid="stFileUploader"] button * {
     pointer-events: auto !important;
-    background: transparent !important;
+    font-size: 13px !important;
     color: #1a1a1a !important;
+}
+div[data-testid="stFileUploader"] button {
+    background: transparent !important;
     border: none !important;
     padding: 0 !important;
     height: 22px !important;
     line-height: 1 !important;
-    font-size: 13px !important;
     font-weight: 500 !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
     overflow: visible !important;
 }
-div[data-testid="stFileUploader"] section button * {
-    font-size: inherit !important;
-    color: inherit !important;
+
+/* ★ button 안에 instructions/200MB 텍스트가 있어도 강제 hide */
+div[data-testid="stFileUploader"] button [data-testid*="nstruction"],
+div[data-testid="stFileUploader"] button small,
+div[data-testid="stFileUploader"] button p,
+div[data-testid="stFileUploader"] button [class*="instruction"],
+div[data-testid="stFileUploader"] button [class*="Instruction"] {
+    display: none !important;
+}
+
+/* ★ section 안 button/svg/FileData 외 모든 요소 강제 hide */
+div[data-testid="stFileUploader"] [data-testid*="nstruction"],
+div[data-testid="stFileUploader"] [data-testid*="DropzoneInstructions"],
+div[data-testid="stFileUploader"] section small,
+div[data-testid="stFileUploader"] section p {
+    display: none !important;
 }
 
 /* 아이콘 — 14px, 버튼 테두리 무시 */
-div[data-testid="stFileUploader"] section button svg {
+div[data-testid="stFileUploader"] button svg {
     width: 14px !important;
     height: 14px !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
     color: #1a1a1a !important;
+    font-size: 14px !important;
 }
 
 /* ★ 첨부 후 파일 정보 칩 — 텍스트 복원 + 클릭 가능 */
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"],
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] *,
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileData"],
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileData"] * {
+div[data-testid="stFileUploader"] [data-testid*="FileData"],
+div[data-testid="stFileUploader"] [data-testid*="FileData"] *,
+div[data-testid="stFileUploader"] [data-testid*="File"]:not(button):not([data-testid*="FileUploader"]),
+div[data-testid="stFileUploader"] [data-testid*="File"]:not(button):not([data-testid*="FileUploader"]) * {
     font-size: 12px !important;
     color: #5e6ad2 !important;
     pointer-events: auto !important;
