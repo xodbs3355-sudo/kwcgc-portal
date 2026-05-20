@@ -205,13 +205,13 @@ div[data-testid="stFileUploader"] section {
     overflow: visible !important;
 }
 
-/* dropzone — 작은 박스 (높이 22px, 28의 80%) */
+/* dropzone — 보라색 버튼 카드 */
 div[data-testid="stFileUploaderDropzone"] {
-    background: #fff !important;
-    border: 1px solid #d4d4d8 !important;
+    background: #5e6ad2 !important;
+    border: 1px solid #4b58c5 !important;
     border-radius: 6px !important;
-    padding: 0 12px !important;
-    height: 22px !important;
+    padding: 4px 14px !important;
+    height: 26px !important;
     min-height: 0 !important;
     width: fit-content !important;
     pointer-events: none !important;
@@ -219,19 +219,21 @@ div[data-testid="stFileUploaderDropzone"] {
     display: inline-flex !important;
     align-items: center !important;
     cursor: pointer !important;
-    transition: background 0.15s, border-color 0.15s !important;
+    box-shadow: 0 1px 2px rgba(94,106,210,0.2) !important;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s !important;
 }
 div[data-testid="stFileUploaderDropzone"]:hover {
-    background: #f4f4f5 !important;
-    border-color: #5e6ad2 !important;
+    background: #4b58c5 !important;
+    border-color: #3f4ab0 !important;
+    box-shadow: 0 2px 4px rgba(94,106,210,0.3) !important;
 }
 
-/* ★ button 과 자식 — 클릭 가능 + 텍스트 복원 */
+/* ★ button 과 자식 — 클릭 가능 + 흰색 텍스트 (보라 배경 위) */
 div[data-testid="stFileUploader"] button,
 div[data-testid="stFileUploader"] button * {
     pointer-events: auto !important;
     font-size: 13px !important;
-    color: #1a1a1a !important;
+    color: #fff !important;
 }
 div[data-testid="stFileUploader"] button {
     background: transparent !important;
@@ -263,13 +265,14 @@ div[data-testid="stFileUploaderDropzone"] > div:not(:has(button)) {
     display: none !important;
 }
 
-/* 아이콘 — 14px, 버튼 테두리 무시 */
+/* 아이콘 — 14px, 흰색 (보라 배경 위), 버튼 테두리 무시 */
 div[data-testid="stFileUploader"] button svg {
     width: 14px !important;
     height: 14px !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
-    color: #1a1a1a !important;
+    color: #fff !important;
+    fill: #fff !important;
     font-size: 14px !important;
 }
 
@@ -455,7 +458,7 @@ with h_num:
 with h_name:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">서류명</div>', unsafe_allow_html=True)
 with h_upload:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">파일첨부</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;text-align:center;">파일첨부</div>', unsafe_allow_html=True)
 with h_files:
     st.markdown('<div style="padding:0 8px 4px;">&nbsp;</div>', unsafe_allow_html=True)
 with h_note:
