@@ -155,8 +155,8 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
     min-width: 150px !important;
     max-width: 150px !important;
     height: 34px !important;
-    background: #fff !important;
-    color: #5e6ad2 !important;
+    background: #5e6ad2 !important;
+    color: #fff !important;
     border: 1px solid #5e6ad2 !important;
     border-radius: 8px !important;
     font-size: 13px !important;
@@ -166,7 +166,7 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
     transition: background 0.15s, border-color 0.15s !important;
 }
 .st-key-run_review_btn button:hover {
-    background: #eef0fb !important;
+    background: #4b58c5 !important;
     border-color: #4b58c5 !important;
 }
 
@@ -300,18 +300,18 @@ div[data-testid="stFileUploaderDropzone"] {
     box-shadow: none !important;
 }
 
-/* ★★ button 자체를 보라색 카드로 — dropzone 의존 없이 무조건 표시 */
+/* ★★ button — 연보라 바탕 + 보라 글씨/테두리 */
 div[data-testid="stFileUploader"] button,
 div[data-testid="stFileUploader"] button * {
     pointer-events: auto !important;
-    color: #fff !important;
+    color: #5e6ad2 !important;
     visibility: visible !important;
     opacity: 1 !important;
 }
 div[data-testid="stFileUploader"] button {
-    background: linear-gradient(180deg, #6770d8 0%, #5e6ad2 100%) !important;
-    background-color: #5e6ad2 !important;
-    border: none !important;
+    background: #eef0fb !important;
+    background-color: #eef0fb !important;
+    border: 1px solid #5e6ad2 !important;
     border-radius: 8px !important;
     padding: 0 16px !important;
     height: 30px !important;
@@ -330,25 +330,24 @@ div[data-testid="stFileUploader"] button {
     overflow: visible !important;
     box-sizing: border-box !important;
     cursor: pointer !important;
-    box-shadow: 0 1px 2px rgba(94,106,210,0.15), 0 0 0 1px rgba(94,106,210,0.08) !important;
-    transition: all 0.18s ease !important;
+    box-shadow: 0 1px 2px rgba(94,106,210,0.10) !important;
+    transition: all 0.15s ease !important;
 }
 div[data-testid="stFileUploader"] button:hover {
-    background: linear-gradient(180deg, #5e6ad2 0%, #4b58c5 100%) !important;
-    background-color: #4b58c5 !important;
-    box-shadow: 0 3px 8px rgba(94,106,210,0.28), 0 0 0 1px rgba(75,88,197,0.15) !important;
-    transform: translateY(-1px) !important;
+    background: #dde1f5 !important;
+    background-color: #dde1f5 !important;
+    border-color: #4b58c5 !important;
+    box-shadow: 0 2px 4px rgba(94,106,210,0.18) !important;
 }
 div[data-testid="stFileUploader"] button:active {
-    transform: translateY(0) !important;
-    box-shadow: 0 1px 2px rgba(94,106,210,0.2) !important;
+    background: #cdd3ef !important;
 }
 div[data-testid="stFileUploader"] button span,
 div[data-testid="stFileUploader"] button div,
 div[data-testid="stFileUploader"] button p {
     display: inline-flex !important;
     align-items: center !important;
-    color: #fff !important;
+    color: #5e6ad2 !important;
     font-size: 13px !important;
 }
 
@@ -367,14 +366,14 @@ div[data-testid="stFileUploaderDropzone"] > p {
     display: none !important;
 }
 
-/* 아이콘 — 14px, 흰색 (보라 배경 위), 버튼 테두리 무시 */
+/* 아이콘 — 14px, 보라 (연보라 배경 위), 버튼 테두리 무시 */
 div[data-testid="stFileUploader"] button svg {
     width: 14px !important;
     height: 14px !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
-    color: #fff !important;
-    fill: #fff !important;
+    color: #5e6ad2 !important;
+    fill: #5e6ad2 !important;
     font-size: 14px !important;
 }
 
@@ -555,8 +554,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 200MB 카드 ↔ 그룹헤더 사이 20px (gap 4 + 16)
-st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+# 200MB 카드 ↔ 그룹헤더 사이 60px (gap 4 + 56)
+st.markdown("<div style='height:56px;'></div>", unsafe_allow_html=True)
 
 # 테이블 헤더
 h_num, h_name, h_upload, h_files, h_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
