@@ -117,20 +117,23 @@ div[data-testid="stFileUploaderDropzone"] button {
     line-height: 1 !important;
 }
 
-/* 서류 행 압축 — 다단 선택자로 확실히 덮어씌우기 */
+/* 페이지 최상위 stVerticalBlock gap 축소 */
+div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+}
+/* 서류 행 구분선 (hr 대체) + 수직 정렬 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
     align-items: center !important;
+    border-bottom: 1px solid #e5e5e8 !important;
+    padding: 2px 0 !important;
 }
+/* 서류 행 내부 컬럼 gap/padding 제거 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"]
-  > div[data-testid="stVerticalBlock"] {
+  div[data-testid="stVerticalBlock"] {
     gap: 0 !important;
-    padding: 0 !important;
 }
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"]
-  > div[data-testid="stVerticalBlock"]
-  > div {
+  div[data-testid="stVerticalBlock"] > div {
     padding: 0 !important;
     margin: 0 !important;
     min-height: 0 !important;
@@ -141,12 +144,6 @@ div[data-testid="stFileUploader"] * {
     min-height: 0 !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
-}
-/* hr 마진 제거 */
-div[data-testid="stMarkdown"]:has(hr) {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 0 !important;
 }
 
 /* 체크박스 */
@@ -281,9 +278,7 @@ st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1
 
 for doc in DOCUMENTS:
     render_doc_row(doc)
-    st.markdown("<hr style='margin:0;border:none;border-top:1px solid #e5e5e8;'>", unsafe_allow_html=True)
 
-st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 _, btn_col = st.columns([3, 1])
 with btn_col:
     run = st.button("검토 시작", use_container_width=True)
