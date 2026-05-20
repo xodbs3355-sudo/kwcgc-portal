@@ -94,6 +94,17 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
     margin-top: -10px !important;
 }
 
+/* ═════════ TEMP: 컬럼 경계선 디버그 (빨간 점선) ═════════ */
+/* 헤더·본문·기타 모든 stHorizontalBlock 의 stColumn 마지막 제외 */
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:not(:last-child) {
+    border-right: 1px dashed #e5484d !important;
+}
+/* 행 자체에도 위/아래 빨간 점선 (본문 행) */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
+    outline: 1px dashed rgba(229,72,77,0.4) !important;
+    outline-offset: -1px !important;
+}
+
 /* ═════════ 서류 행 — CSS Grid 기반 ═════════ */
 
 /* 서류 행 (stFileUploader 포함된 stHorizontalBlock) → Grid */
