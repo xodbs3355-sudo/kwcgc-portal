@@ -101,10 +101,12 @@ div[data-testid="stFileUploader"] section {
     border: none !important;
     background: transparent !important;
     padding: 0 !important;
+    min-height: 0 !important;
 }
 div[data-testid="stFileUploaderDropzone"] {
     background: transparent !important;
     padding: 0 !important;
+    min-height: 0 !important;
 }
 div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
 /* 업로드 버튼 높이 — 입력 필드와 동일하게 */
@@ -114,10 +116,20 @@ div[data-testid="stFileUploaderDropzone"] button {
     font-size: 13px !important;
     line-height: 1 !important;
 }
-/* 첨부된 파일 목록 */
-div[data-testid="stFileUploader"] small {
-    font-size: 11px !important;
+
+/* 서류 행 전체 압축 — 파일업로더가 있는 행만 타겟 */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
+    align-items: center !important;
+    padding: 2px 0 !important;
 }
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) div[data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+}
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) div[data-testid="stVerticalBlock"] > div {
+    padding-bottom: 0 !important;
+    min-height: 0 !important;
+}
+div[data-testid="stFileUploader"] { min-height: 0 !important; }
 
 /* 체크박스 */
 div[data-testid="stCheckbox"] label { font-size: 13px; color: #6b6f7a; }
@@ -217,10 +229,7 @@ def render_doc_row(doc):
             unsafe_allow_html=True,
         )
     with c_name:
-        label = f'<span style="font-size:13px;font-weight:500;color:#1a1a1a;">{doc["name"]}</span>'
-        if cond:
-            label += f'<br><span style="font-size:11px;color:#9b9fa8;">{cond}</span>'
-        st.markdown(f'<div style="padding:6px 0 0;">{label}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;padding:6px 0 0;">{doc["name"]}</div>', unsafe_allow_html=True)
     with c_upload:
         files = st.file_uploader(
             f"{doc['name']}",
