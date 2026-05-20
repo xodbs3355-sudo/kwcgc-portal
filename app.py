@@ -123,7 +123,7 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]):hove
     background: #fafafa !important;
 }
 
-/* 각 셀(stColumn) — flex 수직중앙 + 좌측정렬 */
+/* 각 셀(stColumn) — flex 수직중앙 + 좌측정렬 (3·4번째 셀) */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   > div[data-testid="stColumn"] {
     display: flex !important;
@@ -135,6 +135,21 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
     flex: none !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
+}
+/* No.·서류명 셀 (1·2번째) — 카드 좌우 정중앙 */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  > div[data-testid="stColumn"]:nth-child(1),
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  > div[data-testid="stColumn"]:nth-child(2) {
+    justify-content: center !important;
+}
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  > div[data-testid="stColumn"]:nth-child(1)
+  > div[data-testid="stVerticalBlock"],
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  > div[data-testid="stColumn"]:nth-child(2)
+  > div[data-testid="stVerticalBlock"] {
+    justify-content: center !important;
 }
 
 /* 셀 내부 stVerticalBlock — 너비 채우고, gap 제거 */
@@ -172,13 +187,8 @@ div[data-testid="stFileUploader"] > div {
 }
 
 /* ═════════════════════════════════════════════════════════
-   ★ stFileUploader 전체 잠금 — section 셀렉터 못 잡는 경우 대비
+   ★ stFileUploader — 클릭만 차단 (텍스트는 button 안만 표시)
    ═════════════════════════════════════════════════════════ */
-div[data-testid="stFileUploader"],
-div[data-testid="stFileUploader"] * {
-    font-size: 0 !important;
-    color: transparent !important;
-}
 div[data-testid="stFileUploader"] {
     pointer-events: none !important;
 }
@@ -236,20 +246,20 @@ div[data-testid="stFileUploader"] button {
     overflow: visible !important;
 }
 
-/* ★ button 안에 instructions/200MB 텍스트가 있어도 강제 hide */
-div[data-testid="stFileUploader"] button [data-testid*="nstruction"],
-div[data-testid="stFileUploader"] button small,
-div[data-testid="stFileUploader"] button p,
-div[data-testid="stFileUploader"] button [class*="instruction"],
-div[data-testid="stFileUploader"] button [class*="Instruction"] {
-    display: none !important;
-}
-
-/* ★ section 안 button/svg/FileData 외 모든 요소 강제 hide */
-div[data-testid="stFileUploader"] [data-testid*="nstruction"],
+/* ★ 200MB instructions — 정밀 hide (button 자식 빼고 모두) */
+[data-testid="stFileUploaderDropzoneInstructions"],
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"],
 div[data-testid="stFileUploader"] [data-testid*="DropzoneInstructions"],
-div[data-testid="stFileUploader"] section small,
-div[data-testid="stFileUploader"] section p {
+/* section 직계 small/p (button 옆 형제로 있는 경우) */
+div[data-testid="stFileUploader"] > div > section > small,
+div[data-testid="stFileUploader"] > div > section > p,
+div[data-testid="stFileUploader"] section > small,
+div[data-testid="stFileUploader"] section > p,
+/* dropzone 직계 small/p (button 옆 형제로 있는 경우) */
+div[data-testid="stFileUploaderDropzone"] > small,
+div[data-testid="stFileUploaderDropzone"] > p,
+/* dropzone 자식 중 button 안 들어간 div */
+div[data-testid="stFileUploaderDropzone"] > div:not(:has(button)) {
     display: none !important;
 }
 
