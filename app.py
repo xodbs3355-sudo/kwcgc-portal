@@ -119,7 +119,7 @@ div[data-testid="stFileUploaderDropzone"] button {
 
 /* 페이지 최상위 stVerticalBlock gap 축소 */
 div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {
-    gap: 0 !important;
+    gap: 8px !important;
 }
 /* 서류 행 구분선 (hr 대체) + 수직 정렬 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
