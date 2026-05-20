@@ -24,13 +24,14 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #1a1a1a; }
 .stApp { background: #fff; }
 #MainMenu, footer, header { visibility: hidden; }
 div[data-testid="stToolbar"] { display: none; }
-.block-container { padding-top: 20px !important; padding-left: 2rem !important; padding-right: 2rem !important; max-width: 100% !important; }
+.block-container {
+    padding-top: 20px !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+    max-width: 100% !important;
+}
 
 /* 헤더 */
-.portal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 0; border-bottom: 1px solid #e5e5e8; margin-bottom: 28px;
-}
 .portal-logo { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
 .company-badge {
     font-size: 12px; color: #6b6f7a;
@@ -38,33 +39,15 @@ div[data-testid="stToolbar"] { display: none; }
     border-radius: 6px; padding: 3px 10px;
 }
 
-/* 서류 카드 */
-.doc-card {
-    border: 1px solid #e5e5e8; border-radius: 7px;
-    padding: 10px 14px; margin-bottom: 0; background: #fff;
+/* 섹션 타이틀 */
+.section-title {
+    font-size: 11px; font-weight: 600; color: #9b9fa8;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin: 0 0 4px;
 }
-.doc-card:hover { border-color: #c8cbf0; background: #fafafa; }
-.doc-header { display: flex; align-items: center; gap: 8px; }
-.doc-num {
-    font-size: 11px; font-weight: 600; color: #5e6ad2;
-    background: #eef0fb; border-radius: 4px; padding: 1px 6px;
-    min-width: 22px; text-align: center;
-}
-.doc-name { font-size: 13px; font-weight: 600; color: #1a1a1a; flex: 1; }
-.doc-required {
-    font-size: 10px; font-weight: 600; color: #e5484d;
-    background: #fff0f0; border-radius: 4px; padding: 1px 6px;
-}
-.doc-optional {
-    font-size: 10px; color: #6b6f7a;
-    background: #f2f3f4; border-radius: 4px; padding: 1px 6px;
-}
-.doc-condition { font-size: 11px; color: #9b9fa8; margin-top: 1px; padding-left: 30px; }
 
 /* 결과 카드 */
-.result-summary {
-    display: flex; gap: 10px; margin: 16px 0 24px;
-}
+.result-summary { display: flex; gap: 10px; margin: 16px 0 24px; }
 .result-card {
     flex: 1; border: 1px solid #e5e5e8; border-radius: 8px;
     padding: 14px; text-align: center; background: #f9f9f9;
@@ -87,7 +70,7 @@ div[data-testid="stToolbar"] { display: none; }
     border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;
 }
 
-/* 버튼 */
+/* 기본 버튼 */
 div[data-testid="stButton"] button {
     background: #5e6ad2; color: #fff; border: none;
     border-radius: 6px; font-size: 13px; font-weight: 500;
@@ -95,133 +78,198 @@ div[data-testid="stButton"] button {
 }
 div[data-testid="stButton"] button:hover { background: #4b58c5; }
 
-/* 파일 업로더 — 카드/배경 완전 제거 */
-div[data-testid="stFileUploader"] > div,
-div[data-testid="stFileUploader"] section {
-    border: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    min-height: 0 !important;
-}
-div[data-testid="stFileUploaderDropzone"] {
-    background: transparent !important;
-    padding: 0 !important;
-    min-height: 0 !important;
-}
-div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
-/* 드롭존 내 안내문(200MB 등) 모두 hide — button만 남김 */
-div[data-testid="stFileUploaderDropzone"] > * { display: none !important; }
-div[data-testid="stFileUploaderDropzone"] button { display: inline-flex !important; }
-/* 업로드 버튼 — button/span/label 전방위 타겟 */
-div[data-testid="stFileUploader"] section button,
-div[data-testid="stFileUploader"] section span,
-div[data-testid="stFileUploader"] section label {
-    height: 32px !important;
-    font-size: 7px !important;
-    padding: 0 8px !important;
-    line-height: 32px !important;
-}
-div[data-testid="stFileUploader"] section button svg,
-div[data-testid="stFileUploader"] section span svg,
-div[data-testid="stFileUploader"] section label svg {
-    width: 24px !important;
-    height: 24px !important;
-}
-/* 첨부 후 파일 정보 — 행 높이 35px 고정 */
-div[data-testid="stFileUploader"] section {
-    height: 35px !important;
-    overflow: hidden !important;
-    display: flex !important;
-    align-items: center !important;
-    flex-wrap: nowrap !important;
-}
-div[data-testid="stFileUploader"] section > div {
-    height: 35px !important;
-    overflow: visible !important;
-    display: flex !important;
-    align-items: center !important;
-    font-size: 11px !important;
-    white-space: nowrap !important;
-}
-/* 서류 행 입력 필드 높이 축소 */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-baseweb="input"] {
-    height: 35px !important;
-    min-height: 0 !important;
-}
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-baseweb="input"] input {
-    height: 35px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-/* 페이지 최상위 stVerticalBlock gap 축소 */
+/* 페이지 vertical gap */
 div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {
     gap: 4px !important;
 }
-/* 빈 stMarkdown 컨테이너 (Streamlit auto-inject) hide */
+
+/* 빈 stMarkdown 컨테이너 hide */
 div[data-testid="stMarkdownContainer"]:empty,
 div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty) {
     display: none !important;
 }
-/* 검토 시작 버튼 — 위로 살짝 이동 */
+
+/* 검토 시작 버튼 위로 */
 .st-key-run_review_btn {
     margin-top: -10px !important;
 }
-/* 서류 행 구분선 (hr 대체) + 수직 정렬 */
+
+/* ═════════ 서류 행 — CSS Grid 기반 ═════════ */
+
+/* 서류 행 (stFileUploader 포함된 stHorizontalBlock) → Grid */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
-    align-items: center !important;
+    display: grid !important;
+    grid-template-columns: 0.3fr 1.6fr 3fr 2.5fr !important;
+    align-items: stretch !important;
     border-bottom: 1px solid #e5e5e8 !important;
-    padding: 2px 0 !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    width: 100% !important;
+    transition: background 0.12s ease !important;
 }
-/* 서류 행 내부 컬럼 자체에 flex 중앙정렬 */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]):hover {
+    background: #fafafa !important;
+}
+
+/* 각 셀(stColumn) — flex 수직중앙 + 좌측정렬 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   > div[data-testid="stColumn"] {
     display: flex !important;
     align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 4px 8px !important;
+    min-height: 44px !important;
+    width: 100% !important;
+    flex: none !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 }
-/* 서류 행 내부 컬럼 gap/padding 제거 + 수직 중앙 정렬 */
+
+/* 셀 내부 stVerticalBlock — 너비 채우고, gap 제거 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   > div[data-testid="stColumn"]
   > div[data-testid="stVerticalBlock"] {
-    gap: 0 !important;
-    justify-content: center !important;
     width: 100% !important;
+    gap: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
 }
+
+/* 셀 내부 wrapper div reset */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   div[data-testid="stVerticalBlock"] > div {
+    width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
     min-height: 0 !important;
+    box-sizing: border-box !important;
 }
-/* 파일 업로더 클릭 영역을 버튼 영역으로만 제한 */
+
+/* ═════════ 파일 업로더 (Upload 버튼) ═════════ */
+
+/* file_uploader 외곽 reset */
+div[data-testid="stFileUploader"],
+div[data-testid="stFileUploader"] > div {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    width: auto !important;
+}
+
+/* section — flex 좌측정렬, 행 안에 가두기 */
+div[data-testid="stFileUploader"] section {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    overflow: visible !important;
+}
+
+/* dropzone — 작은 박스 형태 (Upload 텍스트 + 아이콘) */
 div[data-testid="stFileUploaderDropzone"] {
+    background: #fff !important;
+    border: 1px solid #d4d4d8 !important;
+    border-radius: 6px !important;
+    padding: 0 12px !important;
+    height: 28px !important;
+    min-height: 0 !important;
     width: fit-content !important;
     pointer-events: none !important;
+    overflow: visible !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    transition: background 0.15s, border-color 0.15s !important;
 }
+div[data-testid="stFileUploaderDropzone"]:hover {
+    background: #f4f4f5 !important;
+    border-color: #5e6ad2 !important;
+}
+
+/* dropzone 안 모든 자식 hide → button과 그 자식만 부활 */
+div[data-testid="stFileUploaderDropzone"] * { display: none !important; }
+div[data-testid="stFileUploaderDropzone"] button,
+div[data-testid="stFileUploaderDropzone"] button * { display: revert !important; }
+
+/* 업로드 버튼 자체 — 텍스트+아이콘 */
 div[data-testid="stFileUploaderDropzone"] button {
     pointer-events: auto !important;
+    background: transparent !important;
+    color: #1a1a1a !important;
+    border: none !important;
+    padding: 0 !important;
+    height: 28px !important;
+    line-height: 1 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    overflow: visible !important;
 }
-/* stFileUploader 자체 여백 제거 */
-div[data-testid="stFileUploader"],
-div[data-testid="stFileUploader"] * {
+
+/* 아이콘 — 텍스트 높이(14px), 버튼 테두리 무시 */
+div[data-testid="stFileUploaderDropzone"] button svg {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+    overflow: visible !important;
+}
+
+/* 첨부 후 파일 정보 (section > 두번째 div) */
+div[data-testid="stFileUploader"] section > div {
+    overflow: visible !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 12px !important;
+    color: #5e6ad2 !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* ═════════ 특기사항 입력란 ═════════ */
+
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  div[data-testid="stTextInput"] {
+    width: 100% !important;
+}
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  div[data-baseweb="input"] {
+    height: 30px !important;
     min-height: 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border: 1px solid #e5e5e8 !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+}
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  div[data-baseweb="input"] input {
+    height: 28px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    border: none !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  div[data-baseweb="input"]:focus-within {
+    border-color: #5e6ad2 !important;
+    box-shadow: 0 0 0 2px rgba(94,106,210,0.15) !important;
 }
 
-/* 체크박스 */
-div[data-testid="stCheckbox"] label { font-size: 13px; color: #6b6f7a; }
-
-/* 구분선 */
-.section-title {
-    font-size: 11px; font-weight: 600; color: #9b9fa8;
-    text-transform: uppercase; letter-spacing: 0.8px;
-    margin: 0 0 4px;
-}
-
-/* 입력 필드 */
+/* 입력 필드 (로그인 페이지 등 다른 위치) */
 div[data-baseweb="input"] input {
     border: 1px solid #e5e5e8 !important; border-radius: 6px !important;
     font-size: 13px !important;
@@ -305,12 +353,12 @@ def render_doc_row(doc):
 
     with c_num:
         st.markdown(
-            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;height:35px;display:flex;align-items:center;">{doc["num"]}</div>',
+            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;">{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
     with c_name:
         st.markdown(
-            f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;height:35px;display:flex;align-items:center;">{doc["name"]}</div>',
+            f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;">{doc["name"]}</div>',
             unsafe_allow_html=True,
         )
     with c_upload:
@@ -340,13 +388,13 @@ with btn_area:
 # 테이블 헤더
 h_num, h_name, h_upload, h_note = st.columns([0.3, 1.6, 3, 2.5])
 with h_num:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">No.</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">No.</div>', unsafe_allow_html=True)
 with h_name:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">서류명</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">서류명</div>', unsafe_allow_html=True)
 with h_upload:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">파일첨부</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">파일첨부</div>', unsafe_allow_html=True)
 with h_note:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">특기사항</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">특기사항</div>', unsafe_allow_html=True)
 st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
 
 for doc in DOCUMENTS:
