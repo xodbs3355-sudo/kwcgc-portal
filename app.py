@@ -117,19 +117,37 @@ div[data-testid="stFileUploaderDropzone"] button {
     line-height: 1 !important;
 }
 
-/* 서류 행 전체 압축 — 파일업로더가 있는 행만 타겟 */
+/* 서류 행 압축 — 다단 선택자로 확실히 덮어씌우기 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
     align-items: center !important;
-    padding: 2px 0 !important;
 }
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) div[data-testid="stVerticalBlock"] {
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  > div[data-testid="stColumn"]
+  > div[data-testid="stVerticalBlock"] {
     gap: 0 !important;
+    padding: 0 !important;
 }
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) div[data-testid="stVerticalBlock"] > div {
-    padding-bottom: 0 !important;
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  > div[data-testid="stColumn"]
+  > div[data-testid="stVerticalBlock"]
+  > div {
+    padding: 0 !important;
+    margin: 0 !important;
     min-height: 0 !important;
 }
-div[data-testid="stFileUploader"] { min-height: 0 !important; }
+/* stFileUploader 자체 여백 제거 */
+div[data-testid="stFileUploader"],
+div[data-testid="stFileUploader"] * {
+    min-height: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+/* hr 마진 제거 */
+div[data-testid="stMarkdown"]:has(hr) {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+}
 
 /* 체크박스 */
 div[data-testid="stCheckbox"] label { font-size: 13px; color: #6b6f7a; }
