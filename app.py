@@ -109,12 +109,20 @@ div[data-testid="stFileUploaderDropzone"] {
     min-height: 0 !important;
 }
 div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
-/* 업로드 버튼 높이 축소 */
+/* 업로드 버튼 — 텍스트 숨기고 아이콘만 표시 */
 div[data-testid="stFileUploaderDropzone"] button {
     height: 30px !important;
-    padding: 0 14px !important;
-    font-size: 12px !important;
+    width: 40px !important;
+    padding: 0 !important;
+    font-size: 0 !important;
     line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+div[data-testid="stFileUploaderDropzone"] button svg {
+    width: 16px !important;
+    height: 16px !important;
 }
 /* 서류 행 입력 필드 높이 축소 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
