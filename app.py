@@ -48,7 +48,13 @@ div[data-testid="stToolbar"] { display: none; }
     border-radius: 6px;
 }
 
-/* 로그아웃 버튼 — 폭 100px, 짙은 회색 테두리, 흰 배경 */
+/* 로그아웃 버튼 — 업체 배지와 같은 행, 폭 100px, 짙은 회색 테두리 */
+.st-key-logout_btn {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    padding: 12px 0 !important;
+}
 .st-key-logout_btn button {
     width: 100px !important;
     min-width: 100px !important;
@@ -61,6 +67,7 @@ div[data-testid="stToolbar"] { display: none; }
     font-size: 13px !important;
     font-weight: 500 !important;
     padding: 0 !important;
+    margin: 0 !important;
 }
 .st-key-logout_btn button:hover {
     background: #f7f7f9 !important;
@@ -129,9 +136,30 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
     display: none !important;
 }
 
-/* 검토 시작 버튼 위로 */
+/* 검토 시작 버튼 — 폭 150px, 연보라 배경, 보라 글씨/테두리 */
 .st-key-run_review_btn {
     margin-top: -10px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+.st-key-run_review_btn button {
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+    height: 34px !important;
+    background: #eef0fb !important;
+    color: #5e6ad2 !important;
+    border: 1px solid #5e6ad2 !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+    letter-spacing: 0.02em !important;
+    transition: background 0.15s, border-color 0.15s !important;
+}
+.st-key-run_review_btn button:hover {
+    background: #dde1f5 !important;
+    border-color: #4b58c5 !important;
 }
 
 /* ═════════ TEMP: 컬럼 경계선 디버그 (빨간 점선) ═════════ */
@@ -273,33 +301,39 @@ div[data-testid="stFileUploader"] button * {
     opacity: 1 !important;
 }
 div[data-testid="stFileUploader"] button {
-    background: #5e6ad2 !important;
+    background: linear-gradient(180deg, #6770d8 0%, #5e6ad2 100%) !important;
     background-color: #5e6ad2 !important;
-    border: 1px solid #4b58c5 !important;
-    border-radius: 6px !important;
-    padding: 0 14px !important;
-    height: 28px !important;
-    min-height: 28px !important;
-    width: 92px !important;
-    min-width: 92px !important;
-    max-width: 92px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0 16px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
     line-height: 1 !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.03em !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 6px !important;
+    gap: 7px !important;
     overflow: visible !important;
     box-sizing: border-box !important;
     cursor: pointer !important;
-    box-shadow: 0 1px 2px rgba(94,106,210,0.2) !important;
-    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s !important;
+    box-shadow: 0 1px 2px rgba(94,106,210,0.15), 0 0 0 1px rgba(94,106,210,0.08) !important;
+    transition: all 0.18s ease !important;
 }
 div[data-testid="stFileUploader"] button:hover {
-    background: #4b58c5 !important;
-    border-color: #3f4ab0 !important;
-    box-shadow: 0 2px 4px rgba(94,106,210,0.3) !important;
+    background: linear-gradient(180deg, #5e6ad2 0%, #4b58c5 100%) !important;
+    background-color: #4b58c5 !important;
+    box-shadow: 0 3px 8px rgba(94,106,210,0.28), 0 0 0 1px rgba(75,88,197,0.15) !important;
+    transform: translateY(-1px) !important;
+}
+div[data-testid="stFileUploader"] button:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 2px rgba(94,106,210,0.2) !important;
 }
 div[data-testid="stFileUploader"] button span,
 div[data-testid="stFileUploader"] button div,
@@ -422,10 +456,6 @@ with col_badge:
         unsafe_allow_html=True,
     )
 with col_logout:
-    st.markdown(
-        '<div style="display:flex;justify-content:flex-end;align-items:center;padding:12px 0 12px 8px;">',
-        unsafe_allow_html=True,
-    )
     if st.button("로그아웃", type="secondary", use_container_width=False, key="logout_btn"):
         for k in ['company', 'review_results']:
             st.session_state.pop(k, None)
@@ -458,8 +488,7 @@ def render_doc_row(doc):
     with c_num:
         st.markdown(
             f'<div style="display:inline-flex;align-items:center;justify-content:center;'
-            f'background:#eef0fb;border:1px solid #d8dcf3;border-radius:6px;'
-            f'padding:4px 10px;min-width:28px;height:24px;'
+            f'height:24px;'
             f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;'
             f'margin-bottom:15px;">'
             f'{doc["num"]}</div>',
@@ -468,8 +497,7 @@ def render_doc_row(doc):
     with c_name:
         st.markdown(
             f'<div style="display:inline-flex;align-items:center;'
-            f'background:#f7f7f9;border:1px solid #e5e5e8;border-radius:6px;'
-            f'padding:4px 12px;height:24px;'
+            f'height:24px;'
             f'font-size:13px;font-weight:500;color:#1a1a1a;line-height:1;'
             f'margin-bottom:15px;">'
             f'{doc["name"]}</div>',
@@ -518,6 +546,9 @@ st.markdown(
     '<div class="info-card">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</div>',
     unsafe_allow_html=True,
 )
+
+# 200MB 카드 ↔ 그룹헤더 사이 20px (gap 4 + 16)
+st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
 # 테이블 헤더
 h_num, h_name, h_upload, h_files, h_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
