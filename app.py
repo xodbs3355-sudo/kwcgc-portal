@@ -95,18 +95,28 @@ div[data-testid="stButton"] button {
 }
 div[data-testid="stButton"] button:hover { background: #4b58c5; }
 
-/* 파일 업로더 — 카드/배경 제거, 버튼만 표시 */
-div[data-testid="stFileUploader"] > div {
+/* 파일 업로더 — 카드/배경 완전 제거 */
+div[data-testid="stFileUploader"] > div,
+div[data-testid="stFileUploader"] section {
     border: none !important;
     background: transparent !important;
     padding: 0 !important;
 }
-div[data-testid="stFileUploaderDropzone"] { padding: 0 !important; }
+div[data-testid="stFileUploaderDropzone"] {
+    background: transparent !important;
+    padding: 0 !important;
+}
 div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
+/* 업로드 버튼 높이 — 입력 필드와 동일하게 */
+div[data-testid="stFileUploaderDropzone"] button {
+    height: 36px !important;
+    padding: 0 16px !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+}
 /* 첨부된 파일 목록 */
-div[data-testid="stFileUploader"] > div > div:last-child {
-    max-height: 60px !important;
-    overflow-y: auto !important;
+div[data-testid="stFileUploader"] small {
+    font-size: 11px !important;
 }
 
 /* 체크박스 */
