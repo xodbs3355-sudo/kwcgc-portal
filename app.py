@@ -95,24 +95,17 @@ div[data-testid="stButton"] button {
 }
 div[data-testid="stButton"] button:hover { background: #4b58c5; }
 
-/* 파일 업로더 */
+/* 파일 업로더 — 카드/배경 제거, 버튼만 표시 */
 div[data-testid="stFileUploader"] > div {
-    border: 1.5px dashed #d0d2e0 !important;
-    border-radius: 7px !important;
-    background: #fafafa !important;
-    padding: 6px 12px !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
 }
-div[data-testid="stFileUploader"] > div:hover {
-    border-color: #5e6ad2 !important;
-    background: #f5f5ff !important;
-}
-div[data-testid="stFileUploaderDropzone"] { padding: 6px !important; }
-/* 드롭존 안내 텍스트(200MB 등) 숨김 */
-div[data-testid="stFileUploaderDropzoneInstructions"] small { display: none !important; }
-div[data-testid="stFileUploaderDropzoneInstructions"] span { font-size: 12px !important; }
-/* 첨부된 파일 목록 영역 스크롤 고정 (카드 높이 불변) */
+div[data-testid="stFileUploaderDropzone"] { padding: 0 !important; }
+div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
+/* 첨부된 파일 목록 */
 div[data-testid="stFileUploader"] > div > div:last-child {
-    max-height: 90px !important;
+    max-height: 60px !important;
     overflow-y: auto !important;
 }
 
@@ -206,44 +199,43 @@ def render_doc_slot(doc):
     did  = doc["id"]
     cond = doc["condition"]
 
-    with st.container(border=True):
-        c_num, c_name, c_upload, c_note = st.columns([0.3, 1.6, 3, 2.5])
+    c_num, c_name, c_upload, c_note = st.columns([0.3, 1.6, 3, 2.5])
 
-        with c_num:
-            st.markdown(
-                f'<div style="background:#eef0fb;color:#5e6ad2;font-size:11px;'
-                f'font-weight:600;border-radius:4px;padding:2px 6px;text-align:center;'
-                f'margin-top:8px">{doc["num"]}</div>',
-                unsafe_allow_html=True,
-            )
-        with c_name:
-            st.markdown(
-                f'<div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-top:6px;">{doc["name"]}</div>'
-                + (f'<div style="font-size:11px;color:#9b9fa8;">{cond}</div>' if cond else ""),
-                unsafe_allow_html=True,
-            )
-        with c_upload:
-            files = st.file_uploader(
-                f"{doc['name']}",
-                type=["pdf", "jpg", "jpeg", "png"],
-                accept_multiple_files=True,
-                key=f"files_{did}",
-                label_visibility="collapsed",
-            )
-            uploaded[did] = [(f.name, f.read()) for f in files] if files else []
-        with c_note:
-            note = st.text_input(
-                "특기사항",
-                key=f"note_{did}",
-                placeholder="특기사항 (선택)",
-                label_visibility="collapsed",
-            )
-            notes[did] = note
+    with c_num:
+        st.markdown(
+            f'<div style="background:#eef0fb;color:#5e6ad2;font-size:11px;'
+            f'font-weight:600;border-radius:4px;padding:2px 6px;text-align:center;'
+            f'margin-top:6px">{doc["num"]}</div>',
+            unsafe_allow_html=True,
+        )
+    with c_name:
+        st.markdown(
+            f'<div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-top:4px;">{doc["name"]}</div>'
+            + (f'<div style="font-size:11px;color:#9b9fa8;">{cond}</div>' if cond else ""),
+            unsafe_allow_html=True,
+        )
+    with c_upload:
+        files = st.file_uploader(
+            f"{doc['name']}",
+            type=["pdf", "jpg", "jpeg", "png"],
+            accept_multiple_files=True,
+            key=f"files_{did}",
+            label_visibility="collapsed",
+        )
+        uploaded[did] = [(f.name, f.read()) for f in files] if files else []
+    with c_note:
+        note = st.text_input(
+            "특기사항",
+            key=f"note_{did}",
+            placeholder="특기사항 (선택)",
+            label_visibility="collapsed",
+        )
+        notes[did] = note
 
 
 for doc in DOCUMENTS:
     render_doc_slot(doc)
-    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin:2px 0;border:none;border-top:1px solid #e5e5e8;'>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 _, btn_col = st.columns([3, 1])
