@@ -496,7 +496,7 @@ def render_doc_row(doc):
             f'<div style="display:inline-flex;align-items:center;justify-content:center;'
             f'height:24px;'
             f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;'
-            f'margin-bottom:15px;">'
+            f'margin-bottom:15px;margin-left:3px;">'
             f'{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
@@ -567,9 +567,9 @@ for idx, doc in enumerate(DOCUMENTS):
         st.markdown("<div style='height:5px;'></div>", unsafe_allow_html=True)
     render_doc_row(doc)
 
-# 검토 시작 버튼 — 테이블 아래 우측 끝 정렬
+# 검토 시작 버튼 — 테이블 아래 우측 끝 정렬 (본문 행과 동일 컬럼 구조)
 st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
-_, btn_area = st.columns([6, 1])
+_, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
 with btn_area:
     run = st.button("검토 시작", use_container_width=False, key="run_review_btn")
 
