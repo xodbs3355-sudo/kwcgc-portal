@@ -121,7 +121,7 @@ div[data-testid="stFileUploader"] section label {
 div[data-testid="stFileUploader"] section button svg,
 div[data-testid="stFileUploader"] section span svg,
 div[data-testid="stFileUploader"] section label svg {
-    width: 8px !important;
+    width: 16px !important;
     height: 8px !important;
 }
 /* 서류 행 입력 필드 높이 축소 */
@@ -291,7 +291,7 @@ def render_doc_row(doc):
         notes[did] = note
 
 
-# 테이블 헤더
+# 테이블 헤더 (검토 시작 버튼을 특기사항 열 위에 배치)
 h_num, h_name, h_upload, h_note = st.columns([0.3, 1.6, 3, 2.5])
 with h_num:
     st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">No.</div>', unsafe_allow_html=True)
@@ -300,15 +300,10 @@ with h_name:
 with h_upload:
     st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">파일첨부</div>', unsafe_allow_html=True)
 with h_note:
-    st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">특기사항</div>', unsafe_allow_html=True)
+    run = st.button("검토 시작", use_container_width=True)
 st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
 
 for doc in DOCUMENTS:
-    render_doc_row(doc)
-
-_, btn_col = st.columns([3, 1])
-with btn_col:
-    run = st.button("검토 시작", use_container_width=True)
 
 if run:
     all_results = {}
