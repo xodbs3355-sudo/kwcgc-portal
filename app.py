@@ -620,11 +620,11 @@ for idx, doc in enumerate(DOCUMENTS):
         st.markdown("<div style='height:5px;'></div>", unsafe_allow_html=True)
     render_doc_row(doc)
 
-# 검토 시작 버튼 — 테이블 아래 우측 끝 정렬 (본문 행과 동일 컬럼 구조)
+# 검토 시작 버튼 — 마지막 컬럼을 button 폭에 맞춰 쪼개 자연 우측 정렬
 st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
-_, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
+_, _, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 1.67, 0.83])
 with btn_area:
-    run = st.button("검토 시작", use_container_width=False, key="run_review_btn")
+    run = st.button("검토 시작", use_container_width=True, key="run_review_btn")
 
 if run:
     all_results = {}
