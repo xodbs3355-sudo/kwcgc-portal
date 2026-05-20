@@ -259,9 +259,7 @@ div[data-testid="stFileUploader"] section > small,
 div[data-testid="stFileUploader"] section > p,
 /* dropzone 직계 small/p (button 옆 형제로 있는 경우) */
 div[data-testid="stFileUploaderDropzone"] > small,
-div[data-testid="stFileUploaderDropzone"] > p,
-/* dropzone 자식 중 button 안 들어간 div */
-div[data-testid="stFileUploaderDropzone"] > div:not(:has(button)) {
+div[data-testid="stFileUploaderDropzone"] > p {
     display: none !important;
 }
 
@@ -465,7 +463,9 @@ with h_note:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">특기사항</div>', unsafe_allow_html=True)
 st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
 
-for doc in DOCUMENTS:
+for idx, doc in enumerate(DOCUMENTS):
+    if idx == 0:
+        st.markdown("<div style='height:5px;'></div>", unsafe_allow_html=True)
     render_doc_row(doc)
 
 if run:
