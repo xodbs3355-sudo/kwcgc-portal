@@ -245,11 +245,36 @@ div[data-testid="stFileUploader"] section {
     overflow: visible !important;
 }
 
-/* dropzone — 보라색 버튼 카드 (강제 visibility + 명시적 크기) */
-div[data-testid="stFileUploader"] div[data-testid="stFileUploaderDropzone"],
+/* dropzone — 투명 컨테이너 (button 만 시각적으로 표시) */
 div[data-testid="stFileUploaderDropzone"] {
-    background-color: #5e6ad2 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    pointer-events: none !important;
+    overflow: visible !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-shadow: none !important;
+}
+
+/* ★★ button 자체를 보라색 카드로 — dropzone 의존 없이 무조건 표시 */
+div[data-testid="stFileUploader"] button,
+div[data-testid="stFileUploader"] button * {
+    pointer-events: auto !important;
+    color: #fff !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+div[data-testid="stFileUploader"] button {
     background: #5e6ad2 !important;
+    background-color: #5e6ad2 !important;
     border: 1px solid #4b58c5 !important;
     border-radius: 6px !important;
     padding: 0 14px !important;
@@ -258,46 +283,23 @@ div[data-testid="stFileUploaderDropzone"] {
     width: 92px !important;
     min-width: 92px !important;
     max-width: 92px !important;
-    pointer-events: none !important;
-    overflow: visible !important;
-    display: inline-flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    box-sizing: border-box !important;
-    box-shadow: 0 1px 2px rgba(94,106,210,0.2) !important;
-    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s !important;
-}
-div[data-testid="stFileUploaderDropzone"]:hover {
-    background: #4b58c5 !important;
-    border-color: #3f4ab0 !important;
-    box-shadow: 0 2px 4px rgba(94,106,210,0.3) !important;
-}
-
-/* ★ button 과 자식 — 클릭 가능 + 흰색 텍스트 (보라 배경 위) — 강제 visibility */
-div[data-testid="stFileUploader"] button,
-div[data-testid="stFileUploader"] button * {
-    pointer-events: auto !important;
-    font-size: 13px !important;
-    color: #fff !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-div[data-testid="stFileUploader"] button {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    height: 24px !important;
     line-height: 1 !important;
+    font-size: 13px !important;
     font-weight: 500 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 6px !important;
     overflow: visible !important;
-    width: 100% !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+    box-shadow: 0 1px 2px rgba(94,106,210,0.2) !important;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s !important;
+}
+div[data-testid="stFileUploader"] button:hover {
+    background: #4b58c5 !important;
+    border-color: #3f4ab0 !important;
+    box-shadow: 0 2px 4px rgba(94,106,210,0.3) !important;
 }
 div[data-testid="stFileUploader"] button span,
 div[data-testid="stFileUploader"] button div,
