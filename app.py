@@ -426,13 +426,19 @@ div[data-testid="stFileUploader"] button svg {
     font-size: 14px !important;
 }
 
-/* ★ file_uploader 자체의 첨부 후 파일 칩 — 정밀 hide (dropzone wrapper 는 건드리지 않음) */
+/* ★ file_uploader 자체의 첨부 후 파일 칩 — 광범위 hide (dropzone 형제 모두) */
 div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"],
 div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileData"],
 div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileName"],
 div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileErrorMessage"],
 div[data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"],
-div[data-testid="stFileUploader"] [data-testid*="UploadedFile"] {
+div[data-testid="stFileUploader"] [data-testid*="UploadedFile"],
+/* dropzone 의 형제(같은 부모 안 dropzone 이후) 모두 hide */
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"] ~ * {
+    display: none !important;
+}
+/* section 직속 자식 중 dropzone(또는 dropzone 을 자손으로 가진 wrapper)이 아니면 hide */
+div[data-testid="stFileUploader"] section > *:not([data-testid="stFileUploaderDropzone"]):not(:has([data-testid="stFileUploaderDropzone"])):not(:has(button)) {
     display: none !important;
 }
 
