@@ -94,6 +94,35 @@ div[data-testid="stToolbar"] { display: none; }
     margin: 0;
 }
 
+/* 첨부파일 칩 카드 */
+.file-chip-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    align-items: center;
+    overflow: hidden;
+    width: 100%;
+    margin-bottom: 15px;
+}
+.file-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: #eef0fb;
+    border: 1px solid #d8dcf3;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #5e6ad2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    line-height: 1.4;
+    height: 24px;
+    box-sizing: border-box;
+}
+
 /* 섹션 타이틀 */
 .section-title {
     font-size: 11px; font-weight: 600; color: #9b9fa8;
@@ -281,22 +310,29 @@ div[data-testid="stFileUploader"] > div {
 }
 
 /* ═════════════════════════════════════════════════════════
-   ★ stFileUploader — 클릭만 차단 (텍스트는 button 안만 표시)
+   ★ stFileUploader — section 안 dropzone 만 살리고 나머지 hide
    ═════════════════════════════════════════════════════════ */
 div[data-testid="stFileUploader"] {
     pointer-events: none !important;
+    height: 36px !important;
+    overflow: hidden !important;
 }
 div[data-testid="stFileUploader"] section {
     border: none !important;
     background: transparent !important;
     padding: 0 !important;
     margin: 0 !important;
-    min-height: 0 !important;
-    height: auto !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
     display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
-    overflow: visible !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+}
+/* section 안에서 dropzone 외 모든 자식 hide (첨부 후 파일 칩 등) */
+div[data-testid="stFileUploader"] section > *:not([data-testid="stFileUploaderDropzone"]) {
+    display: none !important;
 }
 
 /* dropzone — 투명 컨테이너 (button 만 시각적으로 표시) */
@@ -539,13 +575,11 @@ def render_doc_row(doc):
         uploaded[did] = [(f.name, f.read()) for f in files] if files else []
     with c_files:
         if files:
-            names_html = " · ".join(
-                f'<span style="color:#5e6ad2;">{f.name}</span>' for f in files
+            chips_html = "".join(
+                f'<span class="file-chip">{f.name}</span>' for f in files
             )
             st.markdown(
-                f'<div style="font-size:12px;line-height:1.4;'
-                f'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'
-                f'padding:4px 0;">{names_html}</div>',
+                f'<div class="file-chip-row">{chips_html}</div>',
                 unsafe_allow_html=True,
             )
     with c_note:
