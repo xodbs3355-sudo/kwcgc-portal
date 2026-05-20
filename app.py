@@ -145,9 +145,28 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
 }
 
 /* 검토 시작 버튼 — 폭 150px, 연보라 배경, 보라 글씨/테두리 */
+/* 검토시작 버튼 우측 정렬 — stColumn → stVerticalBlock → wrapper → button 전 계층 강제 */
+div[data-testid="stHorizontalBlock"]:has(.st-key-run_review_btn)
+  > div[data-testid="stColumn"]:last-child {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+}
+div[data-testid="stHorizontalBlock"]:has(.st-key-run_review_btn)
+  > div[data-testid="stColumn"]:last-child
+  > div[data-testid="stVerticalBlock"] {
+    align-items: flex-end !important;
+    width: 100% !important;
+}
 .st-key-run_review_btn {
     display: flex !important;
     justify-content: flex-end !important;
+    align-self: flex-end !important;
+    width: 100% !important;
+    margin-left: auto !important;
+}
+.st-key-run_review_btn button {
+    margin-left: auto !important;
 }
 .st-key-run_review_btn button {
     width: 150px !important;
@@ -496,7 +515,7 @@ def render_doc_row(doc):
             f'<div style="display:inline-flex;align-items:center;justify-content:center;'
             f'height:24px;'
             f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;'
-            f'margin-bottom:15px;margin-left:3px;">'
+            f'margin-bottom:15px;margin-left:10px;">'
             f'{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
