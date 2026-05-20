@@ -109,20 +109,20 @@ div[data-testid="stFileUploaderDropzone"] {
     min-height: 0 !important;
 }
 div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
-/* 업로드 버튼 — 텍스트 숨기고 아이콘만 표시 */
-div[data-testid="stFileUploaderDropzone"] button {
-    height: 30px !important;
-    width: 40px !important;
-    padding: 0 !important;
-    font-size: 0 !important;
-    line-height: 1 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+/* 업로드 버튼 — button/span/label 전방위 타겟 */
+div[data-testid="stFileUploader"] section button,
+div[data-testid="stFileUploader"] section span,
+div[data-testid="stFileUploader"] section label {
+    height: 26px !important;
+    font-size: 7px !important;
+    padding: 0 8px !important;
+    line-height: 26px !important;
 }
-div[data-testid="stFileUploaderDropzone"] button svg {
-    width: 16px !important;
-    height: 16px !important;
+div[data-testid="stFileUploader"] section button svg,
+div[data-testid="stFileUploader"] section span svg,
+div[data-testid="stFileUploader"] section label svg {
+    width: 8px !important;
+    height: 8px !important;
 }
 /* 서류 행 입력 필드 높이 축소 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
@@ -267,11 +267,11 @@ def render_doc_row(doc):
 
     with c_num:
         st.markdown(
-            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;">{doc["num"]}</div>',
+            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;line-height:30px;">{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
     with c_name:
-        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;">{doc["name"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;line-height:30px;">{doc["name"]}</div>', unsafe_allow_html=True)
     with c_upload:
         files = st.file_uploader(
             f"{doc['name']}",
