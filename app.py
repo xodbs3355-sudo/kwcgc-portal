@@ -33,10 +33,50 @@ div[data-testid="stToolbar"] { display: none; }
 
 /* 헤더 */
 .portal-logo { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
-.company-badge {
-    font-size: 12px; color: #6b6f7a;
-    background: #f7f7f9; border: 1px solid #e5e5e8;
-    border-radius: 6px; padding: 3px 10px;
+.company-badge-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 32px;
+    box-sizing: border-box;
+    font-size: 13px;
+    font-weight: 500;
+    color: #5e6ad2;
+    background: #fff;
+    border: 1px solid #5e6ad2;
+    border-radius: 6px;
+}
+
+/* 로그아웃 버튼 — 폭 100px, 짙은 회색 테두리, 흰 배경 */
+.st-key-logout_btn button {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    height: 32px !important;
+    background: #fff !important;
+    color: #4a4d54 !important;
+    border: 1px solid #6b6f7a !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 0 !important;
+}
+.st-key-logout_btn button:hover {
+    background: #f7f7f9 !important;
+    border-color: #4a4d54 !important;
+}
+
+/* 200MB 안내 카드 */
+.info-card {
+    display: inline-block;
+    font-size: 12px;
+    color: #6b6f7a;
+    background: #f7f7f9;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin: 0;
 }
 
 /* 섹션 타이틀 */
@@ -364,23 +404,30 @@ if 'company' not in st.session_state:
 
 # ── 헤더 ─────────────────────────────────────────────────────────
 company = st.session_state.company
-col_h, col_right = st.columns([1, 1])
+col_h, _sp, col_badge, col_logout = st.columns([6, 4, 1, 1.4])
 with col_h:
     st.markdown(
-        f'<div style="display:flex;align-items:center;gap:8px;padding:12px 0;">'
+        f'<div style="display:flex;align-items:center;padding:12px 0;">'
         f'<span class="portal-logo">준공서류 검토 포털</span>'
-        f'<span class="company-badge">{company}</span>'
         f'</div>',
         unsafe_allow_html=True,
     )
-with col_right:
-    _, btn_sub = st.columns([3, 1])
-    with btn_sub:
-        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-        if st.button("로그아웃", type="secondary", use_container_width=True):
-            for k in ['company', 'review_results']:
-                st.session_state.pop(k, None)
-            st.rerun()
+with col_badge:
+    st.markdown(
+        f'<div style="display:flex;justify-content:flex-end;align-items:center;padding:12px 0;">'
+        f'<span class="company-badge-card">{company}</span>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+with col_logout:
+    st.markdown(
+        '<div style="display:flex;justify-content:flex-end;align-items:center;padding:12px 0 12px 8px;">',
+        unsafe_allow_html=True,
+    )
+    if st.button("로그아웃", type="secondary", use_container_width=False, key="logout_btn"):
+        for k in ['company', 'review_results']:
+            st.session_state.pop(k, None)
+        st.rerun()
 st.markdown("<div style='border-top:1px solid #e5e5e8;margin-bottom:8px;'></div>", unsafe_allow_html=True)
 
 # ── Gemini 설정 (사이드바) ────────────────────────────────────────
@@ -396,14 +443,6 @@ with st.sidebar:
 
 
 # ── 서류 업로드 폼 ────────────────────────────────────────────────
-st.markdown('<div class="section-title">준공서류 업로드</div>', unsafe_allow_html=True)
-st.markdown(
-    '<p style="font-size:13px;color:#6b6f7a;margin:0 0 4px;">'
-    '파일당 최대 200MB &nbsp;|&nbsp; PDF · JPG · PNG'
-    '</p>',
-    unsafe_allow_html=True,
-)
-
 uploaded = {}   # doc_id → list of (filename, bytes)
 notes    = {}   # doc_id → str
 
@@ -468,6 +507,15 @@ def render_doc_row(doc):
 _, _, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 1.25, 1.25])
 with btn_area:
     run = st.button("검토 시작", use_container_width=True, key="run_review_btn")
+
+# 검토시작 ↔ 그룹헤더 사이 여백 (gap 4px + 16px = 20px)
+st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+
+# 200MB 안내 카드 — No. 헤더 위
+st.markdown(
+    '<div class="info-card">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</div>',
+    unsafe_allow_html=True,
+)
 
 # 테이블 헤더
 h_num, h_name, h_upload, h_files, h_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
