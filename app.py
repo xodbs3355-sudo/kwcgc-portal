@@ -402,7 +402,8 @@ def render_doc_row(doc):
             f'<div style="display:inline-flex;align-items:center;justify-content:center;'
             f'background:#eef0fb;border:1px solid #d8dcf3;border-radius:6px;'
             f'padding:4px 10px;min-width:28px;height:24px;'
-            f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;">'
+            f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;'
+            f'margin-bottom:10px;">'
             f'{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
@@ -411,7 +412,8 @@ def render_doc_row(doc):
             f'<div style="display:inline-flex;align-items:center;'
             f'background:#f7f7f9;border:1px solid #e5e5e8;border-radius:6px;'
             f'padding:4px 12px;height:24px;'
-            f'font-size:13px;font-weight:500;color:#1a1a1a;line-height:1;">'
+            f'font-size:13px;font-weight:500;color:#1a1a1a;line-height:1;'
+            f'margin-bottom:10px;">'
             f'{doc["name"]}</div>',
             unsafe_allow_html=True,
         )
