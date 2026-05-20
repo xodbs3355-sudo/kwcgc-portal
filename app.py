@@ -110,7 +110,7 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
 /* 서류 행 (stFileUploader 포함된 stHorizontalBlock) → Grid */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
     display: grid !important;
-    grid-template-columns: 0.3fr 1.6fr 3fr 2.5fr !important;
+    grid-template-columns: 0.3fr 1.6fr 0.8fr 2.2fr 2.5fr !important;
     align-items: stretch !important;
     border-bottom: 1px solid #e5e5e8 !important;
     min-height: 44px !important;
@@ -273,14 +273,10 @@ div[data-testid="stFileUploader"] button svg {
     font-size: 14px !important;
 }
 
-/* ★ 첨부 후 파일 정보 칩 — 텍스트 복원 + 클릭 가능 */
+/* ★ file_uploader 자체의 파일 칩 hide — 첨부파일 열에 직접 표시할 것 */
 div[data-testid="stFileUploader"] [data-testid*="FileData"],
-div[data-testid="stFileUploader"] [data-testid*="FileData"] *,
-div[data-testid="stFileUploader"] [data-testid*="File"]:not(button):not([data-testid*="FileUploader"]),
-div[data-testid="stFileUploader"] [data-testid*="File"]:not(button):not([data-testid*="FileUploader"]) * {
-    font-size: 12px !important;
-    color: #5e6ad2 !important;
-    pointer-events: auto !important;
+div[data-testid="stFileUploader"] [data-testid*="FileUploaderFile"]:not([data-testid="stFileUploaderFileName"] *) {
+    display: none !important;
 }
 
 /* ═════════ 특기사항 입력란 ═════════ */
@@ -395,7 +391,7 @@ def render_doc_row(doc):
     did  = doc["id"]
     cond = doc["condition"]
 
-    c_num, c_name, c_upload, c_note = st.columns([0.3, 1.6, 3, 2.5])
+    c_num, c_name, c_upload, c_files, c_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
 
     with c_num:
         st.markdown(
@@ -426,6 +422,17 @@ def render_doc_row(doc):
             label_visibility="collapsed",
         )
         uploaded[did] = [(f.name, f.read()) for f in files] if files else []
+    with c_files:
+        if files:
+            names_html = " · ".join(
+                f'<span style="color:#5e6ad2;">{f.name}</span>' for f in files
+            )
+            st.markdown(
+                f'<div style="font-size:12px;line-height:1.4;'
+                f'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'
+                f'padding:4px 0;">{names_html}</div>',
+                unsafe_allow_html=True,
+            )
     with c_note:
         note = st.text_input(
             "특기사항",
@@ -437,18 +444,20 @@ def render_doc_row(doc):
 
 
 # 검토 시작 버튼 — 특기사항 열 우측 절반에 배치
-_, _, _, _, btn_area = st.columns([0.3, 1.6, 3, 1.25, 1.25])
+_, _, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 1.25, 1.25])
 with btn_area:
     run = st.button("검토 시작", use_container_width=True, key="run_review_btn")
 
 # 테이블 헤더
-h_num, h_name, h_upload, h_note = st.columns([0.3, 1.6, 3, 2.5])
+h_num, h_name, h_upload, h_files, h_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
 with h_num:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">No.</div>', unsafe_allow_html=True)
 with h_name:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">서류명</div>', unsafe_allow_html=True)
 with h_upload:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">파일첨부</div>', unsafe_allow_html=True)
+with h_files:
+    st.markdown('<div style="padding:0 8px 4px;">&nbsp;</div>', unsafe_allow_html=True)
 with h_note:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">특기사항</div>', unsafe_allow_html=True)
 st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
