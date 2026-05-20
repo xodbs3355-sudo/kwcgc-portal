@@ -124,6 +124,22 @@ div[data-testid="stFileUploader"] section label svg {
     width: 16px !important;
     height: 8px !important;
 }
+/* 첨부 후 파일 정보 — 행 높이 30px 고정 */
+div[data-testid="stFileUploader"] section {
+    height: 30px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+}
+div[data-testid="stFileUploader"] section > div {
+    height: 30px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+}
 /* 서류 행 입력 필드 높이 축소 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   div[data-baseweb="input"] {
@@ -304,6 +320,7 @@ with h_note:
 st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
 
 for doc in DOCUMENTS:
+    render_doc_row(doc)
 
 if run:
     all_results = {}
