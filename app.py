@@ -192,57 +192,37 @@ with st.sidebar:
 # ── 서류 업로드 폼 ────────────────────────────────────────────────
 st.markdown('<div class="section-title">준공서류 업로드</div>', unsafe_allow_html=True)
 st.markdown(
-    '<p style="font-size:13px;color:#6b6f7a;margin-bottom:20px;">'
-    '각 항목에 PDF·JPG·PNG 파일을 업로드하세요. &nbsp;'
-    '한 슬롯에 여러 파일 동시 업로드 가능 &nbsp;|&nbsp; 파일당 최대 200MB'
+    '<p style="font-size:13px;color:#6b6f7a;margin-bottom:16px;">'
+    '파일당 최대 200MB &nbsp;|&nbsp; PDF · JPG · PNG'
     '</p>',
     unsafe_allow_html=True,
 )
 
 uploaded = {}   # doc_id → list of (filename, bytes)
-na_flags = {}   # doc_id → bool
 notes    = {}   # doc_id → str
 
 
 def render_doc_slot(doc):
     did  = doc["id"]
-    req  = doc["required"]
     cond = doc["condition"]
 
     with st.container(border=True):
-        # ── 헤더 행: 번호 | 서류명 | [해당없음 체크] | 필수/선택 ──
-        c_num, c_name, c_na, c_badge = st.columns([0.5, 5, 2, 1.2])
+        c_num, c_name, c_upload, c_note = st.columns([0.3, 1.6, 3, 2.5])
 
         with c_num:
             st.markdown(
                 f'<div style="background:#eef0fb;color:#5e6ad2;font-size:11px;'
                 f'font-weight:600;border-radius:4px;padding:2px 6px;text-align:center;'
-                f'margin-top:4px">{doc["num"]}</div>',
+                f'margin-top:8px">{doc["num"]}</div>',
                 unsafe_allow_html=True,
             )
         with c_name:
             st.markdown(
-                f'<div style="font-size:13px;font-weight:600;color:#1a1a1a;'
-                f'margin-top:3px">{doc["name"]}</div>'
-                + (f'<div style="font-size:11px;color:#9b9fa8;margin-top:1px">대상: {cond}</div>' if cond else ""),
+                f'<div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-top:6px;">{doc["name"]}</div>'
+                + (f'<div style="font-size:11px;color:#9b9fa8;">{cond}</div>' if cond else ""),
                 unsafe_allow_html=True,
             )
-        with c_na:
-            na = st.checkbox("해당없음", key=f"na_{did}") if not req else False
-        with c_badge:
-            bc = ("background:#fff0f0;color:#e5484d" if req
-                  else "background:#f2f3f4;color:#6b6f7a")
-            st.markdown(
-                f'<div style="{bc};font-size:10px;font-weight:600;border-radius:4px;'
-                f'padding:2px 6px;text-align:center;margin-top:4px">'
-                f'{"필수" if req else "선택"}</div>',
-                unsafe_allow_html=True,
-            )
-
-        na_flags[did] = na
-
-        # ── 파일 업로더 ──────────────────────────────────────────
-        if not na:
+        with c_upload:
             files = st.file_uploader(
                 f"{doc['name']}",
                 type=["pdf", "jpg", "jpeg", "png"],
@@ -251,36 +231,24 @@ def render_doc_slot(doc):
                 label_visibility="collapsed",
             )
             uploaded[did] = [(f.name, f.read()) for f in files] if files else []
-
-            # ── 특기사항 ─────────────────────────────────────────
+        with c_note:
             note = st.text_input(
                 "특기사항",
                 key=f"note_{did}",
-                placeholder="특기사항 입력 (선택)",
+                placeholder="특기사항 (선택)",
                 label_visibility="collapsed",
             )
             notes[did] = note
-        else:
-            uploaded[did] = None
-            notes[did]    = ""
 
 
-run = False
-
-# 행 단위로 컬럼 생성 → 좌우 높이 자동 정렬
-for i in range(0, len(DOCUMENTS), 2):
-    col_l, col_r = st.columns(2, gap="medium")
-    with col_l:
-        render_doc_slot(DOCUMENTS[i])
-    with col_r:
-        if i + 1 < len(DOCUMENTS):
-            render_doc_slot(DOCUMENTS[i + 1])
-        if i + 2 >= len(DOCUMENTS):
-            st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-            _, btn_col = st.columns([3, 1])
-            with btn_col:
-                run = st.button("검토 시작", use_container_width=True)
+for doc in DOCUMENTS:
+    render_doc_slot(doc)
     st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+_, btn_col = st.columns([3, 1])
+with btn_col:
+    run = st.button("검토 시작", use_container_width=True)
 
 if run:
     all_results = {}
@@ -292,13 +260,8 @@ if run:
         name = doc["name"]
         bar.progress(idx / total, text=f"'{name}' 검토 중...")
 
-        files = uploaded.get(did)
-
-        if files is None:
-            # 해당없음
-            all_results[name] = [reviewer.make_result("서류 제출 여부", "SKIP", "해당없음", "해당없음 처리")]
-        else:
-            all_results[name] = reviewer.review_document(did, name, files)
+        files = uploaded.get(did, [])
+        all_results[name] = reviewer.review_document(did, name, files)
 
     bar.progress(1.0, text="검토 완료!")
     st.session_state.review_results = all_results
