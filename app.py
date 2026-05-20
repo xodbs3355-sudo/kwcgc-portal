@@ -109,12 +109,24 @@ div[data-testid="stFileUploaderDropzone"] {
     min-height: 0 !important;
 }
 div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
-/* 업로드 버튼 높이 — 입력 필드와 동일하게 */
+/* 업로드 버튼 높이 축소 */
 div[data-testid="stFileUploaderDropzone"] button {
-    height: 36px !important;
-    padding: 0 16px !important;
-    font-size: 13px !important;
+    height: 30px !important;
+    padding: 0 14px !important;
+    font-size: 12px !important;
     line-height: 1 !important;
+}
+/* 서류 행 입력 필드 높이 축소 */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  div[data-baseweb="input"] {
+    height: 30px !important;
+    min-height: 0 !important;
+}
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
+  div[data-baseweb="input"] input {
+    height: 30px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 /* 페이지 최상위 stVerticalBlock gap 축소 */
@@ -240,11 +252,11 @@ def render_doc_row(doc):
 
     with c_num:
         st.markdown(
-            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;padding:8px 0 0;">{doc["num"]}</div>',
+            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;height:30px;display:flex;align-items:center;">{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
     with c_name:
-        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;padding:6px 0 0;">{doc["name"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;height:30px;display:flex;align-items:center;">{doc["name"]}</div>', unsafe_allow_html=True)
     with c_upload:
         files = st.file_uploader(
             f"{doc['name']}",
