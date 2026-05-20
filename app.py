@@ -109,14 +109,19 @@ div[data-testid="stFileUploaderDropzone"] {
     min-height: 0 !important;
 }
 div[data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
+/* 드롭존 내 200MB 텍스트 등 불필요 텍스트 완전 제거 */
+div[data-testid="stFileUploaderDropzone"] small,
+div[data-testid="stFileUploaderDropzone"] p,
+div[data-testid="stFileUploaderDropzone"] span.st-emotion-cache-9ycgxx,
+div[data-testid="stFileUploaderDropzone"] > div { display: none !important; }
 /* 업로드 버튼 — button/span/label 전방위 타겟 */
 div[data-testid="stFileUploader"] section button,
 div[data-testid="stFileUploader"] section span,
 div[data-testid="stFileUploader"] section label {
-    height: 26px !important;
+    height: 40px !important;
     font-size: 7px !important;
     padding: 0 8px !important;
-    line-height: 26px !important;
+    line-height: 40px !important;
 }
 div[data-testid="stFileUploader"] section button svg,
 div[data-testid="stFileUploader"] section span svg,
@@ -124,17 +129,17 @@ div[data-testid="stFileUploader"] section label svg {
     width: 16px !important;
     height: 8px !important;
 }
-/* 첨부 후 파일 정보 — 행 높이 30px 고정 */
+/* 첨부 후 파일 정보 — 행 높이 45px 고정 */
 div[data-testid="stFileUploader"] section {
-    height: 30px !important;
+    height: 45px !important;
     overflow: hidden !important;
     display: flex !important;
     align-items: center !important;
     flex-wrap: nowrap !important;
 }
 div[data-testid="stFileUploader"] section > div {
-    height: 30px !important;
-    overflow: hidden !important;
+    height: 45px !important;
+    overflow: visible !important;
     display: flex !important;
     align-items: center !important;
     font-size: 11px !important;
@@ -143,12 +148,12 @@ div[data-testid="stFileUploader"] section > div {
 /* 서류 행 입력 필드 높이 축소 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   div[data-baseweb="input"] {
-    height: 30px !important;
+    height: 45px !important;
     min-height: 0 !important;
 }
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   div[data-baseweb="input"] input {
-    height: 30px !important;
+    height: 45px !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
@@ -176,8 +181,7 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
     margin: 0 !important;
     min-height: 0 !important;
 }
-/* 파일 업로더 클릭 영역을 버튼 크기로만 제한 */
-div[data-testid="stFileUploader"] section,
+/* 파일 업로더 클릭 영역을 버튼 크기로만 제한 (dropzone만, section은 제외해야 파일명 안잘림) */
 div[data-testid="stFileUploaderDropzone"] {
     width: fit-content !important;
 }
@@ -283,11 +287,11 @@ def render_doc_row(doc):
 
     with c_num:
         st.markdown(
-            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;line-height:30px;">{doc["num"]}</div>',
+            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;line-height:45px;">{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
     with c_name:
-        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;line-height:30px;">{doc["name"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;line-height:45px;">{doc["name"]}</div>', unsafe_allow_html=True)
     with c_upload:
         files = st.file_uploader(
             f"{doc['name']}",
@@ -307,7 +311,12 @@ def render_doc_row(doc):
         notes[did] = note
 
 
-# 테이블 헤더 (검토 시작 버튼을 특기사항 열 위에 배치)
+# 검토 시작 버튼 — 특기사항 열 위에 별도 행으로 배치
+_, _, _, btn_area = st.columns([0.3, 1.6, 3, 2.5])
+with btn_area:
+    run = st.button("검토 시작", use_container_width=True)
+
+# 테이블 헤더
 h_num, h_name, h_upload, h_note = st.columns([0.3, 1.6, 3, 2.5])
 with h_num:
     st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">No.</div>', unsafe_allow_html=True)
@@ -316,7 +325,7 @@ with h_name:
 with h_upload:
     st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">파일첨부</div>', unsafe_allow_html=True)
 with h_note:
-    run = st.button("검토 시작", use_container_width=True)
+    st.markdown('<div style="font-size:11px;font-weight:600;color:#9b9fa8;padding-bottom:4px;">특기사항</div>', unsafe_allow_html=True)
 st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
 
 for doc in DOCUMENTS:
