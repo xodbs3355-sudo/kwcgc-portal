@@ -160,7 +160,9 @@ div[data-testid="stFileUploader"] > div {
     width: auto !important;
 }
 
-/* section — flex 좌측정렬, 행 안에 가두기 */
+/* ═════════════════════════════════════════════════════════
+   ★ section 전체 잠금 — 텍스트와 클릭 모두 차단
+   ═════════════════════════════════════════════════════════ */
 div[data-testid="stFileUploader"] section {
     border: none !important;
     background: transparent !important;
@@ -172,15 +174,19 @@ div[data-testid="stFileUploader"] section {
     align-items: center !important;
     gap: 8px !important;
     overflow: visible !important;
+    /* ★ 텍스트 무력화 + 클릭 차단 */
+    font-size: 0 !important;
+    color: transparent !important;
+    pointer-events: none !important;
 }
 
-/* dropzone — 작은 박스 형태 (Upload 텍스트 + 아이콘) */
+/* dropzone — 작은 박스 (높이 22px, 28의 80%) */
 div[data-testid="stFileUploaderDropzone"] {
     background: #fff !important;
     border: 1px solid #d4d4d8 !important;
     border-radius: 6px !important;
     padding: 0 12px !important;
-    height: 28px !important;
+    height: 22px !important;
     min-height: 0 !important;
     width: fit-content !important;
     pointer-events: none !important;
@@ -195,19 +201,14 @@ div[data-testid="stFileUploaderDropzone"]:hover {
     border-color: #5e6ad2 !important;
 }
 
-/* dropzone 안 모든 자식 hide → button과 그 자식만 부활 */
-div[data-testid="stFileUploaderDropzone"] * { display: none !important; }
-div[data-testid="stFileUploaderDropzone"] button,
-div[data-testid="stFileUploaderDropzone"] button * { display: revert !important; }
-
-/* 업로드 버튼 자체 — 텍스트+아이콘 */
-div[data-testid="stFileUploaderDropzone"] button {
+/* ★ button 만 클릭 가능 + 텍스트 복원 */
+div[data-testid="stFileUploader"] section button {
     pointer-events: auto !important;
     background: transparent !important;
     color: #1a1a1a !important;
     border: none !important;
     padding: 0 !important;
-    height: 28px !important;
+    height: 22px !important;
     line-height: 1 !important;
     font-size: 13px !important;
     font-weight: 500 !important;
@@ -216,25 +217,28 @@ div[data-testid="stFileUploaderDropzone"] button {
     gap: 6px !important;
     overflow: visible !important;
 }
+div[data-testid="stFileUploader"] section button * {
+    font-size: inherit !important;
+    color: inherit !important;
+}
 
-/* 아이콘 — 텍스트 높이(14px), 버튼 테두리 무시 */
-div[data-testid="stFileUploaderDropzone"] button svg {
+/* 아이콘 — 14px, 버튼 테두리 무시 */
+div[data-testid="stFileUploader"] section button svg {
     width: 14px !important;
     height: 14px !important;
     flex-shrink: 0 !important;
     overflow: visible !important;
+    color: #1a1a1a !important;
 }
 
-/* 첨부 후 파일 정보 (section > 두번째 div) */
-div[data-testid="stFileUploader"] section > div {
-    overflow: visible !important;
-    display: flex !important;
-    align-items: center !important;
+/* ★ 첨부 후 파일 정보 칩 — 텍스트 복원 + 클릭 가능 */
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"],
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] *,
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileData"],
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileData"] * {
     font-size: 12px !important;
     color: #5e6ad2 !important;
-    white-space: nowrap !important;
-    width: auto !important;
-    height: auto !important;
+    pointer-events: auto !important;
 }
 
 /* ═════════ 특기사항 입력란 ═════════ */
@@ -353,12 +357,20 @@ def render_doc_row(doc):
 
     with c_num:
         st.markdown(
-            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;">{doc["num"]}</div>',
+            f'<div style="display:inline-flex;align-items:center;justify-content:center;'
+            f'background:#eef0fb;border:1px solid #d8dcf3;border-radius:6px;'
+            f'padding:4px 10px;min-width:28px;height:24px;'
+            f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;">'
+            f'{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
     with c_name:
         st.markdown(
-            f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;">{doc["name"]}</div>',
+            f'<div style="display:inline-flex;align-items:center;'
+            f'background:#f7f7f9;border:1px solid #e5e5e8;border-radius:6px;'
+            f'padding:4px 12px;height:24px;'
+            f'font-size:13px;font-weight:500;color:#1a1a1a;line-height:1;">'
+            f'{doc["name"]}</div>',
             unsafe_allow_html=True,
         )
     with c_upload:
