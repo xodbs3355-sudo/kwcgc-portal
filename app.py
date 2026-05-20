@@ -310,12 +310,11 @@ div[data-testid="stFileUploader"] > div {
 }
 
 /* ═════════════════════════════════════════════════════════
-   ★ stFileUploader — section 안 dropzone 만 살리고 나머지 hide
+   ★ stFileUploader — height 강제 + 첨부 후 칩만 정밀 hide
    ═════════════════════════════════════════════════════════ */
 div[data-testid="stFileUploader"] {
     pointer-events: none !important;
     height: 36px !important;
-    overflow: hidden !important;
 }
 div[data-testid="stFileUploader"] section {
     border: none !important;
@@ -329,10 +328,6 @@ div[data-testid="stFileUploader"] section {
     align-items: center !important;
     gap: 0 !important;
     overflow: hidden !important;
-}
-/* section 안에서 dropzone 외 모든 자식 hide (첨부 후 파일 칩 등) */
-div[data-testid="stFileUploader"] section > *:not([data-testid="stFileUploaderDropzone"]) {
-    display: none !important;
 }
 
 /* dropzone — 투명 컨테이너 (button 만 시각적으로 표시) */
@@ -431,9 +426,13 @@ div[data-testid="stFileUploader"] button svg {
     font-size: 14px !important;
 }
 
-/* ★ file_uploader 자체의 파일 칩 hide — 첨부파일 열에 직접 표시할 것 */
-div[data-testid="stFileUploader"] [data-testid*="FileData"],
-div[data-testid="stFileUploader"] [data-testid*="FileUploaderFile"]:not([data-testid="stFileUploaderFileName"] *) {
+/* ★ file_uploader 자체의 첨부 후 파일 칩 — 정밀 hide (dropzone wrapper 는 건드리지 않음) */
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"],
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileData"],
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileName"],
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileErrorMessage"],
+div[data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"],
+div[data-testid="stFileUploader"] [data-testid*="UploadedFile"] {
     display: none !important;
 }
 
