@@ -39,11 +39,12 @@ div[data-testid="stToolbar"] { display: none; }
     justify-content: center;
     width: 50px;
     height: 32px;
+    line-height: 1;
     box-sizing: border-box;
     font-size: 13px;
     font-weight: 500;
     color: #5e6ad2;
-    background: #fff;
+    background: #eef0fb;
     border: 1px solid #5e6ad2;
     border-radius: 6px;
 }
@@ -60,6 +61,10 @@ div[data-testid="stToolbar"] { display: none; }
     min-width: 100px !important;
     max-width: 100px !important;
     height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
     background: #fff !important;
     color: #4a4d54 !important;
     border: 1px solid #6b6f7a !important;
@@ -68,6 +73,9 @@ div[data-testid="stToolbar"] { display: none; }
     font-weight: 500 !important;
     padding: 0 !important;
     margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 .st-key-logout_btn button:hover {
     background: #f7f7f9 !important;
@@ -147,7 +155,7 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
     min-width: 150px !important;
     max-width: 150px !important;
     height: 34px !important;
-    background: #eef0fb !important;
+    background: #fff !important;
     color: #5e6ad2 !important;
     border: 1px solid #5e6ad2 !important;
     border-radius: 8px !important;
@@ -158,7 +166,7 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
     transition: background 0.15s, border-color 0.15s !important;
 }
 .st-key-run_review_btn button:hover {
-    background: #dde1f5 !important;
+    background: #eef0fb !important;
     border-color: #4b58c5 !important;
 }
 
@@ -533,13 +541,13 @@ def render_doc_row(doc):
         notes[did] = note
 
 
-# 검토 시작 버튼 — 특기사항 열 우측 절반에 배치
-_, _, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 1.25, 1.25])
+# 검토 시작 버튼 — 특기사항 열 위에 우측 정렬
+_, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
 with btn_area:
-    run = st.button("검토 시작", use_container_width=True, key="run_review_btn")
+    run = st.button("검토 시작", use_container_width=False, key="run_review_btn")
 
-# 검토시작 ↔ 그룹헤더 사이 여백 (gap 4px + 16px = 20px)
-st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+# 검토시작 ↔ 다음 요소 사이 여백 (gap 4px + 6px = 10px)
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
 # 200MB 안내 카드 — No. 헤더 위
 st.markdown(
