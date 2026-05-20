@@ -146,7 +146,6 @@ div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty
 
 /* 검토 시작 버튼 — 폭 150px, 연보라 배경, 보라 글씨/테두리 */
 .st-key-run_review_btn {
-    margin-top: -10px !important;
     display: flex !important;
     justify-content: flex-end !important;
 }
@@ -540,14 +539,6 @@ def render_doc_row(doc):
         notes[did] = note
 
 
-# 검토 시작 버튼 — 특기사항 열 위에 우측 정렬
-_, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
-with btn_area:
-    run = st.button("검토 시작", use_container_width=False, key="run_review_btn")
-
-# 검토시작 ↔ 다음 요소 사이 여백 (gap 4px + 6px = 10px)
-st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
-
 # 200MB 안내 카드 — No. 헤더 위
 st.markdown(
     '<div class="info-card">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</div>',
@@ -575,6 +566,12 @@ for idx, doc in enumerate(DOCUMENTS):
     if idx == 0:
         st.markdown("<div style='height:5px;'></div>", unsafe_allow_html=True)
     render_doc_row(doc)
+
+# 검토 시작 버튼 — 테이블 아래 우측 끝 정렬
+st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+_, btn_area = st.columns([6, 1])
+with btn_area:
+    run = st.button("검토 시작", use_container_width=False, key="run_review_btn")
 
 if run:
     all_results = {}
