@@ -102,7 +102,7 @@ div[data-testid="stToolbar"] { display: none; }
     align-items: center;
     overflow: hidden;
     width: 100%;
-    margin-bottom: 15px;
+    padding-left: 8px;
 }
 .file-chip {
     display: inline-flex;
@@ -233,7 +233,7 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
 /* 서류 행 (stFileUploader 포함된 stHorizontalBlock) → Grid */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
     display: grid !important;
-    grid-template-columns: 0.3fr 1.6fr 0.8fr 2.2fr 2.5fr !important;
+    grid-template-columns: 0.3fr 1.6fr 3.0fr 2.5fr !important;
     align-items: stretch !important;
     border-bottom: 1px solid #e5e5e8 !important;
     min-height: 44px !important;
@@ -543,7 +543,7 @@ def render_doc_row(doc):
     did  = doc["id"]
     cond = doc["condition"]
 
-    c_num, c_name, c_upload, c_files, c_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
+    c_num, c_name, c_upload, c_note = st.columns([0.3, 1.6, 3.0, 2.5])
 
     with c_num:
         st.markdown(
@@ -572,7 +572,6 @@ def render_doc_row(doc):
             label_visibility="collapsed",
         )
         uploaded[did] = [(f.name, f.read()) for f in files] if files else []
-    with c_files:
         if files:
             chips_html = "".join(
                 f'<span class="file-chip">{f.name}</span>' for f in files
@@ -601,15 +600,13 @@ st.markdown(
 st.markdown("<div style='height:56px;'></div>", unsafe_allow_html=True)
 
 # 테이블 헤더
-h_num, h_name, h_upload, h_files, h_note = st.columns([0.3, 1.6, 0.8, 2.2, 2.5])
+h_num, h_name, h_upload, h_note = st.columns([0.3, 1.6, 3.0, 2.5])
 with h_num:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;text-align:center;">No.</div>', unsafe_allow_html=True)
 with h_name:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">서류명</div>', unsafe_allow_html=True)
 with h_upload:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;text-align:center;">파일첨부</div>', unsafe_allow_html=True)
-with h_files:
-    st.markdown('<div style="padding:0 8px 4px;">&nbsp;</div>', unsafe_allow_html=True)
 with h_note:
     st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">특기사항</div>', unsafe_allow_html=True)
 st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
@@ -619,9 +616,9 @@ for idx, doc in enumerate(DOCUMENTS):
         st.markdown("<div style='height:5px;'></div>", unsafe_allow_html=True)
     render_doc_row(doc)
 
-# 검토 시작 버튼 — 마지막 컬럼을 button 폭에 맞춰 쪼개 자연 우측 정렬
+# 검토 시작 버튼 — 4컬럼 + 마지막 button 폭에 맞춰 쪼갬
 st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
-_, _, _, _, _, btn_area = st.columns([0.3, 1.6, 0.8, 2.2, 1.67, 0.83])
+_, _, _, _, btn_area = st.columns([0.3, 1.6, 3.0, 1.67, 0.83])
 with btn_area:
     run = st.button("검토 시작", use_container_width=True, key="run_review_btn")
 
