@@ -267,11 +267,11 @@ def render_doc_row(doc):
 
     with c_num:
         st.markdown(
-            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;height:30px;display:flex;align-items:center;">{doc["num"]}</div>',
+            f'<div style="font-size:12px;font-weight:600;color:#5e6ad2;">{doc["num"]}</div>',
             unsafe_allow_html=True,
         )
     with c_name:
-        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;height:30px;display:flex;align-items:center;">{doc["name"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:13px;font-weight:500;color:#1a1a1a;">{doc["name"]}</div>', unsafe_allow_html=True)
     with c_upload:
         files = st.file_uploader(
             f"{doc['name']}",
