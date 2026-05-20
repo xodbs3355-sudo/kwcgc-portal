@@ -147,16 +147,23 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
     border-bottom: 1px solid #e5e5e8 !important;
     padding: 2px 0 !important;
 }
-/* 서류 행 내부 컬럼 gap/padding 제거 */
+/* 서류 행 내부 컬럼 gap/padding 제거 + 수직 중앙 정렬 */
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-testid="stVerticalBlock"] {
+  > div[data-testid="stColumn"]
+  > div[data-testid="stVerticalBlock"] {
     gap: 0 !important;
+    justify-content: center !important;
 }
 div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
   div[data-testid="stVerticalBlock"] > div {
     padding: 0 !important;
     margin: 0 !important;
     min-height: 0 !important;
+}
+/* 파일 업로더 클릭 영역을 버튼 크기로만 제한 */
+div[data-testid="stFileUploader"] section,
+div[data-testid="stFileUploaderDropzone"] {
+    width: fit-content !important;
 }
 /* stFileUploader 자체 여백 제거 */
 div[data-testid="stFileUploader"],
