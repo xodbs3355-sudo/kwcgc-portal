@@ -427,6 +427,26 @@ button { font-family: inherit; cursor: pointer; }
 }
 .file-chip-del:hover { background: #d8dcf3; }
 
+/* 업로드 중 placeholder 칩 */
+.file-chip-pending {
+    background: #f5f6f8;
+    border-color: #d8dcf3;
+    color: #9b9fa8;
+}
+.file-chip-spinner {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid #d8dcf3;
+    border-top-color: #5e6ad2;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* ── Note input ─────────────────────────────────────────────── */
 .note-input {
     width: 100%;

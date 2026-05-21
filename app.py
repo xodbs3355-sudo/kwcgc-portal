@@ -303,6 +303,19 @@ def download_pdf():
     )
 
 
+@app.route("/status")
+def status():
+    """AI 검토 활성 여부 진단용."""
+    key = config.GEMINI_API_KEY or ""
+    return jsonify({
+        "ai_enabled": not config.USE_MOCK,
+        "model": config.GEMINI_MODEL,
+        "api_key_set": bool(key),
+        "api_key_length": len(key),
+        "api_key_preview": (key[:6] + "..." + key[-4:]) if len(key) > 10 else "",
+    })
+
+
 @app.route("/api-key", methods=["POST"])
 def set_api_key():
     """Gemini API 키 입력 (선택)."""

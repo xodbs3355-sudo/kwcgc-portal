@@ -57,24 +57,19 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
   <div class="result-summary">
     <div class="result-card card-ok">
       <div class="result-num num-ok">{{ counts.OK }}</div>
-      <div class="result-label">OK</div>
+      <div class="result-label">양호</div>
     </div>
     <div class="result-card card-ng">
-      <div class="result-num num-ng">{{ counts.NG }}</div>
-      <div class="result-label">NG</div>
-    </div>
-    <div class="result-card card-warn">
-      <div class="result-num num-warn">{{ counts.WARN }}</div>
-      <div class="result-label">WARN</div>
+      <div class="result-num num-ng">{{ counts.NG + counts.WARN }}</div>
+      <div class="result-label">보완 또는 확인</div>
     </div>
     <div class="result-card card-skip">
       <div class="result-num num-skip">{{ counts.SKIP }}</div>
-      <div class="result-label">해당없음</div>
+      <div class="result-label">해당 없음</div>
     </div>
 
     <div class="result-card {% if verdict_pass %}card-verdict-pass{% else %}card-verdict-fail{% endif %}">
-      <div class="result-num verdict-text">{% if verdict_pass %}합격{% else %}불합격{% endif %}</div>
-      <div class="result-label">최종 판정</div>
+      <div class="result-num verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
     </div>
 
     <a class="result-card card-pdf" href="{{ url_for('download_pdf') }}">
@@ -86,7 +81,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
       </div>
-      <div class="result-label">첨부 통합 PDF</div>
+      <div class="result-label">통합 PDF 출력</div>
     </a>
   </div>
 

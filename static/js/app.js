@@ -5,6 +5,10 @@ document.querySelectorAll('.file-input').forEach((input) => {
     const files = input.files;
     if (!files || files.length === 0) return;
 
+    // 업로드 중 placeholder 칩 표시
+    const pendingNames = Array.from(files).map(f => f.name);
+    addPendingChips(docId, pendingNames);
+
     const fd = new FormData();
     for (const f of files) fd.append('files', f);
 
@@ -15,9 +19,11 @@ document.querySelectorAll('.file-input').forEach((input) => {
         renderChips(docId, data.files);
       } else {
         alert('업로드 실패: ' + (data.error || '알 수 없는 오류'));
+        removePendingChips(docId);
       }
     } catch (err) {
       alert('네트워크 오류: ' + err.message);
+      removePendingChips(docId);
     }
     input.value = '';
   });
@@ -139,6 +145,7 @@ document.addEventListener('paste', async (e) => {
   }
 
   const fd = new FormData();
+  const pendingNames = [];
   for (const f of files) {
     // 이미지 캡처 등 기본 파일명(image.png) 은 타임스탬프 부여
     let name = f.name || '';
@@ -151,7 +158,11 @@ document.addEventListener('paste', async (e) => {
       name = `clipboard-${ts}.${ext}`;
     }
     fd.append('files', f, name);
+    pendingNames.push(name);
   }
+
+  // 업로드 중 placeholder 칩 표시
+  addPendingChips(activeDocId, pendingNames);
 
   try {
     const res = await fetch(`/upload/${activeDocId}`, { method: 'POST', body: fd });
@@ -160,11 +171,33 @@ document.addEventListener('paste', async (e) => {
       renderChips(activeDocId, data.files);
     } else {
       alert('업로드 실패: ' + (data.error || '알 수 없는 오류'));
+      removePendingChips(activeDocId);
     }
   } catch (err) {
     alert('업로드 오류: ' + err.message);
+    removePendingChips(activeDocId);
   }
 });
+
+// ── pending 칩 헬퍼 ─────────────────────────────────────────────
+function addPendingChips(docId, names) {
+  const container = document.querySelector(`[data-chips-for="${docId}"]`);
+  if (!container) return;
+  for (const name of names) {
+    const chip = document.createElement('span');
+    chip.className = 'file-chip file-chip-pending';
+    chip.innerHTML = `
+      <span class="file-chip-spinner"></span>
+      <span class="file-chip-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+    `;
+    container.appendChild(chip);
+  }
+}
+function removePendingChips(docId) {
+  const container = document.querySelector(`[data-chips-for="${docId}"]`);
+  if (!container) return;
+  container.querySelectorAll('.file-chip-pending').forEach(c => c.remove());
+}
 
 // ── 칩 렌더링 ─────────────────────────────────────────────────────
 function renderChips(docId, fileNames) {
