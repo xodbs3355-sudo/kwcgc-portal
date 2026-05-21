@@ -120,11 +120,7 @@ button { font-family: inherit; cursor: pointer; }
 .doc-table th.col-no { text-align: center; }
 .doc-table th.col-skip { text-align: center; }
 
-/* 파일첨부 헤더 안 라벨 + 안내 카드 */
-.doc-table th.col-upload .th-label {
-    margin-right: 10px;
-    vertical-align: middle;
-}
+/* 안내 카드 (신설 컬럼 헤더 안) */
 .hint-card {
     display: inline-block;
     padding: 2px 8px;
@@ -141,10 +137,11 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .doc-table .col-no    { width: 4%; }
-.doc-table .col-name  { width: 22%; }
+.doc-table .col-name  { width: 18%; }
 .doc-table .col-skip  { width: 7%; }
-.doc-table .col-upload{ width: 33%; }
-.doc-table .col-note  { width: 34%; }
+.doc-table .col-upload{ width: 10%; }
+.doc-table .col-hint  { width: 30%; }
+.doc-table .col-note  { width: 31%; }
 
 .doc-table td.col-skip { text-align: center; }
 
@@ -181,6 +178,23 @@ button { font-family: inherit; cursor: pointer; }
 }
 .doc-table tbody tr.is-active:hover {
     background: #f0f2fa;
+}
+
+/* 신설 컬럼 — 빈 박스 (클릭 선택 시각 단서) */
+.hint-box {
+    width: 100%;
+    height: 30px;
+    border: 1.5px solid #d8dcf3;       /* 연보라 테두리 */
+    border-radius: 6px;
+    background: transparent;
+    box-sizing: border-box;
+    transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+.doc-table tbody tr.is-active .hint-box {
+    border-color: #5e6ad2;             /* 활성 시 진한 보라 */
+    border-width: 1.5px;
+    background: #eef0fb;
+    box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
 }
 
 .doc-table tbody tr {
