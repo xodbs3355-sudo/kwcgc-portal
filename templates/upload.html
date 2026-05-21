@@ -18,7 +18,10 @@
              data-field="date" value="{{ project_info.get('date', '') }}">
     </div>
     <div class="project-info-field">
-      <label for="pi-amount">준공금액</label>
+      <label for="pi-amount">
+        준공금액
+        <span class="field-hint">(금액 입력 후 Enter 입력하면 천단위 쉼표 설정 가능)</span>
+      </label>
       <input type="text" id="pi-amount" class="project-info-input"
              data-field="amount" value="{{ project_info.get('amount', '') }}" placeholder="">
     </div>

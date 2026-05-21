@@ -2,6 +2,44 @@
 {% set active_tab = 'result' %}
 {% set has_result = true %}
 {% block title %}검토 결과 — 준공서류 검토 프로그램{% endblock %}
+
+{% block scripts %}
+<script>
+// 좌측 카드 클릭 → 우측 패널 전환
+document.querySelectorAll('.doc-list-item').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.docTarget;
+    document.querySelectorAll('.doc-list-item').forEach(b =>
+      b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.doc-detail-pane').forEach(p =>
+      p.classList.toggle('active', p.dataset.docPane === target));
+  });
+});
+
+// 첨부 미리보기 탭 클릭 → viewer 교체
+document.querySelectorAll('.preview-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const docId = tab.dataset.docId;
+    const idx = tab.dataset.idx;
+    const filename = tab.dataset.filename || '';
+    const ext = filename.split('.').pop().toLowerCase();
+
+    document.querySelectorAll(`[data-preview-tabs="${docId}"] .preview-tab`)
+      .forEach(t => t.classList.toggle('active', t === tab));
+
+    const viewer = document.querySelector(`[data-preview-viewer="${docId}"]`);
+    if (!viewer) return;
+    const url = `/preview/${docId}/${idx}`;
+    if (['jpg', 'jpeg', 'png'].includes(ext)) {
+      viewer.innerHTML = `<img class="preview-image" src="${url}" alt="">`;
+    } else {
+      viewer.innerHTML = `<iframe class="preview-iframe" src="${url}"></iframe>`;
+    }
+  });
+});
+</script>
+{% endblock %}
+
 {% block body %}
 <div class="page">
   {% include "_header.html" %}
@@ -42,35 +80,94 @@
     </a>
   </div>
 
-  <div class="result-details">
-    {% for doc in documents %}
-      {% set rows = all_results.get(doc.name) %}
-      {% if rows %}
-      <details class="doc-detail">
-        <summary class="doc-detail-summary">
-          <span class="doc-detail-name">{{ doc.name }}</span>
+  <div class="result-split">
+    <!-- 좌측: 서류 카드 리스트 -->
+    <aside class="doc-list">
+      {% for doc in documents %}
+        {% set rows = all_results.get(doc.name) %}
+        {% if rows %}
           {% set ng_count = rows | selectattr('결과', 'equalto', 'NG') | list | length %}
-          {% if ng_count > 0 %}<span class="doc-badge badge-ng">NG {{ ng_count }}</span>{% endif %}
-        </summary>
-        <div class="doc-detail-body">
-          {% for item in rows %}
-            <div class="result-item">
-              <div class="result-item-head">
-                <span class="status-badge status-{{ item['결과']|lower }}">{{ item['결과'] }}</span>
-                <span class="result-item-title">{{ item['항목'] }}</span>
-              </div>
-              {% if item.get('추출값') and item['추출값'] not in ('-', '') %}
-                <div class="result-item-meta">추출값: {{ item['추출값'] }}</div>
-              {% endif %}
-              {% if item.get('비고') %}
-                <div class="result-item-meta">비고: {{ item['비고'] }}</div>
+          {% set warn_count = rows | selectattr('결과', 'equalto', 'WARN') | list | length %}
+          {% set skip_count = rows | selectattr('결과', 'equalto', 'SKIP') | list | length %}
+          <button type="button" class="doc-list-item {% if loop.first %}active{% endif %}"
+                  data-doc-target="{{ doc.id }}">
+            <span class="doc-list-num">{{ doc.num }}</span>
+            <span class="doc-list-name">{{ doc.name }}</span>
+            {% if ng_count > 0 %}
+              <span class="doc-badge badge-ng">NG {{ ng_count }}</span>
+            {% elif skip_count > 0 %}
+              <span class="doc-badge badge-skip">SKIP</span>
+            {% elif warn_count > 0 %}
+              <span class="doc-badge badge-warn">WARN {{ warn_count }}</span>
+            {% else %}
+              <span class="doc-badge badge-ok">OK</span>
+            {% endif %}
+          </button>
+        {% endif %}
+      {% endfor %}
+    </aside>
+
+    <!-- 우측: 선택된 서류 상세 -->
+    <section class="doc-detail-panel">
+      {% for doc in documents %}
+        {% set rows = all_results.get(doc.name) %}
+        {% if rows %}
+          <div class="doc-detail-pane {% if loop.first %}active{% endif %}"
+               data-doc-pane="{{ doc.id }}">
+            <h2 class="doc-detail-title">{{ doc.name }}</h2>
+
+            <!-- 첨부 파일 미리보기 -->
+            <div class="preview-section">
+              <div class="preview-section-label">첨부 파일</div>
+              {% set files = file_names.get(doc.id, []) %}
+              {% if files %}
+                <div class="preview-tabs" data-preview-tabs="{{ doc.id }}">
+                  {% for name in files %}
+                    <button type="button" class="preview-tab {% if loop.first %}active{% endif %}"
+                            data-doc-id="{{ doc.id }}" data-idx="{{ loop.index0 }}"
+                            data-filename="{{ name }}">
+                      {{ name }}
+                    </button>
+                  {% endfor %}
+                </div>
+                <div class="preview-viewer" data-preview-viewer="{{ doc.id }}">
+                  {% set first_name = files[0] %}
+                  {% set first_ext = first_name.lower().rsplit('.', 1)[-1] %}
+                  {% if first_ext in ('jpg', 'jpeg', 'png') %}
+                    <img class="preview-image" src="{{ url_for('preview_file', doc_id=doc.id, idx=0) }}" alt="{{ first_name }}">
+                  {% else %}
+                    <iframe class="preview-iframe" src="{{ url_for('preview_file', doc_id=doc.id, idx=0) }}"></iframe>
+                  {% endif %}
+                </div>
+              {% else %}
+                <div class="preview-empty">첨부된 파일이 없습니다</div>
               {% endif %}
             </div>
-          {% endfor %}
-        </div>
-      </details>
-      {% endif %}
-    {% endfor %}
+
+            <!-- 확인사항 카드 -->
+            <div class="checklist-section">
+              <div class="preview-section-label">확인사항</div>
+              <div class="checklist-items">
+                {% for item in rows %}
+                  <div class="checklist-card status-card-{{ item['결과']|lower }}">
+                    <div class="checklist-head">
+                      <span class="status-badge status-{{ item['결과']|lower }}">{{ item['결과'] }}</span>
+                      <span class="checklist-title">{{ item['항목'] }}</span>
+                    </div>
+                    {% if item.get('추출값') and item['추출값'] not in ('-', '') %}
+                      <div class="checklist-meta"><strong>추출값:</strong> {{ item['추출값'] }}</div>
+                    {% endif %}
+                    {% if item.get('비고') %}
+                      <div class="checklist-meta"><strong>비고:</strong> {{ item['비고'] }}</div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </section>
   </div>
 </div>
 {% endblock %}

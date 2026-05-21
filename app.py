@@ -228,6 +228,10 @@ def result():
     }
     verdict_pass = counts["NG"] == 0
 
+    # 첨부 파일명 (미리보기용)
+    uploaded = load_uploaded()
+    file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
+
     return render_template(
         "result.html",
         company=session["company"],
@@ -235,6 +239,7 @@ def result():
         counts=counts,
         verdict_pass=verdict_pass,
         documents=DOCUMENTS,
+        file_names=file_names,
     )
 
 
@@ -252,6 +257,31 @@ def download_excel():
         as_attachment=True,
         download_name="준공서류검토결과.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@app.route("/preview/<doc_id>/<int:idx>")
+def preview_file(doc_id: str, idx: int):
+    """첨부 파일 미리보기 — 검토 결과 우측 패널에서 사용."""
+    if "company" not in session:
+        return "", 401
+    uploaded = load_uploaded()
+    files = uploaded.get(doc_id, [])
+    if idx < 0 or idx >= len(files):
+        return "", 404
+    filename, file_bytes = files[idx]
+    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+    mime = {
+        "pdf":  "application/pdf",
+        "jpg":  "image/jpeg",
+        "jpeg": "image/jpeg",
+        "png":  "image/png",
+    }.get(ext, "application/octet-stream")
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mime,
+        download_name=filename,
+        as_attachment=False,
     )
 
 
