@@ -16,12 +16,22 @@ import config
 import auth
 import reviewer
 import output
+import prompts_store
 from documents import DOCUMENTS
+
+
+def _is_admin() -> bool:
+    return auth.is_admin(session.get("company", ""))
 
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.token_hex(32))
 app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024 * 16  # 행당 200MB × 16 여유
+
+
+@app.context_processor
+def inject_admin_flag():
+    return {"is_admin": _is_admin()}
 
 
 # ── 세션 저장소 (업로드된 파일 bytes 는 디스크 임시 파일로) ─────────
@@ -311,6 +321,51 @@ def download_pdf():
         download_name="준공서류_첨부통합.pdf",
         mimetype="application/pdf",
     )
+
+
+@app.route("/admin/prompts", methods=["GET"])
+def admin_prompts():
+    if not _is_admin():
+        return redirect(url_for("index"))
+    items = prompts_store.list_for_admin()
+    return render_template(
+        "admin_prompts.html",
+        company=session["company"],
+        items=items,
+    )
+
+
+@app.route("/admin/prompts/save", methods=["POST"])
+def admin_prompts_save():
+    if not _is_admin():
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+    doc_id = request.form.get("doc_id", "")
+    prompt = request.form.get("prompt", "")
+    if not any(d["id"] == doc_id for d in DOCUMENTS):
+        return jsonify({"ok": False, "error": "invalid doc_id"}), 400
+    all_prompts = prompts_store.load_all()
+    if prompt.strip():
+        all_prompts[doc_id] = prompt
+    else:
+        # 빈 값이면 기본값으로 되돌리기 (저장 dict 에서 제거)
+        all_prompts.pop(doc_id, None)
+    prompts_store.save_all(all_prompts)
+    return jsonify({"ok": True})
+
+
+@app.route("/admin/prompts/reset", methods=["POST"])
+def admin_prompts_reset():
+    """단일 서류 프롬프트를 기본값으로 초기화."""
+    if not _is_admin():
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+    doc_id = request.form.get("doc_id", "")
+    all_prompts = prompts_store.load_all()
+    all_prompts.pop(doc_id, None)
+    prompts_store.save_all(all_prompts)
+    # 기본 프롬프트 반환
+    doc = next((d for d in DOCUMENTS if d["id"] == doc_id), None)
+    default_prompt = prompts_store.get_default(doc["name"]) if doc else ""
+    return jsonify({"ok": True, "default_prompt": default_prompt})
 
 
 @app.route("/status")

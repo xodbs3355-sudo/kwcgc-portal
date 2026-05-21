@@ -7,6 +7,7 @@ import json
 
 from PIL import Image
 import config
+import prompts_store
 
 
 def make_result(item: str, status: str, extracted: str, note: str) -> dict:
@@ -40,20 +41,10 @@ def _get_mime(filename: str) -> str:
     }.get(ext, "application/octet-stream")
 
 
-# ── 검토 프롬프트 — 모든 서류에 동일하게 4개 항목 ────────────────
-# (서류 첨부 여부는 review_document 에서 Python 으로 별도 처리)
-PROMPTS = {}  # 서류별 차이 제거. 모두 GENERIC_PROMPT + _build_prompt 사용.
+# ── 프롬프트 — 관리자가 입력한 것 우선, 없으면 prompts_store 의 기본값 ──
 
-
-def _build_prompt(_base_prompt: str, project_info: dict | None) -> str:
-    """입력 정보(공사명/준공일자/준공금액) 기반으로 검토 프롬프트 구성.
-
-    검토 항목 (4개, 서류 종류 무관 동일):
-      1. 공사명 확인
-      2. 준공일자 확인
-      3. 준공금액 확인
-      4. 서명/날인 여부
-    """
+def _build_prompt(doc_id: str, doc_name: str, project_info: dict | None) -> str:
+    """관리자 프롬프트(또는 기본 프롬프트) 에 입력 정보를 끼워넣어 최종 프롬프트 생성."""
     info = project_info or {}
     name   = info.get("name", "").strip()
     date   = info.get("date", "").strip()
@@ -65,37 +56,15 @@ def _build_prompt(_base_prompt: str, project_info: dict | None) -> str:
     if amount: info_lines.append(f"- 준공금액: {amount}")
     info_block = "\n".join(info_lines) if info_lines else "(입력 정보 없음)"
 
-    return f"""
-도시가스 공사 준공서류입니다. 첨부된 서류를 분석하여 다음 4가지 항목을 검토하고,
-**JSON 배열만** 응답하세요. (다른 설명/마크다운 금지)
-
-[사용자가 입력한 공사 정보 — 이 정보와 서류 내용을 대조 검증]
-{info_block}
-
-[검토 항목 — 항상 정확히 아래 4개만, 같은 순서로]
-1. "공사명 확인"     : 입력 공사명과 서류 표기 공사명 일치 여부
-2. "준공일자 확인"   : 입력 준공일자와 서류의 준공/완공 일자 일치 여부
-3. "준공금액 확인"   : 입력 준공금액과 서류의 계약/준공/총액/합계 등 금액 일치 여부
-                       (콤마/단위/VAT 별도 무시. 서류에 여러 금액이 있어도 종합 판단)
-4. "서명/날인 여부"  : 서명 또는 인감 날인이 있는지
-
-[결과 규칙]
-- 입력 정보 없거나 서류에 해당 정보 없음 → "결과": "SKIP", "비고": "서류에서 확인 불가" 또는 "입력 정보 없음"
-- 일치/존재                              → "결과": "OK", "추출값": 서류에서 추출한 실제 값
-- 불일치                                 → "결과": "NG", "비고": "입력값 X / 서류값 Y" 형태로 비교
-- 판단 어려움 / 부분 충족                → "결과": "WARN", "비고": 이유 설명
-
-[응답 형식 (예시)]
-[
-  {{"항목":"공사명 확인","결과":"OK","추출값":"춘천시 거두리 ...","비고":""}},
-  {{"항목":"준공일자 확인","결과":"NG","추출값":"2025-10-30","비고":"입력값 2025-10-31 / 서류값 2025-10-30"}},
-  {{"항목":"준공금액 확인","결과":"OK","추출값":"3,400,910","비고":""}},
-  {{"항목":"서명/날인 여부","결과":"OK","추출값":"대표이사 정인철/문만영 인감 확인","비고":""}}
-]
-""".strip()
+    template = prompts_store.get_effective_prompt(doc_id, doc_name)
+    if "{project_info}" in template:
+        return template.replace("{project_info}", info_block)
+    # placeholder 없는 옛 프롬프트는 그대로 사용
+    return template
 
 
-# 기존 코드 호환용 (사용 안 함)
+# 기존 호환용 (사용 안 함)
+PROMPTS = {}
 GENERIC_PROMPT = ""
 
 MOCK_RESULT = [
@@ -107,13 +76,13 @@ MOCK_RESULT = [
 
 
 # ── 단일 파일 검토 ────────────────────────────────────────────────
-def review_file(doc_id: str, file_bytes: bytes, filename: str,
+def review_file(doc_id: str, doc_name: str, file_bytes: bytes, filename: str,
                 project_info: dict | None = None) -> list[dict]:
     if config.USE_MOCK:
         return MOCK_RESULT
 
     mime = _get_mime(filename)
-    prompt = _build_prompt("", project_info)
+    prompt = _build_prompt(doc_id, doc_name, project_info)
     try:
         raw = _call_gemini(prompt, file_bytes, mime)
         return _parse_json(raw)
@@ -134,7 +103,7 @@ def review_document(doc_id: str, doc_name: str, files: list,
     results = [make_result("서류 첨부 여부", "OK", f"{len(files)}개 파일 첨부", "첨부 확인")]
 
     for i, (filename, file_bytes) in enumerate(files):
-        file_results = review_file(doc_id, file_bytes, filename, project_info)
+        file_results = review_file(doc_id, doc_name, file_bytes, filename, project_info)
         # 다중 파일일 때만 항목명 앞에 파일 표시
         if len(files) > 1:
             for r in file_results:

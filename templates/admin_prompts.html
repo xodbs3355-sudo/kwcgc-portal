@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% set active_tab = 'admin' %}
+{% set has_result = session.get('review_results') is not none %}
+{% block title %}서류항목별 검토 로직 — 준공서류 검토 프로그램{% endblock %}
+{% block body %}
+<div class="page">
+  {% include "_header.html" %}
+
+  <div class="admin-intro">
+    <strong>관리자 전용</strong> — 서류별 AI 검토 프롬프트를 직접 편집합니다.
+    저장하면 다음 검토부터 즉시 반영됩니다.
+    프롬프트 안에 <code>{project_info}</code> 자리에 사용자 입력(공사명/일자/금액)이 자동 치환됩니다.
+  </div>
+
+  <div class="admin-prompts">
+    <!-- 좌측 서류 리스트 -->
+    <aside class="admin-doc-list">
+      {% for it in items %}
+        <button type="button" class="admin-doc-item {% if loop.first %}active{% endif %}"
+                data-target="{{ it.id }}">
+          <span class="admin-doc-num">{{ it.num }}</span>
+          <span class="admin-doc-name">{{ it.name }}</span>
+          {% if it.is_custom %}
+            <span class="admin-doc-mark">CUSTOM</span>
+          {% else %}
+            <span class="admin-doc-mark admin-mark-default">기본값</span>
+          {% endif %}
+        </button>
+      {% endfor %}
+    </aside>
+
+    <!-- 우측 편집 영역 -->
+    <section class="admin-editor">
+      {% for it in items %}
+        <div class="admin-editor-pane {% if loop.first %}active{% endif %}" data-pane="{{ it.id }}">
+          <div class="admin-editor-head">
+            <h2 class="admin-editor-title">{{ it.name }}</h2>
+            <div class="admin-editor-actions">
+              <button type="button" class="btn-secondary admin-reset-btn"
+                      data-doc-id="{{ it.id }}">기본값으로 복원</button>
+              <button type="button" class="btn-primary-sm admin-save-btn"
+                      data-doc-id="{{ it.id }}">저장</button>
+            </div>
+          </div>
+          <textarea class="admin-prompt-textarea" data-doc-id="{{ it.id }}"
+                    spellcheck="false">{{ it.prompt }}</textarea>
+          <div class="admin-save-status" data-status-for="{{ it.id }}"></div>
+        </div>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 좌측 서류 선택 → 우측 패널 전환
+document.querySelectorAll('.admin-doc-item').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.target;
+    document.querySelectorAll('.admin-doc-item').forEach(b =>
+      b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.admin-editor-pane').forEach(p =>
+      p.classList.toggle('active', p.dataset.pane === target));
+  });
+});
+
+// 저장
+document.querySelectorAll('.admin-save-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const docId = btn.dataset.docId;
+    const textarea = document.querySelector(`.admin-prompt-textarea[data-doc-id="${docId}"]`);
+    const status = document.querySelector(`[data-status-for="${docId}"]`);
+    if (!textarea) return;
+
+    btn.disabled = true;
+    status.textContent = '저장 중...';
+    status.className = 'admin-save-status status-saving';
+
+    const fd = new FormData();
+    fd.append('doc_id', docId);
+    fd.append('prompt', textarea.value);
+    try {
+      const res = await fetch('/admin/prompts/save', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.ok) {
+        status.textContent = '✓ 저장됨';
+        status.className = 'admin-save-status status-ok';
+      } else {
+        status.textContent = '✕ 실패: ' + (data.error || '');
+        status.className = 'admin-save-status status-err';
+      }
+    } catch (err) {
+      status.textContent = '✕ 네트워크 오류: ' + err.message;
+      status.className = 'admin-save-status status-err';
+    }
+    btn.disabled = false;
+    setTimeout(() => { status.textContent = ''; status.className = 'admin-save-status'; }, 3000);
+  });
+});
+
+// 기본값으로 복원
+document.querySelectorAll('.admin-reset-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('기본 프롬프트로 되돌립니다. 계속하시겠습니까?')) return;
+    const docId = btn.dataset.docId;
+    const textarea = document.querySelector(`.admin-prompt-textarea[data-doc-id="${docId}"]`);
+    const status = document.querySelector(`[data-status-for="${docId}"]`);
+
+    const fd = new FormData();
+    fd.append('doc_id', docId);
+    try {
+      const res = await fetch('/admin/prompts/reset', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.ok) {
+        textarea.value = data.default_prompt || '';
+        status.textContent = '✓ 기본값 복원됨';
+        status.className = 'admin-save-status status-ok';
+        setTimeout(() => { status.textContent = ''; status.className = 'admin-save-status'; }, 3000);
+      }
+    } catch (err) {
+      alert('복원 실패: ' + err.message);
+    }
+  });
+});
+</script>
+{% endblock %}

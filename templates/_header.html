@@ -14,4 +14,8 @@
   <a class="tab {% if active_tab == 'upload' %}active{% endif %}" href="{{ url_for('index') }}">① 준공 정보 입력</a>
   <a class="tab {% if active_tab == 'result' %}active{% endif %} {% if not has_result %}disabled{% endif %}"
      href="{% if has_result %}{{ url_for('result') }}{% else %}#{% endif %}">② 준공서류 검토 결과</a>
+  {% if is_admin %}
+    <a class="tab tab-admin {% if active_tab == 'admin' %}active{% endif %}"
+       href="{{ url_for('admin_prompts') }}">⚙ 서류항목별 검토 로직</a>
+  {% endif %}
 </nav>
