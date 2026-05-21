@@ -68,6 +68,7 @@ def index():
         return redirect(url_for("login"))
     uploaded = load_uploaded()
     notes = session.get("notes", {})
+    skips = session.get("skips", {})
     # 파일 이름만 템플릿에 전달 (bytes 는 X)
     file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
     return render_template(
@@ -76,6 +77,7 @@ def index():
         documents=DOCUMENTS,
         file_names=file_names,
         notes=notes,
+        skips=skips,
     )
 
 
@@ -152,17 +154,38 @@ def save_note(doc_id: str):
     return jsonify({"ok": True})
 
 
+@app.route("/skip/<doc_id>", methods=["POST"])
+def save_skip(doc_id: str):
+    """해당없음 체크박스 상태 저장."""
+    if "company" not in session:
+        return jsonify({"ok": False}), 401
+    skips = session.get("skips", {})
+    skips[doc_id] = (request.form.get("skip") == "true")
+    session["skips"] = skips
+    return jsonify({"ok": True})
+
+
 @app.route("/review", methods=["POST"])
 def review():
     if "company" not in session:
         return redirect(url_for("login"))
 
     uploaded = load_uploaded()
+    skips = session.get("skips", {})
 
     all_results = {}
     for doc in DOCUMENTS:
         did = doc["id"]
         name = doc["name"]
+        # 해당없음 체크된 서류는 SKIP 처리
+        if skips.get(did):
+            all_results[name] = [{
+                "항목": "해당없음 처리",
+                "결과": "SKIP",
+                "추출값": "-",
+                "비고": "사용자가 해당없음 체크",
+            }]
+            continue
         files = uploaded.get(did, [])
         all_results[name] = reviewer.review_document(did, name, files)
 

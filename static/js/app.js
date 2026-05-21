@@ -50,6 +50,23 @@ document.querySelectorAll('.note-input').forEach((input) => {
   });
 });
 
+// ── 해당없음 체크박스 ─────────────────────────────────────────────
+document.querySelectorAll('.skip-check').forEach((cb) => {
+  cb.addEventListener('change', async () => {
+    const docId = cb.dataset.docId;
+    const fd = new FormData();
+    fd.append('skip', cb.checked ? 'true' : 'false');
+
+    // 행 시각 표시
+    const row = cb.closest('tr');
+    if (row) row.classList.toggle('is-skipped', cb.checked);
+
+    try {
+      await fetch(`/skip/${docId}`, { method: 'POST', body: fd });
+    } catch (_) {}
+  });
+});
+
 // ── 칩 렌더링 ─────────────────────────────────────────────────────
 function renderChips(docId, fileNames) {
   const container = document.querySelector(`[data-chips-for="${docId}"]`);

@@ -14,15 +14,20 @@
         <tr>
           <th class="col-no">No.</th>
           <th class="col-name">서류명</th>
+          <th class="col-skip">해당없음</th>
           <th class="col-upload">파일첨부</th>
           <th class="col-note">특기사항</th>
         </tr>
       </thead>
       <tbody>
         {% for doc in documents %}
-        <tr data-doc-id="{{ doc.id }}">
+        <tr data-doc-id="{{ doc.id }}" {% if skips.get(doc.id) %}class="is-skipped"{% endif %}>
           <td class="col-no"><span class="num-badge">{{ doc.num }}</span></td>
           <td class="col-name">{{ doc.name }}</td>
+          <td class="col-skip">
+            <input type="checkbox" class="skip-check" data-doc-id="{{ doc.id }}"
+                   {% if skips.get(doc.id) %}checked{% endif %}>
+          </td>
           <td class="col-upload">
             <div class="upload-cell">
               <label class="upload-btn" for="file-{{ doc.id }}">
