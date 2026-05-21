@@ -180,14 +180,18 @@ button { font-family: inherit; cursor: pointer; }
     background: #f0f2fa;
 }
 
-/* 신설 컬럼 — 빈 박스 (클릭 선택 시각 단서) */
+/* 신설 컬럼 — 박스 (클릭 선택 시각 단서 + 파일 칩 컨테이너) */
 .hint-box {
     width: 100%;
-    height: 30px;
+    min-height: 30px;
     border: 1.5px solid #d8dcf3;       /* 연보라 테두리 */
     border-radius: 6px;
     background: transparent;
     box-sizing: border-box;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
     transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
 }
 .doc-table tbody tr.is-active .hint-box {
@@ -195,6 +199,16 @@ button { font-family: inherit; cursor: pointer; }
     border-width: 1.5px;
     background: #eef0fb;
     box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
+}
+/* hint-box 안 file-chips 정렬 */
+.hint-box .file-chips {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow: hidden;
+    align-items: center;
 }
 
 .doc-table tbody tr {

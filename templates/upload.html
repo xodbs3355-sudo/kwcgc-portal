@@ -49,6 +49,10 @@
               <input type="file" id="file-{{ doc.id }}" class="file-input"
                      data-doc-id="{{ doc.id }}"
                      accept=".pdf,.jpg,.jpeg,.png" multiple>
+            </div>
+          </td>
+          <td class="col-hint">
+            <div class="hint-box">
               <div class="file-chips" data-chips-for="{{ doc.id }}">
                 {% for name in file_names.get(doc.id, []) %}
                   <span class="file-chip" data-idx="{{ loop.index0 }}">
@@ -59,9 +63,6 @@
                 {% endfor %}
               </div>
             </div>
-          </td>
-          <td class="col-hint">
-            <div class="hint-box"></div>
           </td>
           <td class="col-note">
             <input type="text" class="note-input" data-doc-id="{{ doc.id }}"
