@@ -196,9 +196,12 @@ button { font-family: inherit; cursor: pointer; }
 /* ── File chips ─────────────────────────────────────────────── */
 .file-chips {
     display: flex;
+    flex: 1;
+    min-width: 0;
     flex-wrap: wrap;
     gap: 4px;
     align-items: center;
+    overflow: hidden;
 }
 .file-chip {
     display: inline-flex;
@@ -213,10 +216,13 @@ button { font-family: inherit; cursor: pointer; }
     color: #5e6ad2;
     height: 24px;
     box-sizing: border-box;
-    max-width: 240px;
+    max-width: 100%;
+    min-width: 0;
+    flex: 0 1 auto;
 }
 .file-chip-name {
-    max-width: 200px;
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
