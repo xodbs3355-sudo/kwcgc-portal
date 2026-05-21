@@ -66,9 +66,13 @@ def clear_uploaded():
 def index():
     if "company" not in session:
         return redirect(url_for("login"))
+    # 최초 진입 시 default_skip 적용
+    if "skips" not in session:
+        session["skips"] = {d["id"]: True for d in DOCUMENTS if d.get("default_skip")}
     uploaded = load_uploaded()
     notes = session.get("notes", {})
     skips = session.get("skips", {})
+    project_info = session.get("project_info", {})
     # 파일 이름만 템플릿에 전달 (bytes 는 X)
     file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
     return render_template(
@@ -78,6 +82,7 @@ def index():
         file_names=file_names,
         notes=notes,
         skips=skips,
+        project_info=project_info,
     )
 
 
@@ -162,6 +167,19 @@ def save_skip(doc_id: str):
     skips = session.get("skips", {})
     skips[doc_id] = (request.form.get("skip") == "true")
     session["skips"] = skips
+    return jsonify({"ok": True})
+
+
+@app.route("/project-info", methods=["POST"])
+def save_project_info():
+    """공사명/준공일자/준공금액 저장."""
+    if "company" not in session:
+        return jsonify({"ok": False}), 401
+    info = session.get("project_info", {})
+    field = request.form.get("field", "")
+    if field in ("name", "date", "amount"):
+        info[field] = request.form.get("value", "")
+        session["project_info"] = info
     return jsonify({"ok": True})
 
 

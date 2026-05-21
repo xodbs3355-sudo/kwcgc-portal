@@ -6,7 +6,23 @@
 <div class="page">
   {% include "_header.html" %}
 
-  <div class="info-card">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</div>
+  <div class="project-info-card">
+    <div class="project-info-row">
+      <label for="pi-name">공사명</label>
+      <input type="text" id="pi-name" class="project-info-input"
+             data-field="name" value="{{ project_info.get('name', '') }}" placeholder="">
+    </div>
+    <div class="project-info-row">
+      <label for="pi-date">준공일자</label>
+      <input type="date" id="pi-date" class="project-info-input"
+             data-field="date" value="{{ project_info.get('date', '') }}">
+    </div>
+    <div class="project-info-row">
+      <label for="pi-amount">준공금액</label>
+      <input type="text" id="pi-amount" class="project-info-input"
+             data-field="amount" value="{{ project_info.get('amount', '') }}" placeholder="">
+    </div>
+  </div>
 
   <form id="review-form" method="post" action="{{ url_for('review') }}">
     <table class="doc-table">
@@ -28,6 +44,7 @@
                 TIP : 행 클릭 후 붙여넣기(Ctrl+V)로도 첨부 가능
                 <span class="hint-sub">(다수 파일 첨부 가능)</span>
               </span>
+              <span class="info-card-inline">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</span>
               <button type="submit" class="btn-review">
                 <svg class="btn-review-icon" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2"

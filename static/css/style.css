@@ -120,16 +120,60 @@ button { font-family: inherit; cursor: pointer; }
     pointer-events: none;
 }
 
-/* ── 200MB info card ────────────────────────────────────────── */
-.info-card {
-    display: inline-block;
-    font-size: 12px;
+/* ── 200MB info card — TIP 카드 옆 인라인 ──────────────────── */
+.info-card-inline {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 500;
     color: #6b6f7a;
     background: #f7f7f9;
     border: 1px solid #e5e5e8;
+    border-radius: 4px;
+    vertical-align: middle;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+/* ── 준공 정보 입력 카드 (공사명/준공일자/준공금액) ──────── */
+.project-info-card {
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 560px;
+}
+.project-info-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.project-info-row label {
+    width: 80px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+.project-info-input {
+    flex: 1;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+    border: 1px solid #e5e5e8;
     border-radius: 6px;
-    padding: 6px 12px;
-    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.project-info-input:focus {
+    border-color: #5e6ad2;
+    box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
 }
 
 /* ── Document table ─────────────────────────────────────────── */

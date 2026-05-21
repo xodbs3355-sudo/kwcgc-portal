@@ -38,6 +38,18 @@ document.querySelector('.doc-table').addEventListener('click', async (e) => {
   }
 });
 
+// ── 준공 정보 입력 (blur 시 저장) ─────────────────────────────────
+document.querySelectorAll('.project-info-input').forEach((input) => {
+  input.addEventListener('blur', async () => {
+    const fd = new FormData();
+    fd.append('field', input.dataset.field);
+    fd.append('value', input.value);
+    try {
+      await fetch('/project-info', { method: 'POST', body: fd });
+    } catch (_) {}
+  });
+});
+
 // ── 해당없음 체크박스 ─────────────────────────────────────────────
 document.querySelectorAll('.skip-check').forEach((cb) => {
   cb.addEventListener('change', async () => {
