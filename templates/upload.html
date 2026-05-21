@@ -9,6 +9,10 @@
   <div class="info-card">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</div>
 
   <form id="review-form" method="post" action="{{ url_for('review') }}">
+    <div class="action-row">
+      <button type="submit" class="btn-review">검토 시작</button>
+    </div>
+
     <table class="doc-table">
       <thead>
         <tr>
@@ -61,10 +65,6 @@
         {% endfor %}
       </tbody>
     </table>
-
-    <div class="action-row">
-      <button type="submit" class="btn-review">검토 시작</button>
-    </div>
   </form>
 </div>
 {% endblock %}

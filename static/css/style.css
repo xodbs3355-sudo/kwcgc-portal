@@ -281,7 +281,7 @@ button { font-family: inherit; cursor: pointer; }
 .action-row {
     display: flex;
     justify-content: flex-end;
-    margin-top: 16px;
+    margin: 0 0 8px 0;
 }
 .btn-review {
     width: 150px;
