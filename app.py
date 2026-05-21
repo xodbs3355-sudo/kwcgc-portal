@@ -1,719 +1,249 @@
 """
-도시가스 공사 준공서류 검토 포털
+도시가스 공사 준공서류 검토 포털 — Flask 버전
 """
-import streamlit as st
+import io
+import os
+import pickle
+import secrets
+import tempfile
+
+from flask import (
+    Flask, render_template, request, redirect, url_for,
+    session, send_file, flash, jsonify
+)
+
 import config
 import auth
 import reviewer
 import output
-from email_sender import send_review_email
 from documents import DOCUMENTS
 
-st.set_page_config(
-    page_title="준공서류 검토 포털",
-    page_icon=None,
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
 
-# ── CSS ───────────────────────────────────────────────────────────
-st.html("""<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: #1a1a1a; }
-.stApp { background: #fff; }
-#MainMenu, footer, header { visibility: hidden; }
-div[data-testid="stToolbar"] { display: none; }
-.block-container {
-    padding-top: 20px !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
-    max-width: 100% !important;
-}
-
-/* 헤더 */
-.portal-logo { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
-.company-badge-card {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    height: 32px;
-    line-height: 1;
-    box-sizing: border-box;
-    font-size: 13px;
-    font-weight: 500;
-    color: #5e6ad2;
-    background: #eef0fb;
-    border: 1px solid #5e6ad2;
-    border-radius: 6px;
-}
-
-/* 로그아웃 버튼 — 업체 배지와 같은 행, 폭 100px, 짙은 회색 테두리 */
-.st-key-logout_btn {
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
-    padding: 12px 0 !important;
-}
-.st-key-logout_btn button {
-    width: 100px !important;
-    min-width: 100px !important;
-    max-width: 100px !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
-    line-height: 1 !important;
-    box-sizing: border-box !important;
-    background: #fff !important;
-    color: #4a4d54 !important;
-    border: 1px solid #6b6f7a !important;
-    border-radius: 6px !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-.st-key-logout_btn button:hover {
-    background: #f7f7f9 !important;
-    border-color: #4a4d54 !important;
-}
-
-/* 200MB 안내 카드 */
-.info-card {
-    display: inline-block;
-    font-size: 12px;
-    color: #6b6f7a;
-    background: #f7f7f9;
-    border: 1px solid #e5e5e8;
-    border-radius: 6px;
-    padding: 6px 12px;
-    margin: 0;
-}
-
-/* 첨부파일 칩 카드 */
-.file-chip-row {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 4px;
-    align-items: center;
-    overflow: hidden;
-    width: 100%;
-    padding-left: 8px;
-}
-.file-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    background: #eef0fb;
-    border: 1px solid #d8dcf3;
-    border-radius: 5px;
-    font-size: 11px;
-    font-weight: 500;
-    color: #5e6ad2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    line-height: 1.4;
-    height: 24px;
-    box-sizing: border-box;
-}
-
-/* 섹션 타이틀 */
-.section-title {
-    font-size: 11px; font-weight: 600; color: #9b9fa8;
-    text-transform: uppercase; letter-spacing: 0.8px;
-    margin: 0 0 4px;
-}
-
-/* 결과 카드 */
-.result-summary { display: flex; gap: 10px; margin: 16px 0 24px; }
-.result-card {
-    flex: 1; border: 1px solid #e5e5e8; border-radius: 8px;
-    padding: 14px; text-align: center; background: #f9f9f9;
-}
-.result-num { font-size: 28px; font-weight: 600; line-height: 1; }
-.result-label { font-size: 11px; color: #6b6f7a; margin-top: 4px; font-weight: 500; }
-.card-ok   { border-top: 3px solid #4cb87a; } .num-ok   { color: #4cb87a; }
-.card-ng   { border-top: 3px solid #e5484d; } .num-ng   { color: #e5484d; }
-.card-warn { border-top: 3px solid #f5a623; } .num-warn { color: #f5a623; }
-.card-skip { border-top: 3px solid #9b9fa8; } .num-skip { color: #9b9fa8; }
-
-.verdict-pass {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #e8f7ee; color: #2d7d52; border: 1px solid #b7e4c7;
-    border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;
-}
-.verdict-fail {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #fff0f0; color: #c0392b; border: 1px solid #fcc;
-    border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;
-}
-
-/* 기본 버튼 */
-div[data-testid="stButton"] button {
-    background: #5e6ad2; color: #fff; border: none;
-    border-radius: 6px; font-size: 13px; font-weight: 500;
-    padding: 8px 20px; transition: background 0.15s;
-}
-div[data-testid="stButton"] button:hover { background: #4b58c5; }
-
-/* 페이지 vertical gap */
-div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {
-    gap: 4px !important;
-}
-
-/* 빈 stMarkdown 컨테이너 hide */
-div[data-testid="stMarkdownContainer"]:empty,
-div[data-testid="stMarkdown"]:has(> div[data-testid="stMarkdownContainer"]:empty) {
-    display: none !important;
-}
-
-/* 검토 시작 버튼 — 폭 150px, 연보라 배경, 보라 글씨/테두리 */
-/* 검토시작 버튼 우측 정렬 — stColumn → stVerticalBlock → wrapper → button 전 계층 강제 */
-div[data-testid="stHorizontalBlock"]:has(.st-key-run_review_btn)
-  > div[data-testid="stColumn"]:last-child {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-}
-div[data-testid="stHorizontalBlock"]:has(.st-key-run_review_btn)
-  > div[data-testid="stColumn"]:last-child
-  > div[data-testid="stVerticalBlock"] {
-    align-items: flex-end !important;
-    width: 100% !important;
-}
-.st-key-run_review_btn {
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-self: flex-end !important;
-    width: 100% !important;
-    margin-left: auto !important;
-}
-.st-key-run_review_btn button {
-    margin-left: auto !important;
-}
-.st-key-run_review_btn button {
-    width: 150px !important;
-    min-width: 150px !important;
-    max-width: 150px !important;
-    height: 34px !important;
-    background: #5e6ad2 !important;
-    color: #fff !important;
-    border: 1px solid #5e6ad2 !important;
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    padding: 0 !important;
-    letter-spacing: 0.02em !important;
-    transition: background 0.15s, border-color 0.15s !important;
-}
-.st-key-run_review_btn button:hover {
-    background: #4b58c5 !important;
-    border-color: #4b58c5 !important;
-}
-
-/* ═════════ TEMP: 컬럼 경계선 디버그 (빨간 점선) ═════════ */
-/* 헤더·본문·기타 모든 stHorizontalBlock 의 stColumn 마지막 제외 */
-div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:not(:last-child) {
-    border-right: 1px dashed #e5484d !important;
-}
-/* 행 자체에도 위/아래 빨간 점선 (본문 행) */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
-    outline: 1px dashed rgba(229,72,77,0.4) !important;
-    outline-offset: -1px !important;
-}
-
-/* ═════════ 서류 행 — CSS Grid 기반 ═════════ */
-
-/* 서류 행 (stFileUploader 포함된 stHorizontalBlock) → Grid */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]) {
-    display: grid !important;
-    grid-template-columns: 0.3fr 1.6fr 3.0fr 2.5fr !important;
-    align-items: stretch !important;
-    border-bottom: 1px solid #e5e5e8 !important;
-    min-height: 44px !important;
-    padding: 0 !important;
-    gap: 0 !important;
-    width: 100% !important;
-    transition: background 0.12s ease !important;
-}
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"]):hover {
-    background: #fafafa !important;
-}
-
-/* 각 셀(stColumn) — flex 수직중앙 + 좌측정렬 (3·4번째 셀) */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"] {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    padding: 4px 8px !important;
-    min-height: 44px !important;
-    width: 100% !important;
-    flex: none !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-}
-/* No.·서류명 셀 (1·2번째) — 카드 좌우 정중앙 */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"]:nth-child(1),
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"]:nth-child(2) {
-    justify-content: center !important;
-}
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"]:nth-child(1)
-  > div[data-testid="stVerticalBlock"],
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"]:nth-child(2)
-  > div[data-testid="stVerticalBlock"] {
-    justify-content: center !important;
-}
-
-/* 셀 내부 stVerticalBlock — 너비 채우고, gap 제거 */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  > div[data-testid="stColumn"]
-  > div[data-testid="stVerticalBlock"] {
-    width: 100% !important;
-    gap: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    flex-direction: row !important;
-}
-
-/* 셀 내부 wrapper div reset */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-testid="stVerticalBlock"] > div {
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    min-height: 0 !important;
-    box-sizing: border-box !important;
-}
-
-/* ═════════ 파일 업로더 (Upload 버튼) ═════════ */
-
-/* file_uploader 외곽 reset */
-div[data-testid="stFileUploader"],
-div[data-testid="stFileUploader"] > div {
-    border: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    min-height: 0 !important;
-    width: auto !important;
-}
-
-/* ═════════════════════════════════════════════════════════
-   ★ stFileUploader — height 강제 + 첨부 후 칩만 정밀 hide
-   ═════════════════════════════════════════════════════════ */
-div[data-testid="stFileUploader"] {
-    pointer-events: none !important;
-    height: 36px !important;
-}
-div[data-testid="stFileUploader"] section {
-    border: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    max-height: 36px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0 !important;
-    overflow: hidden !important;
-}
-
-/* dropzone — 투명 컨테이너 (button 만 시각적으로 표시) */
-div[data-testid="stFileUploaderDropzone"] {
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    height: auto !important;
-    min-height: 0 !important;
-    width: auto !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    pointer-events: none !important;
-    overflow: visible !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    box-shadow: none !important;
-}
-
-/* ★★ button — 연보라 바탕 + 보라 글씨/테두리 */
-div[data-testid="stFileUploader"] button,
-div[data-testid="stFileUploader"] button * {
-    pointer-events: auto !important;
-    color: #5e6ad2 !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-div[data-testid="stFileUploader"] button {
-    background: #eef0fb !important;
-    background-color: #eef0fb !important;
-    border: 1px solid #5e6ad2 !important;
-    border-radius: 8px !important;
-    padding: 0 16px !important;
-    height: 30px !important;
-    min-height: 30px !important;
-    width: 96px !important;
-    min-width: 96px !important;
-    max-width: 96px !important;
-    line-height: 1 !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.03em !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 7px !important;
-    overflow: visible !important;
-    box-sizing: border-box !important;
-    cursor: pointer !important;
-    box-shadow: 0 1px 2px rgba(94,106,210,0.10) !important;
-    transition: all 0.15s ease !important;
-}
-div[data-testid="stFileUploader"] button:hover {
-    background: #dde1f5 !important;
-    background-color: #dde1f5 !important;
-    border-color: #4b58c5 !important;
-    box-shadow: 0 2px 4px rgba(94,106,210,0.18) !important;
-}
-div[data-testid="stFileUploader"] button:active {
-    background: #cdd3ef !important;
-}
-div[data-testid="stFileUploader"] button span,
-div[data-testid="stFileUploader"] button div,
-div[data-testid="stFileUploader"] button p {
-    display: inline-flex !important;
-    align-items: center !important;
-    color: #5e6ad2 !important;
-    font-size: 13px !important;
-}
-
-/* ★ 200MB instructions — 정밀 hide (button 자식 빼고 모두) */
-[data-testid="stFileUploaderDropzoneInstructions"],
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"],
-div[data-testid="stFileUploader"] [data-testid*="DropzoneInstructions"],
-/* section 직계 small/p (button 옆 형제로 있는 경우) */
-div[data-testid="stFileUploader"] > div > section > small,
-div[data-testid="stFileUploader"] > div > section > p,
-div[data-testid="stFileUploader"] section > small,
-div[data-testid="stFileUploader"] section > p,
-/* dropzone 직계 small/p (button 옆 형제로 있는 경우) */
-div[data-testid="stFileUploaderDropzone"] > small,
-div[data-testid="stFileUploaderDropzone"] > p {
-    display: none !important;
-}
-
-/* 아이콘 — 14px, 보라 (연보라 배경 위), 버튼 테두리 무시 */
-div[data-testid="stFileUploader"] button svg {
-    width: 14px !important;
-    height: 14px !important;
-    flex-shrink: 0 !important;
-    overflow: visible !important;
-    color: #5e6ad2 !important;
-    fill: #5e6ad2 !important;
-    font-size: 14px !important;
-}
-
-/* ★ file_uploader 자체의 첨부 후 파일 칩 — 광범위 hide (dropzone 형제 모두) */
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFile"],
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileData"],
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileName"],
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderFileErrorMessage"],
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"],
-div[data-testid="stFileUploader"] [data-testid*="UploadedFile"],
-/* dropzone 의 형제(같은 부모 안 dropzone 이후) 모두 hide */
-div[data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"] ~ * {
-    display: none !important;
-}
-/* section 직속 자식 중 dropzone(또는 dropzone 을 자손으로 가진 wrapper)이 아니면 hide */
-div[data-testid="stFileUploader"] section > *:not([data-testid="stFileUploaderDropzone"]):not(:has([data-testid="stFileUploaderDropzone"])):not(:has(button)) {
-    display: none !important;
-}
-
-/* ═════════ 특기사항 입력란 ═════════ */
-
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-testid="stTextInput"] {
-    width: 100% !important;
-}
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-baseweb="input"] {
-    height: 30px !important;
-    min-height: 0 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    border: 1px solid #e5e5e8 !important;
-    border-radius: 6px !important;
-    background: #fff !important;
-}
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-baseweb="input"] input {
-    height: 28px !important;
-    padding: 0 10px !important;
-    font-size: 13px !important;
-    border: none !important;
-    background: transparent !important;
-    box-sizing: border-box !important;
-    width: 100% !important;
-}
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stFileUploader"])
-  div[data-baseweb="input"]:focus-within {
-    border-color: #5e6ad2 !important;
-    box-shadow: 0 0 0 2px rgba(94,106,210,0.15) !important;
-}
-
-/* 입력 필드 (로그인 페이지 등 다른 위치) */
-div[data-baseweb="input"] input {
-    border: 1px solid #e5e5e8 !important; border-radius: 6px !important;
-    font-size: 13px !important;
-}
-div[data-baseweb="input"] input:focus {
-    border-color: #5e6ad2 !important;
-    box-shadow: 0 0 0 3px rgba(94,106,210,0.15) !important;
-}
-</style>""")
+app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.token_hex(32))
+app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024 * 16  # 행당 200MB × 16 여유
 
 
-# ── 로그인 ────────────────────────────────────────────────────────
-if 'company' not in st.session_state:
-    col1, col2, col3 = st.columns([1, 1.2, 1])
-    with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("### 준공서류 검토 포털")
-        st.markdown('<p style="color:#6b6f7a;font-size:13px;margin-bottom:24px;">업체 계정으로 로그인하세요</p>', unsafe_allow_html=True)
-        username = st.text_input("아이디", placeholder="업체 아이디", label_visibility="collapsed")
-        password = st.text_input("비밀번호", type="password", placeholder="비밀번호", label_visibility="collapsed")
-        if st.button("로그인", use_container_width=True):
-            if auth.verify_login(username, password):
-                st.session_state.company = username
-                st.rerun()
-            else:
-                st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
-    st.stop()
+# ── 세션 저장소 (업로드된 파일 bytes 는 디스크 임시 파일로) ─────────
+SESSION_DIR = os.path.join(tempfile.gettempdir(), "kwcgc_uploads")
+os.makedirs(SESSION_DIR, exist_ok=True)
 
 
-# ── 헤더 ─────────────────────────────────────────────────────────
-company = st.session_state.company
-col_h, _sp, col_badge, col_logout = st.columns([6, 4, 1, 1.4])
-with col_h:
-    st.markdown(
-        f'<div style="display:flex;align-items:center;padding:12px 0;">'
-        f'<span class="portal-logo">준공서류 검토 포털</span>'
-        f'</div>',
-        unsafe_allow_html=True,
+def _session_file_path(sess_id: str) -> str:
+    return os.path.join(SESSION_DIR, f"{sess_id}.pkl")
+
+
+def load_uploaded() -> dict:
+    sess_id = session.get("sess_id")
+    if not sess_id:
+        return {}
+    path = _session_file_path(sess_id)
+    if not os.path.exists(path):
+        return {}
+    with open(path, "rb") as f:
+        return pickle.load(f)
+
+
+def save_uploaded(data: dict):
+    sess_id = session.get("sess_id")
+    if not sess_id:
+        sess_id = secrets.token_hex(16)
+        session["sess_id"] = sess_id
+    with open(_session_file_path(sess_id), "wb") as f:
+        pickle.dump(data, f)
+
+
+def clear_uploaded():
+    sess_id = session.pop("sess_id", None)
+    if sess_id:
+        path = _session_file_path(sess_id)
+        if os.path.exists(path):
+            os.remove(path)
+
+
+# ── 라우트 ────────────────────────────────────────────────────────
+@app.route("/")
+def index():
+    if "company" not in session:
+        return redirect(url_for("login"))
+    uploaded = load_uploaded()
+    notes = session.get("notes", {})
+    # 파일 이름만 템플릿에 전달 (bytes 는 X)
+    file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
+    return render_template(
+        "upload.html",
+        company=session["company"],
+        documents=DOCUMENTS,
+        file_names=file_names,
+        notes=notes,
     )
-with col_badge:
-    st.markdown(
-        f'<div style="display:flex;justify-content:flex-end;align-items:center;padding:12px 0;">'
-        f'<span class="company-badge-card">{company}</span>'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-with col_logout:
-    if st.button("로그아웃", type="secondary", use_container_width=False, key="logout_btn"):
-        for k in ['company', 'review_results']:
-            st.session_state.pop(k, None)
-        st.rerun()
-st.markdown("<div style='border-top:1px solid #e5e5e8;margin-bottom:8px;'></div>", unsafe_allow_html=True)
-
-# ── Gemini 설정 (사이드바) ────────────────────────────────────────
-with st.sidebar:
-    st.markdown("**AI 검토 설정**")
-    key_input = st.text_input("Gemini API Key", value=config.GEMINI_API_KEY,
-                               type="password", placeholder="AIza...",
-                               help="없으면 첨부 여부만 확인됩니다")
-    if key_input:
-        config.GEMINI_API_KEY = key_input
-        config.USE_MOCK = False
-    st.caption("AI 검토 활성" if not config.USE_MOCK else "첨부 여부만 확인")
 
 
-# ── 서류 업로드 폼 ────────────────────────────────────────────────
-uploaded = {}   # doc_id → list of (filename, bytes)
-notes    = {}   # doc_id → str
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        if auth.verify_login(username, password):
+            session["company"] = username
+            return redirect(url_for("index"))
+        flash("아이디 또는 비밀번호가 올바르지 않습니다.", "error")
+    return render_template("login.html")
 
 
-def render_doc_row(doc):
-    did  = doc["id"]
-    cond = doc["condition"]
-
-    c_num, c_name, c_upload, c_note = st.columns([0.3, 1.6, 3.0, 2.5])
-
-    with c_num:
-        st.markdown(
-            f'<div style="display:inline-flex;align-items:center;justify-content:center;'
-            f'height:24px;'
-            f'font-size:12px;font-weight:600;color:#5e6ad2;line-height:1;'
-            f'margin-bottom:15px;margin-left:10px;">'
-            f'{doc["num"]}</div>',
-            unsafe_allow_html=True,
-        )
-    with c_name:
-        st.markdown(
-            f'<div style="display:inline-flex;align-items:center;'
-            f'height:24px;'
-            f'font-size:13px;font-weight:500;color:#1a1a1a;line-height:1;'
-            f'margin-bottom:15px;">'
-            f'{doc["name"]}</div>',
-            unsafe_allow_html=True,
-        )
-    with c_upload:
-        files = st.file_uploader(
-            f"{doc['name']}",
-            type=["pdf", "jpg", "jpeg", "png"],
-            accept_multiple_files=True,
-            key=f"files_{did}",
-            label_visibility="collapsed",
-        )
-        uploaded[did] = [(f.name, f.read()) for f in files] if files else []
-        if files:
-            chips_html = "".join(
-                f'<span class="file-chip">{f.name}</span>' for f in files
-            )
-            st.markdown(
-                f'<div class="file-chip-row">{chips_html}</div>',
-                unsafe_allow_html=True,
-            )
-    with c_note:
-        note = st.text_input(
-            "특기사항",
-            key=f"note_{did}",
-            placeholder="",
-            label_visibility="collapsed",
-        )
-        notes[did] = note
+@app.route("/logout", methods=["POST"])
+def logout():
+    clear_uploaded()
+    session.clear()
+    return redirect(url_for("login"))
 
 
-# 200MB 안내 카드 — No. 헤더 위
-st.markdown(
-    '<div class="info-card">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</div>',
-    unsafe_allow_html=True,
-)
+@app.route("/upload/<doc_id>", methods=["POST"])
+def upload_file(doc_id: str):
+    """단일 서류 항목의 파일 업로드 (다중 가능)."""
+    if "company" not in session:
+        return jsonify({"ok": False, "error": "not logged in"}), 401
 
-# 200MB 카드 ↔ 그룹헤더 사이 60px (gap 4 + 56)
-st.markdown("<div style='height:56px;'></div>", unsafe_allow_html=True)
+    if not any(d["id"] == doc_id for d in DOCUMENTS):
+        return jsonify({"ok": False, "error": "invalid doc_id"}), 400
 
-# 테이블 헤더
-h_num, h_name, h_upload, h_note = st.columns([0.3, 1.6, 3.0, 2.5])
-with h_num:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;text-align:center;">No.</div>', unsafe_allow_html=True)
-with h_name:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">서류명</div>', unsafe_allow_html=True)
-with h_upload:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;text-align:center;">파일첨부</div>', unsafe_allow_html=True)
-with h_note:
-    st.markdown('<div style="font-size:13px;font-weight:600;color:#9b9fa8;padding:0 8px 4px;">특기사항</div>', unsafe_allow_html=True)
-st.markdown("<hr style='margin:0 0 2px;border:none;border-top:1.5px solid #1a1a1a;'>", unsafe_allow_html=True)
+    files = request.files.getlist("files")
+    uploaded = load_uploaded()
+    existing = uploaded.get(doc_id, [])
+    for f in files:
+        if not f or not f.filename:
+            continue
+        ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+        if ext not in ("pdf", "jpg", "jpeg", "png"):
+            continue
+        existing.append((f.filename, f.read()))
+    uploaded[doc_id] = existing
+    save_uploaded(uploaded)
 
-for idx, doc in enumerate(DOCUMENTS):
-    if idx == 0:
-        st.markdown("<div style='height:5px;'></div>", unsafe_allow_html=True)
-    render_doc_row(doc)
+    return jsonify({
+        "ok": True,
+        "files": [name for name, _b in existing],
+    })
 
-# 검토 시작 버튼 — 4컬럼 + 마지막 button 폭에 맞춰 쪼갬
-st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
-_, _, _, _, btn_area = st.columns([0.3, 1.6, 3.0, 1.67, 0.83])
-with btn_area:
-    run = st.button("검토 시작", use_container_width=True, key="run_review_btn")
 
-if run:
+@app.route("/remove/<doc_id>/<int:idx>", methods=["POST"])
+def remove_file(doc_id: str, idx: int):
+    if "company" not in session:
+        return jsonify({"ok": False}), 401
+    uploaded = load_uploaded()
+    files = uploaded.get(doc_id, [])
+    if 0 <= idx < len(files):
+        files.pop(idx)
+        uploaded[doc_id] = files
+        save_uploaded(uploaded)
+    return jsonify({
+        "ok": True,
+        "files": [name for name, _b in uploaded.get(doc_id, [])],
+    })
+
+
+@app.route("/note/<doc_id>", methods=["POST"])
+def save_note(doc_id: str):
+    if "company" not in session:
+        return jsonify({"ok": False}), 401
+    notes = session.get("notes", {})
+    notes[doc_id] = request.form.get("note", "")
+    session["notes"] = notes
+    return jsonify({"ok": True})
+
+
+@app.route("/review", methods=["POST"])
+def review():
+    if "company" not in session:
+        return redirect(url_for("login"))
+
+    uploaded = load_uploaded()
+
     all_results = {}
-    bar = st.progress(0, text="검토 준비 중...")
-    total = len(DOCUMENTS)
-
-    for idx, doc in enumerate(DOCUMENTS):
-        did  = doc["id"]
+    for doc in DOCUMENTS:
+        did = doc["id"]
         name = doc["name"]
-        bar.progress(idx / total, text=f"'{name}' 검토 중...")
-
         files = uploaded.get(did, [])
         all_results[name] = reviewer.review_document(did, name, files)
 
-    bar.progress(1.0, text="검토 완료!")
-    st.session_state.review_results = all_results
-
-    sent = send_review_email(company, all_results)
-    if sent:
-        st.success("검토 완료 — 결과가 담당자 메일로 발송되었습니다.")
-    else:
-        st.success("검토 완료")
+    session["review_results"] = all_results
+    return redirect(url_for("result"))
 
 
-# ── 결과 표시 ─────────────────────────────────────────────────────
-if not st.session_state.get("review_results"):
-    st.stop()
+@app.route("/result")
+def result():
+    if "company" not in session:
+        return redirect(url_for("login"))
+    all_results = session.get("review_results")
+    if not all_results:
+        return redirect(url_for("index"))
 
-all_results = st.session_state.review_results
-all_items   = [r for rows in all_results.values() for r in rows]
-ok   = sum(1 for r in all_items if r['결과'] == 'OK')
-ng   = sum(1 for r in all_items if r['결과'] == 'NG')
-warn = sum(1 for r in all_items if r['결과'] == 'WARN')
-skip = sum(1 for r in all_items if r['결과'] == 'SKIP')
+    all_items = [r for rows in all_results.values() for r in rows]
+    counts = {
+        "OK":   sum(1 for r in all_items if r["결과"] == "OK"),
+        "NG":   sum(1 for r in all_items if r["결과"] == "NG"),
+        "WARN": sum(1 for r in all_items if r["결과"] == "WARN"),
+        "SKIP": sum(1 for r in all_items if r["결과"] == "SKIP"),
+    }
+    verdict_pass = counts["NG"] == 0
 
-st.markdown("---")
-st.markdown('<div class="section-title">검토 결과</div>', unsafe_allow_html=True)
-
-st.markdown(f"""
-<div class="result-summary">
-  <div class="result-card card-ok">
-    <div class="result-num num-ok">{ok}</div>
-    <div class="result-label">OK</div>
-  </div>
-  <div class="result-card card-ng">
-    <div class="result-num num-ng">{ng}</div>
-    <div class="result-label">NG</div>
-  </div>
-  <div class="result-card card-warn">
-    <div class="result-num num-warn">{warn}</div>
-    <div class="result-label">WARN</div>
-  </div>
-  <div class="result-card card-skip">
-    <div class="result-num num-skip">{skip}</div>
-    <div class="result-label">해당없음</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-vc  = "verdict-pass" if ng == 0 else "verdict-fail"
-vt  = "이상 없음" if ng == 0 else f"NG {ng}건 확인 필요"
-st.markdown(f'<div class="{vc}">최종 판정 — {vt}</div>', unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
-
-# 서류별 결과 탭
-tabs = st.tabs(list(all_results.keys()))
-for tab, (doc_name, rows) in zip(tabs, all_results.items()):
-    with tab:
-        for item in rows:
-            s    = item['결과']
-            with st.expander(f"{item['항목']}", expanded=(s == 'NG')):
-                st.markdown(f'<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:{"#e8f7ee" if s=="OK" else "#fff0f0" if s=="NG" else "#fffbeb" if s=="WARN" else "#f2f3f4"};color:{"#2d7d52" if s=="OK" else "#c0392b" if s=="NG" else "#92650a" if s=="WARN" else "#6b6f7a"}">{s}</span>', unsafe_allow_html=True)
-                if item.get('추출값') and item['추출값'] not in ('-', ''):
-                    st.caption(f"추출값: {item['추출값']}")
-                if item.get('비고'):
-                    st.caption(f"비고: {item['비고']}")
-
-# 결과 다운로드
-st.markdown("---")
-col_dl, _ = st.columns([2, 5])
-with col_dl:
-    with st.spinner("엑셀 생성 중..."):
-        excel_bytes = output.results_to_excel(all_results)
-    st.download_button(
-        "검토결과 엑셀 다운로드",
-        data=excel_bytes,
-        file_name="준공서류검토결과.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True,
+    return render_template(
+        "result.html",
+        company=session["company"],
+        all_results=all_results,
+        counts=counts,
+        verdict_pass=verdict_pass,
     )
+
+
+@app.route("/download/excel")
+def download_excel():
+    if "company" not in session:
+        return redirect(url_for("login"))
+    all_results = session.get("review_results")
+    if not all_results:
+        return redirect(url_for("index"))
+
+    excel_bytes = output.results_to_excel(all_results)
+    return send_file(
+        io.BytesIO(excel_bytes),
+        as_attachment=True,
+        download_name="준공서류검토결과.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@app.route("/download/pdf")
+def download_pdf():
+    if "company" not in session:
+        return redirect(url_for("login"))
+    uploaded = load_uploaded()
+    if not uploaded:
+        flash("첨부된 파일이 없습니다.", "error")
+        return redirect(url_for("result"))
+
+    pdf_bytes = output.merge_attachments_to_pdf(uploaded, DOCUMENTS)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        as_attachment=True,
+        download_name="준공서류_첨부통합.pdf",
+        mimetype="application/pdf",
+    )
+
+
+@app.route("/api-key", methods=["POST"])
+def set_api_key():
+    """Gemini API 키 입력 (선택)."""
+    if "company" not in session:
+        return jsonify({"ok": False}), 401
+    key = request.form.get("key", "").strip()
+    if key:
+        config.GEMINI_API_KEY = key
+        config.USE_MOCK = False
+    else:
+        config.USE_MOCK = True
+    return jsonify({"ok": True, "mock": config.USE_MOCK})
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)

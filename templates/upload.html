@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% set active_tab = 'upload' %}
+{% set has_result = session.get('review_results') is not none %}
+{% block title %}파일 업로드 — 준공서류 검토 포털{% endblock %}
+{% block body %}
+<div class="page">
+  {% include "_header.html" %}
+
+  <div class="info-card">파일당 최대 200MB&nbsp;&nbsp;|&nbsp;&nbsp;PDF · JPG · PNG</div>
+
+  <form id="review-form" method="post" action="{{ url_for('review') }}">
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th class="col-no">No.</th>
+          <th class="col-name">서류명</th>
+          <th class="col-upload">파일첨부</th>
+          <th class="col-note">특기사항</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in documents %}
+        <tr data-doc-id="{{ doc.id }}">
+          <td class="col-no"><span class="num-badge">{{ doc.num }}</span></td>
+          <td class="col-name">{{ doc.name }}</td>
+          <td class="col-upload">
+            <div class="upload-cell">
+              <label class="upload-btn" for="file-{{ doc.id }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Upload
+              </label>
+              <input type="file" id="file-{{ doc.id }}" class="file-input"
+                     data-doc-id="{{ doc.id }}"
+                     accept=".pdf,.jpg,.jpeg,.png" multiple>
+              <div class="file-chips" data-chips-for="{{ doc.id }}">
+                {% for name in file_names.get(doc.id, []) %}
+                  <span class="file-chip" data-idx="{{ loop.index0 }}">
+                    <span class="file-chip-name">{{ name }}</span>
+                    <button type="button" class="file-chip-del"
+                            data-doc-id="{{ doc.id }}" data-idx="{{ loop.index0 }}">×</button>
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+          </td>
+          <td class="col-note">
+            <input type="text" class="note-input" data-doc-id="{{ doc.id }}"
+                   value="{{ notes.get(doc.id, '') }}" placeholder="">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="action-row">
+      <button type="submit" class="btn-review">검토 시작</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

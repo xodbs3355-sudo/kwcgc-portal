@@ -1,0 +1,17 @@
+<header class="portal-header">
+  <div class="portal-header-left">
+    <span class="portal-logo">준공서류 검토 포털</span>
+  </div>
+  <div class="portal-header-right">
+    <span class="company-badge">{{ company }}</span>
+    <form method="post" action="{{ url_for('logout') }}" style="margin:0;">
+      <button type="submit" class="logout-btn">로그아웃</button>
+    </form>
+  </div>
+</header>
+
+<nav class="tabs">
+  <a class="tab {% if active_tab == 'upload' %}active{% endif %}" href="{{ url_for('index') }}">파일 업로드</a>
+  <a class="tab {% if active_tab == 'result' %}active{% endif %} {% if not has_result %}disabled{% endif %}"
+     href="{% if has_result %}{{ url_for('result') }}{% else %}#{% endif %}">검토 결과</a>
+</nav>

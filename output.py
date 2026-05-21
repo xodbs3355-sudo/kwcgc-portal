@@ -1,11 +1,13 @@
 """
-검토 결과 엑셀 출력
+검토 결과 엑셀 출력 + 첨부 파일 PDF 병합
 """
 import io
 from datetime import datetime
 
 import openpyxl
 from openpyxl.styles import Alignment, Font, PatternFill
+from PIL import Image
+from pypdf import PdfWriter, PdfReader
 
 
 STATUS_COLORS = {
@@ -87,3 +89,49 @@ def _add_summary_sheet(wb: openpyxl.Workbook, all_results: dict[str, list[dict]]
         cell = ws.cell(row_idx, 5, final)
         cell.fill = PatternFill("solid", fgColor=final_color)
         cell.font = Font(bold=True)
+
+
+# ── 첨부 파일 PDF 병합 ────────────────────────────────────────────
+def _image_to_pdf_bytes(img_bytes: bytes) -> bytes:
+    """이미지 bytes → PDF bytes 변환"""
+    img = Image.open(io.BytesIO(img_bytes))
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")
+    buf = io.BytesIO()
+    img.save(buf, format="PDF")
+    return buf.getvalue()
+
+
+def merge_attachments_to_pdf(uploaded_files: dict, documents: list) -> bytes:
+    """
+    uploaded_files: {doc_id: [(filename, bytes), ...]}
+    documents: DOCUMENTS list (서류 순서 보장용)
+    반환: 통합 PDF bytes
+    """
+    writer = PdfWriter()
+
+    for doc in documents:
+        did = doc["id"]
+        files = uploaded_files.get(did, [])
+        if not files:
+            continue
+
+        for filename, file_bytes in files:
+            ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+            try:
+                if ext == "pdf":
+                    pdf_bytes = file_bytes
+                elif ext in ("jpg", "jpeg", "png"):
+                    pdf_bytes = _image_to_pdf_bytes(file_bytes)
+                else:
+                    continue
+
+                reader = PdfReader(io.BytesIO(pdf_bytes))
+                for page in reader.pages:
+                    writer.add_page(page)
+            except Exception:
+                continue
+
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()

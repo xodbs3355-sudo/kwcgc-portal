@@ -1,5 +1,5 @@
-streamlit
+Flask>=3.0
 openpyxl
 Pillow
 google-generativeai
-xlrd==1.2.0
+pypdf>=4.0

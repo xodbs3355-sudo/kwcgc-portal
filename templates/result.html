@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set active_tab = 'result' %}
+{% set has_result = true %}
+{% block title %}검토 결과 — 준공서류 검토 포털{% endblock %}
+{% block body %}
+<div class="page">
+  {% include "_header.html" %}
+
+  <div class="result-summary">
+    <div class="result-card card-ok">
+      <div class="result-num num-ok">{{ counts.OK }}</div>
+      <div class="result-label">OK</div>
+    </div>
+    <div class="result-card card-ng">
+      <div class="result-num num-ng">{{ counts.NG }}</div>
+      <div class="result-label">NG</div>
+    </div>
+    <div class="result-card card-warn">
+      <div class="result-num num-warn">{{ counts.WARN }}</div>
+      <div class="result-label">WARN</div>
+    </div>
+    <div class="result-card card-skip">
+      <div class="result-num num-skip">{{ counts.SKIP }}</div>
+      <div class="result-label">해당없음</div>
+    </div>
+  </div>
+
+  <div class="verdict {% if verdict_pass %}verdict-pass{% else %}verdict-fail{% endif %}">
+    {% if verdict_pass %}최종 판정 — 이상 없음{% else %}최종 판정 — NG {{ counts.NG }}건 확인 필요{% endif %}
+  </div>
+
+  <div class="download-row">
+    <a class="btn-download" href="{{ url_for('download_excel') }}">검토결과 엑셀 다운로드</a>
+    <a class="btn-download" href="{{ url_for('download_pdf') }}">첨부 통합 PDF 다운로드</a>
+  </div>
+
+  <div class="result-details">
+    {% for doc_name, rows in all_results.items() %}
+      <details class="doc-detail">
+        <summary class="doc-detail-summary">
+          <span class="doc-detail-name">{{ doc_name }}</span>
+          {% set ng_count = rows | selectattr('결과', 'equalto', 'NG') | list | length %}
+          {% if ng_count > 0 %}<span class="doc-badge badge-ng">NG {{ ng_count }}</span>{% endif %}
+        </summary>
+        <div class="doc-detail-body">
+          {% for item in rows %}
+            <div class="result-item">
+              <div class="result-item-head">
+                <span class="status-badge status-{{ item['결과']|lower }}">{{ item['결과'] }}</span>
+                <span class="result-item-title">{{ item['항목'] }}</span>
+              </div>
+              {% if item.get('추출값') and item['추출값'] not in ('-', '') %}
+                <div class="result-item-meta">추출값: {{ item['추출값'] }}</div>
+              {% endif %}
+              {% if item.get('비고') %}
+                <div class="result-item-meta">비고: {{ item['비고'] }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </details>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
