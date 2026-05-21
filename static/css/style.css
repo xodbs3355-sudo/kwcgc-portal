@@ -1,3 +1,12 @@
+/* ── Custom font: Gmarket Sans Bold (프로그램 이름 전용) ────── */
+@font-face {
+    font-family: 'GmarketSansBold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ── Reset & base ───────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 html, body {
@@ -31,6 +40,7 @@ button { font-family: inherit; cursor: pointer; }
 .portal-header-left { display: flex; align-items: center; gap: 8px; }
 .portal-header-right { display: flex; align-items: center; gap: 8px; }
 .portal-logo {
+    font-family: 'GmarketSansBold', 'Inter', sans-serif;
     font-size: 30px;
     font-weight: 700;
     letter-spacing: -0.5px;
@@ -431,6 +441,7 @@ button { font-family: inherit; cursor: pointer; }
     box-shadow: 0 4px 16px rgba(0,0,0,0.04);
 }
 .login-title {
+    font-family: 'GmarketSansBold', 'Inter', sans-serif;
     margin: 0;
     font-size: 27px;
     font-weight: 700;
