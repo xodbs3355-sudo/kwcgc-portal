@@ -353,15 +353,21 @@ button { font-family: inherit; cursor: pointer; }
     box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
 }
 
-/* ── Action row & 검토시작 ──────────────────────────────────── */
-.action-row {
+/* ── 검토시작 버튼 (신설 헤더 셀 안 우측) ──────────────────── */
+.hint-header-row {
     display: flex;
-    justify-content: flex-end;
-    margin: 0 0 8px 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
 }
 .btn-review {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     width: 150px;
-    height: 36px;
+    height: 34px;
     background: linear-gradient(135deg, #7682e0 0%, #5e6ad2 55%, #4b58c5 100%);
     color: #fff;
     border: 1px solid #4b58c5;
@@ -372,6 +378,7 @@ button { font-family: inherit; cursor: pointer; }
     box-shadow: 0 2px 6px rgba(94,106,210,0.25),
                 inset 0 1px 0 rgba(255,255,255,0.18);
     transition: filter 0.18s, box-shadow 0.18s, transform 0.12s;
+    cursor: pointer;
 }
 .btn-review:hover {
     filter: brightness(1.08);
@@ -382,6 +389,12 @@ button { font-family: inherit; cursor: pointer; }
 .btn-review:active {
     transform: translateY(0);
     filter: brightness(0.96);
+}
+.btn-review-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: #fff;
 }
 
 /* ── Login ──────────────────────────────────────────────────── */
