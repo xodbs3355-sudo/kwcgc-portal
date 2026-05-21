@@ -21,9 +21,16 @@
           <th class="col-skip">해당없음</th>
           <th class="col-upload">파일첨부</th>
           <th class="col-hint">
-            <span class="hint-card">팁 : 행 클릭 후 붙여넣기(Ctrl+V)로도 첨부 가능</span>
+            <span class="hint-card">
+              <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              TIP : 행 클릭 후 붙여넣기(Ctrl+V)로도 첨부 가능
+            </span>
           </th>
-          <th class="col-note">특기사항</th>
         </tr>
       </thead>
       <tbody>
@@ -63,10 +70,6 @@
                 {% endfor %}
               </div>
             </div>
-          </td>
-          <td class="col-note">
-            <input type="text" class="note-input" data-doc-id="{{ doc.id }}"
-                   value="{{ notes.get(doc.id, '') }}" placeholder="">
           </td>
         </tr>
         {% endfor %}

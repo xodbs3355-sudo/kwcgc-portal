@@ -38,18 +38,6 @@ document.querySelector('.doc-table').addEventListener('click', async (e) => {
   }
 });
 
-// ── 특기사항 저장 (blur 시) ───────────────────────────────────────
-document.querySelectorAll('.note-input').forEach((input) => {
-  input.addEventListener('blur', async () => {
-    const docId = input.dataset.docId;
-    const fd = new FormData();
-    fd.append('note', input.value);
-    try {
-      await fetch(`/note/${docId}`, { method: 'POST', body: fd });
-    } catch (_) {}
-  });
-});
-
 // ── 해당없음 체크박스 ─────────────────────────────────────────────
 document.querySelectorAll('.skip-check').forEach((cb) => {
   cb.addEventListener('change', async () => {

@@ -119,11 +119,14 @@ button { font-family: inherit; cursor: pointer; }
 }
 .doc-table th.col-no { text-align: center; }
 .doc-table th.col-skip { text-align: center; }
+.doc-table th.col-upload { text-align: center; }
 
 /* 안내 카드 (신설 컬럼 헤더 안) */
 .hint-card {
-    display: inline-block;
-    padding: 2px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
     font-size: 11px;
     font-weight: 500;
     color: #92650a;
@@ -135,15 +138,21 @@ button { font-family: inherit; cursor: pointer; }
     text-transform: none;
     white-space: nowrap;
 }
+.hint-icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: #92650a;
+}
 
 .doc-table .col-no    { width: 4%; }
 .doc-table .col-name  { width: 18%; }
 .doc-table .col-skip  { width: 7%; }
 .doc-table .col-upload{ width: 10%; }
-.doc-table .col-hint  { width: 30%; }
-.doc-table .col-note  { width: 31%; }
+.doc-table .col-hint  { width: 61%; }
 
 .doc-table td.col-skip { text-align: center; }
+.doc-table td.col-upload { text-align: center; }
 
 /* 해당없음 체크박스 */
 .skip-check {
