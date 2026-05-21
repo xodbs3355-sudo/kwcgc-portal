@@ -935,8 +935,8 @@ button { font-family: inherit; cursor: pointer; }
     background: #fafafa;
 }
 .status-card-ok   { background: #f0faf4; border-color: #d4ecdb; }
-.status-card-ng   { background: #fff5f5; border-color: #fcd8d8; }
-.status-card-warn { background: #fffbeb; border-color: #f5e2a8; }
+.status-card-ng   { background: #fff7e8; border-color: #f5d6a3; }   /* 주황 톤 */
+.status-card-warn { background: #fff7e8; border-color: #f5d6a3; }   /* 동일 톤 */
 .status-card-skip { background: #f5f6f8; border-color: #e5e5e8; }
 .checklist-head {
     display: flex;
@@ -1024,6 +1024,6 @@ button { font-family: inherit; cursor: pointer; }
     border-radius: 4px;
 }
 .status-ok   { background: #e8f7ee; color: #2d7d52; }
-.status-ng   { background: #fff0f0; color: #c0392b; }
-.status-warn { background: #fffbeb; color: #92650a; }
+.status-ng   { background: #fff4e0; color: #c67c00; }   /* 보완 또는 확인 — 주황 */
+.status-warn { background: #fff4e0; color: #c67c00; }   /* WARN 도 같은 주황 톤 */
 .status-skip { background: #f2f3f4; color: #6b6f7a; }

@@ -40,82 +40,69 @@ def _get_mime(filename: str) -> str:
     }.get(ext, "application/octet-stream")
 
 
-# ── 서류별 프롬프트 ───────────────────────────────────────────────
-# 모든 프롬프트 앞에 입력 정보 대조 항목을 자동 추가합니다 (_build_prompt 참조).
-PROMPTS = {
-    "doc01": """
-도시가스 공사 준공계 서류입니다. 다음을 검토하고 JSON 배열로만 응답하세요.
-1. 계약금액 숫자와 한글금액 일치 여부
-2. 기성/준공액 숫자와 한글금액 일치 여부
-3. 금회기성 합계 일치 여부
-4. 서명/날인 여부
-형식: [{"항목":"...","결과":"OK/NG/WARN/SKIP","추출값":"...","비고":"..."}]
-""",
-    "doc02": """
-하도급 공종별 작업내역서입니다. 다음을 검토하고 JSON 배열로만 응답하세요.
-1. 품목·단가·수량·금액 항목 모두 기재 여부
-2. 단가 × 수량 = 금액 일치 여부 (샘플 3건)
-3. 합계금액 일치 여부
-4. 서명/날인 여부
-형식: [{"항목":"...","결과":"OK/NG/WARN/SKIP","추출값":"...","비고":"..."}]
-""",
-    "doc03": """
-기밀시험 데이터 서류입니다. 다음을 검토하고 JSON 배열로만 응답하세요.
-1. 시험압력 기재 및 기준 적합 여부
-2. 시험시간 기재 여부
-3. 합격/불합격 결과 기재 여부
-4. 담당자 서명 여부
-형식: [{"항목":"...","결과":"OK/NG/WARN/SKIP","추출값":"...","비고":"..."}]
-""",
-}
-
-GENERIC_PROMPT = """
-도시가스 공사 준공서류입니다. 다음을 검토하고 JSON 배열로만 응답하세요.
-1. 서류 양식 및 내용 기재 여부
-2. 필수 항목(날짜·서명·금액 등) 누락 여부
-3. 전반적인 서류 적정성
-형식: [{"항목":"...","결과":"OK/NG/WARN/SKIP","추출값":"...","비고":"..."}]
-"""
+# ── 검토 프롬프트 — 모든 서류에 동일하게 4개 항목 ────────────────
+# (서류 첨부 여부는 review_document 에서 Python 으로 별도 처리)
+PROMPTS = {}  # 서류별 차이 제거. 모두 GENERIC_PROMPT + _build_prompt 사용.
 
 
-def _build_prompt(base_prompt: str, project_info: dict | None) -> str:
-    """프롬프트 앞에 입력 정보(공사명/준공일자/준공금액) 대조 지시를 붙임."""
-    if not project_info:
-        return base_prompt
+def _build_prompt(_base_prompt: str, project_info: dict | None) -> str:
+    """입력 정보(공사명/준공일자/준공금액) 기반으로 검토 프롬프트 구성.
 
-    name   = project_info.get("name", "").strip()
-    date   = project_info.get("date", "").strip()
-    amount = project_info.get("amount", "").strip()
-    if not any([name, date, amount]):
-        return base_prompt
+    검토 항목 (4개, 서류 종류 무관 동일):
+      1. 공사명 확인
+      2. 준공일자 확인
+      3. 준공금액 확인
+      4. 서명/날인 여부
+    """
+    info = project_info or {}
+    name   = info.get("name", "").strip()
+    date   = info.get("date", "").strip()
+    amount = info.get("amount", "").strip()
 
-    info_block = "[사용자가 입력한 공사 정보 — 이 정보와 서류 내용을 대조 검증하세요]\n"
-    if name:   info_block += f"- 공사명: {name}\n"
-    if date:   info_block += f"- 준공일자: {date}\n"
-    if amount: info_block += f"- 준공금액: {amount}\n"
+    info_lines = []
+    if name:   info_lines.append(f"- 공사명: {name}")
+    if date:   info_lines.append(f"- 준공일자: {date}")
+    if amount: info_lines.append(f"- 준공금액: {amount}")
+    info_block = "\n".join(info_lines) if info_lines else "(입력 정보 없음)"
 
-    check_items = []
-    if name:
-        check_items.append('- "공사명 대조": 서류에 표기된 공사명이 입력 공사명과 일치하는지')
-    if date:
-        check_items.append('- "준공일자 대조": 서류의 준공/완공 일자가 입력 일자와 일치하는지')
-    if amount:
-        check_items.append('- "준공금액 대조": 서류의 계약/준공/총액 금액이 입력 금액과 일치하는지 (콤마/단위 무시하고 숫자만 비교)')
+    return f"""
+도시가스 공사 준공서류입니다. 첨부된 서류를 분석하여 다음 4가지 항목을 검토하고,
+**JSON 배열만** 응답하세요. (다른 설명/마크다운 금지)
 
-    info_block += (
-        "\n[필수 — 아래 항목을 JSON 배열의 앞쪽에 포함해 응답하세요]\n"
-        + "\n".join(check_items)
-        + '\n  · 서류에 해당 정보가 없으면 "결과": "SKIP", "비고"에 "서류에서 확인 불가" 기재\n'
-        + '  · 일치하면 "결과": "OK", "추출값"에 서류에서 추출한 값 기재\n'
-        + '  · 불일치하면 "결과": "NG", "비고"에 입력값/서류값 같이 기재\n\n'
-    )
+[사용자가 입력한 공사 정보 — 이 정보와 서류 내용을 대조 검증]
+{info_block}
 
-    return info_block + base_prompt
+[검토 항목 — 항상 정확히 아래 4개만, 같은 순서로]
+1. "공사명 확인"     : 입력 공사명과 서류 표기 공사명 일치 여부
+2. "준공일자 확인"   : 입력 준공일자와 서류의 준공/완공 일자 일치 여부
+3. "준공금액 확인"   : 입력 준공금액과 서류의 계약/준공/총액/합계 등 금액 일치 여부
+                       (콤마/단위/VAT 별도 무시. 서류에 여러 금액이 있어도 종합 판단)
+4. "서명/날인 여부"  : 서명 또는 인감 날인이 있는지
+
+[결과 규칙]
+- 입력 정보 없거나 서류에 해당 정보 없음 → "결과": "SKIP", "비고": "서류에서 확인 불가" 또는 "입력 정보 없음"
+- 일치/존재                              → "결과": "OK", "추출값": 서류에서 추출한 실제 값
+- 불일치                                 → "결과": "NG", "비고": "입력값 X / 서류값 Y" 형태로 비교
+- 판단 어려움 / 부분 충족                → "결과": "WARN", "비고": 이유 설명
+
+[응답 형식 (예시)]
+[
+  {{"항목":"공사명 확인","결과":"OK","추출값":"춘천시 거두리 ...","비고":""}},
+  {{"항목":"준공일자 확인","결과":"NG","추출값":"2025-10-30","비고":"입력값 2025-10-31 / 서류값 2025-10-30"}},
+  {{"항목":"준공금액 확인","결과":"OK","추출값":"3,400,910","비고":""}},
+  {{"항목":"서명/날인 여부","결과":"OK","추출값":"대표이사 정인철/문만영 인감 확인","비고":""}}
+]
+""".strip()
+
+
+# 기존 코드 호환용 (사용 안 함)
+GENERIC_PROMPT = ""
 
 MOCK_RESULT = [
-    make_result("서류 양식 확인",    "OK",   "정상",   "양식 확인됨"),
-    make_result("필수 항목 기재",    "WARN", "-",      "AI 키 없음 — 수동 확인 필요"),
-    make_result("서류 적정성",       "WARN", "-",      "AI 키 없음 — 수동 확인 필요"),
+    make_result("공사명 확인",    "WARN", "-", "AI 키 없음 — 수동 확인 필요"),
+    make_result("준공일자 확인",  "WARN", "-", "AI 키 없음 — 수동 확인 필요"),
+    make_result("준공금액 확인",  "WARN", "-", "AI 키 없음 — 수동 확인 필요"),
+    make_result("서명/날인 여부", "WARN", "-", "AI 키 없음 — 수동 확인 필요"),
 ]
 
 
@@ -126,8 +113,7 @@ def review_file(doc_id: str, file_bytes: bytes, filename: str,
         return MOCK_RESULT
 
     mime = _get_mime(filename)
-    base_prompt = PROMPTS.get(doc_id, GENERIC_PROMPT)
-    prompt = _build_prompt(base_prompt, project_info)
+    prompt = _build_prompt("", project_info)
     try:
         raw = _call_gemini(prompt, file_bytes, mime)
         return _parse_json(raw)
@@ -148,10 +134,11 @@ def review_document(doc_id: str, doc_name: str, files: list,
     results = [make_result("서류 첨부 여부", "OK", f"{len(files)}개 파일 첨부", "첨부 확인")]
 
     for i, (filename, file_bytes) in enumerate(files):
-        label = f"파일 {i+1} ({filename})" if len(files) > 1 else "내용 검토"
         file_results = review_file(doc_id, file_bytes, filename, project_info)
-        for r in file_results:
-            r["항목"] = f"{label} — {r['항목']}"
+        # 다중 파일일 때만 항목명 앞에 파일 표시
+        if len(files) > 1:
+            for r in file_results:
+                r["항목"] = f"[파일 {i+1}] {r['항목']}"
         results.extend(file_results)
 
     return results
