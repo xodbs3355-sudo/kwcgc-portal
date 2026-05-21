@@ -220,14 +220,23 @@ def result():
     if not all_results:
         return redirect(url_for("index"))
 
-    all_items = [r for rows in all_results.values() for r in rows]
-    counts = {
-        "OK":   sum(1 for r in all_items if r["결과"] == "OK"),
-        "NG":   sum(1 for r in all_items if r["결과"] == "NG"),
-        "WARN": sum(1 for r in all_items if r["결과"] == "WARN"),
-        "SKIP": sum(1 for r in all_items if r["결과"] == "SKIP"),
-    }
-    verdict_pass = counts["NG"] == 0
+    # 서류 단위 집계 (각 슬롯은 서류 개수, 합 ≤ DOCUMENTS 총 개수)
+    counts = {"OK": 0, "NG": 0, "WARN": 0, "SKIP": 0}
+    for _doc_name, rows in all_results.items():
+        if not rows:
+            continue
+        has_ng   = any(r["결과"] == "NG"   for r in rows)
+        has_warn = any(r["결과"] == "WARN" for r in rows)
+        all_skip = all(r["결과"] == "SKIP" for r in rows)
+        if all_skip:
+            counts["SKIP"] += 1   # 해당 없음
+        elif has_ng:
+            counts["NG"] += 1     # 보완 또는 확인 (NG 포함)
+        elif has_warn:
+            counts["WARN"] += 1   # 보완 또는 확인 (WARN 만)
+        else:
+            counts["OK"] += 1     # 양호
+    verdict_pass = (counts["NG"] + counts["WARN"]) == 0
 
     # 첨부 파일명 (미리보기용)
     uploaded = load_uploaded()
