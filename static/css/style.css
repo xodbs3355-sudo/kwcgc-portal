@@ -171,6 +171,11 @@ button { font-family: inherit; cursor: pointer; }
     flex-shrink: 0;
     color: #92650a;
 }
+.hint-sub {
+    margin-left: 6px;
+    color: #9b9fa8;
+    font-weight: 400;
+}
 
 .doc-table .col-no    { width: 4%; }
 .doc-table .col-name  { width: 18%; }
