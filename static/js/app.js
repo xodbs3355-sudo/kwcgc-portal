@@ -67,6 +67,84 @@ document.querySelectorAll('.skip-check').forEach((cb) => {
   });
 });
 
+// ── 행 클릭 → 활성화 (클립보드 paste 대상) ───────────────────────
+let activeDocId = null;
+
+document.querySelectorAll('.doc-table tbody tr').forEach((row) => {
+  row.addEventListener('click', (e) => {
+    // input / button / label / checkbox 등 클릭은 활성화에서 제외
+    if (e.target.closest('input, textarea, button, label')) return;
+    // 해당없음 체크된 행은 활성화 불가
+    if (row.classList.contains('is-skipped')) return;
+    setActiveRow(row);
+  });
+});
+
+function setActiveRow(row) {
+  document.querySelectorAll('.doc-table tbody tr.is-active').forEach((r) => {
+    r.classList.remove('is-active');
+  });
+  if (row) {
+    row.classList.add('is-active');
+    activeDocId = row.dataset.docId;
+  } else {
+    activeDocId = null;
+  }
+}
+
+// ── 클립보드 paste (Ctrl+V) → 활성 행에 파일 첨부 ────────────────
+document.addEventListener('paste', async (e) => {
+  // 텍스트 입력 중인 input/textarea 에서는 기본 paste 동작 유지
+  if (e.target.matches('input, textarea')) return;
+
+  const items = e.clipboardData ? e.clipboardData.items : null;
+  if (!items) return;
+
+  // 클립보드에서 파일만 추출
+  const files = [];
+  for (const item of items) {
+    if (item.kind === 'file') {
+      const f = item.getAsFile();
+      if (f) files.push(f);
+    }
+  }
+  if (files.length === 0) return;
+
+  e.preventDefault();
+
+  if (!activeDocId) {
+    alert('행을 먼저 클릭해서 선택한 다음 Ctrl+V 로 붙여넣으세요.');
+    return;
+  }
+
+  const fd = new FormData();
+  for (const f of files) {
+    // 이미지 캡처 등 기본 파일명(image.png) 은 타임스탬프 부여
+    let name = f.name || '';
+    if (!name || /^image\.(png|jpg|jpeg)$/i.test(name)) {
+      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const ext = f.type === 'image/png' ? 'png'
+                : (f.type === 'image/jpeg' || f.type === 'image/jpg') ? 'jpg'
+                : (f.type === 'application/pdf') ? 'pdf'
+                : 'bin';
+      name = `clipboard-${ts}.${ext}`;
+    }
+    fd.append('files', f, name);
+  }
+
+  try {
+    const res = await fetch(`/upload/${activeDocId}`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      renderChips(activeDocId, data.files);
+    } else {
+      alert('업로드 실패: ' + (data.error || '알 수 없는 오류'));
+    }
+  } catch (err) {
+    alert('업로드 오류: ' + err.message);
+  }
+});
+
 // ── 칩 렌더링 ─────────────────────────────────────────────────────
 function renderChips(docId, fileNames) {
   const container = document.querySelector(`[data-chips-for="${docId}"]`);

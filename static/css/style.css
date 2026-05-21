@@ -145,6 +145,24 @@ button { font-family: inherit; cursor: pointer; }
     pointer-events: none;
 }
 
+/* 활성 행 (클릭 선택 후 Ctrl+V 가능) */
+.doc-table tbody tr {
+    cursor: pointer;
+}
+.doc-table tbody tr input,
+.doc-table tbody tr textarea,
+.doc-table tbody tr button,
+.doc-table tbody tr label {
+    cursor: auto;
+}
+.doc-table tbody tr.is-active {
+    background: #f5f6fc;
+    box-shadow: inset 3px 0 0 #5e6ad2;
+}
+.doc-table tbody tr.is-active:hover {
+    background: #f0f2fa;
+}
+
 .doc-table tbody tr {
     border-bottom: 1px solid #e5e5e8;
     transition: background 0.12s;
