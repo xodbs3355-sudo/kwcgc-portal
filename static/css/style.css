@@ -669,40 +669,71 @@ button { font-family: inherit; cursor: pointer; }
 /* ── 결과 좌우 분할 (master-detail) ─────────────────────────── */
 .result-split {
     display: grid;
-    grid-template-columns: minmax(280px, 1fr) 2fr;
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
     align-items: start;
 }
 
-/* 좌측 — 서류 카드 리스트 */
+/* 좌측 — 서류 카드 리스트 (각 카드 안에 확인사항 펼침/접힘) */
 .doc-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 .doc-list-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
     background: #fff;
     border: 1px solid #e5e5e8;
     border-radius: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    overflow: hidden;
+}
+.doc-list-item:hover {
+    border-color: #c8cbf0;
+}
+.doc-list-item.active {
+    border-color: #5e6ad2;
+    box-shadow: 0 0 0 2px rgba(94,106,210,0.12);
+}
+.doc-list-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
     font-size: 13px;
     font-weight: 500;
     color: #1a1a1a;
     cursor: pointer;
     text-align: left;
-    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    transition: background 0.15s;
 }
-.doc-list-item:hover {
+.doc-list-head:hover {
     background: #fafafa;
-    border-color: #c8cbf0;
 }
-.doc-list-item.active {
+.doc-list-item.active .doc-list-head {
     background: #f5f6fc;
-    border-color: #5e6ad2;
-    box-shadow: 0 0 0 2px rgba(94,106,210,0.12);
+}
+.doc-list-head::before {
+    content: "▸";
+    font-size: 10px;
+    color: #9b9fa8;
+    margin-right: 4px;
+    transition: transform 0.15s;
+}
+.doc-list-item.active .doc-list-head::before {
+    content: "▾";
+}
+.doc-list-body {
+    display: none;
+    padding: 10px 14px 14px;
+    border-top: 1px solid #f0f0f3;
+    flex-direction: column;
+    gap: 8px;
+}
+.doc-list-item.active .doc-list-body {
+    display: flex;
 }
 .doc-list-num {
     display: inline-flex;
