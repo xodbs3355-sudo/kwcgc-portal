@@ -23,15 +23,23 @@
       <div class="result-num num-skip">{{ counts.SKIP }}</div>
       <div class="result-label">해당없음</div>
     </div>
-  </div>
 
-  <div class="verdict {% if verdict_pass %}verdict-pass{% else %}verdict-fail{% endif %}">
-    {% if verdict_pass %}최종 판정 — 이상 없음{% else %}최종 판정 — NG {{ counts.NG }}건 확인 필요{% endif %}
-  </div>
+    <div class="result-card {% if verdict_pass %}card-verdict-pass{% else %}card-verdict-fail{% endif %}">
+      <div class="result-num verdict-text">{% if verdict_pass %}합격{% else %}불합격{% endif %}</div>
+      <div class="result-label">최종 판정</div>
+    </div>
 
-  <div class="download-row">
-    <a class="btn-download" href="{{ url_for('download_excel') }}">검토결과 엑셀 다운로드</a>
-    <a class="btn-download" href="{{ url_for('download_pdf') }}">첨부 통합 PDF 다운로드</a>
+    <a class="result-card card-pdf" href="{{ url_for('download_pdf') }}">
+      <div class="result-num">
+        <svg class="pdf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </div>
+      <div class="result-label">첨부 통합 PDF</div>
+    </a>
   </div>
 
   <div class="result-details">

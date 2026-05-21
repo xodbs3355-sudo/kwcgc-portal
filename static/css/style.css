@@ -537,6 +537,34 @@ button { font-family: inherit; cursor: pointer; }
 .card-warn { border-top: 3px solid #f5a623; } .num-warn { color: #f5a623; }
 .card-skip { border-top: 3px solid #9b9fa8; } .num-skip { color: #9b9fa8; }
 
+/* 최종 판정 카드 */
+.card-verdict-pass { border-top: 3px solid #4cb87a; }
+.card-verdict-pass .verdict-text { color: #4cb87a; }
+.card-verdict-fail { border-top: 3px solid #e5484d; }
+.card-verdict-fail .verdict-text { color: #e5484d; }
+.verdict-text {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+/* PDF 다운로드 카드 */
+.card-pdf {
+    border-top: 3px solid #5e6ad2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.card-pdf:hover {
+    background: #f0f2fa;
+    box-shadow: 0 2px 6px rgba(94,106,210,0.12);
+}
+.pdf-icon {
+    width: 28px;
+    height: 28px;
+    color: #5e6ad2;
+}
+
 .verdict {
     display: inline-flex;
     align-items: center;
