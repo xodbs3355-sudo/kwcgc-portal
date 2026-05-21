@@ -216,6 +216,7 @@ def result():
         all_results=all_results,
         counts=counts,
         verdict_pass=verdict_pass,
+        documents=DOCUMENTS,
     )
 
 

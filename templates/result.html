@@ -43,10 +43,12 @@
   </div>
 
   <div class="result-details">
-    {% for doc_name, rows in all_results.items() %}
+    {% for doc in documents %}
+      {% set rows = all_results.get(doc.name) %}
+      {% if rows %}
       <details class="doc-detail">
         <summary class="doc-detail-summary">
-          <span class="doc-detail-name">{{ doc_name }}</span>
+          <span class="doc-detail-name">{{ doc.name }}</span>
           {% set ng_count = rows | selectattr('결과', 'equalto', 'NG') | list | length %}
           {% if ng_count > 0 %}<span class="doc-badge badge-ng">NG {{ ng_count }}</span>{% endif %}
         </summary>
@@ -67,6 +69,7 @@
           {% endfor %}
         </div>
       </details>
+      {% endif %}
     {% endfor %}
   </div>
 </div>
