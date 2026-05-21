@@ -43,6 +43,11 @@ button { font-family: inherit; cursor: pointer; }
     vertical-align: super;
     line-height: 0;
     letter-spacing: 0;
+    white-space: nowrap;
+}
+/* 로그인 제목은 한 줄 유지 */
+.login-title {
+    white-space: nowrap;
 }
 .company-badge {
     display: inline-flex;
