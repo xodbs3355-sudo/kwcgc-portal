@@ -38,9 +38,20 @@ document.querySelector('.doc-table').addEventListener('click', async (e) => {
   }
 });
 
-// ── 준공 정보 입력 (blur 시 저장) ─────────────────────────────────
+// ── 준공 정보 입력 (blur 시 저장, 금액은 콤마 포맷) ─────────────
+function formatAmount(input) {
+  const raw = input.value.replace(/[^\d]/g, '');
+  if (raw) {
+    input.value = parseInt(raw, 10).toLocaleString('ko-KR');
+  }
+}
+
 document.querySelectorAll('.project-info-input').forEach((input) => {
   input.addEventListener('blur', async () => {
+    // 준공금액이면 콤마 포맷 후 저장
+    if (input.dataset.field === 'amount') {
+      formatAmount(input);
+    }
     const fd = new FormData();
     fd.append('field', input.dataset.field);
     fd.append('value', input.value);
@@ -48,6 +59,16 @@ document.querySelectorAll('.project-info-input').forEach((input) => {
       await fetch('/project-info', { method: 'POST', body: fd });
     } catch (_) {}
   });
+
+  // 준공금액: Enter 시 콤마 포맷 + 저장 (blur 트리거)
+  if (input.dataset.field === 'amount') {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.blur();
+      }
+    });
+  }
 });
 
 // ── 해당없음 체크박스 ─────────────────────────────────────────────
