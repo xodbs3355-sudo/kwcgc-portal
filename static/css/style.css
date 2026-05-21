@@ -418,8 +418,8 @@ button { font-family: inherit; cursor: pointer; }
     filter: brightness(0.96);
 }
 .btn-review-icon {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
     color: #fff;
 }
