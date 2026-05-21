@@ -1,3 +1,18 @@
+// ── 검토 시작 시 오버레이 표시 ────────────────────────────────────
+const reviewForm = document.getElementById('review-form');
+const reviewOverlay = document.getElementById('review-overlay');
+if (reviewForm && reviewOverlay) {
+  reviewForm.addEventListener('submit', () => {
+    reviewOverlay.hidden = false;
+    // 버튼도 비활성 + 텍스트 변경
+    const btn = reviewForm.querySelector('.btn-review');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+    }
+  });
+}
+
 // ── 파일 업로드 (AJAX) ───────────────────────────────────────────
 document.querySelectorAll('.file-input').forEach((input) => {
   input.addEventListener('change', async (e) => {

@@ -190,6 +190,7 @@ def review():
 
     uploaded = load_uploaded()
     skips = session.get("skips", {})
+    project_info = session.get("project_info", {})
 
     all_results = {}
     for doc in DOCUMENTS:
@@ -205,7 +206,7 @@ def review():
             }]
             continue
         files = uploaded.get(did, [])
-        all_results[name] = reviewer.review_document(did, name, files)
+        all_results[name] = reviewer.review_document(did, name, files, project_info)
 
     session["review_results"] = all_results
     return redirect(url_for("result"))
