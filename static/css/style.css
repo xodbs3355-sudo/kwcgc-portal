@@ -440,7 +440,16 @@ button { font-family: inherit; cursor: pointer; }
     color: #6b6f7a;
     font-size: 13px;
 }
-.login-form { display: flex; flex-direction: column; gap: 10px; }
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+.login-form input,
+.login-form button {
+    width: 50%;
+}
 .login-form input {
     height: 36px;
     padding: 0 12px;
