@@ -3,3 +3,4 @@ openpyxl
 Pillow
 google-generativeai
 pypdf>=4.0
+gunicorn>=21.0
