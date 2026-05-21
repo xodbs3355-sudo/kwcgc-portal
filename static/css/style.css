@@ -417,11 +417,12 @@ button { font-family: inherit; cursor: pointer; }
     background: transparent;
 }
 .login-card {
-    width: 320px;
+    width: 640px;
+    max-width: 92%;
     background: #fff;
     border: 1px solid #e5e5e8;
     border-radius: 10px;
-    padding: 36px 32px;
+    padding: 36px 40px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.04);
 }
 .login-title {
