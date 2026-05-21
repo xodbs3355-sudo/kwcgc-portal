@@ -7,17 +7,17 @@
   {% include "_header.html" %}
 
   <div class="project-info-card">
-    <div class="project-info-row">
+    <div class="project-info-field">
       <label for="pi-name">공사명</label>
       <input type="text" id="pi-name" class="project-info-input"
              data-field="name" value="{{ project_info.get('name', '') }}" placeholder="">
     </div>
-    <div class="project-info-row">
+    <div class="project-info-field">
       <label for="pi-date">준공일자</label>
       <input type="date" id="pi-date" class="project-info-input"
              data-field="date" value="{{ project_info.get('date', '') }}">
     </div>
-    <div class="project-info-row">
+    <div class="project-info-field">
       <label for="pi-amount">준공금액</label>
       <input type="text" id="pi-amount" class="project-info-input"
              data-field="amount" value="{{ project_info.get('amount', '') }}" placeholder="">

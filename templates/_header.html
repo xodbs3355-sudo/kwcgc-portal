@@ -11,7 +11,7 @@
 </header>
 
 <nav class="tabs">
-  <a class="tab {% if active_tab == 'upload' %}active{% endif %}" href="{{ url_for('index') }}">준공 정보 입력</a>
+  <a class="tab {% if active_tab == 'upload' %}active{% endif %}" href="{{ url_for('index') }}">① 준공 정보 입력</a>
   <a class="tab {% if active_tab == 'result' %}active{% endif %} {% if not has_result %}disabled{% endif %}"
-     href="{% if has_result %}{{ url_for('result') }}{% else %}#{% endif %}">준공서류 검토 결과</a>
+     href="{% if has_result %}{{ url_for('result') }}{% else %}#{% endif %}">② 준공서류 검토 결과</a>
 </nav>
