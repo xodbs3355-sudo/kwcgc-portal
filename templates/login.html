@@ -13,10 +13,20 @@
     {% endwith %}
 
     <form method="post" action="{{ url_for('login') }}" class="login-form">
-      <input type="text" name="username" placeholder="업체 아이디" autocomplete="username" required>
+      <input type="text" name="username" placeholder="업체 아이디" autocomplete="username" required autofocus>
       <input type="password" name="password" placeholder="비밀번호" autocomplete="current-password" required>
       <button type="submit" class="btn-primary">로그인</button>
     </form>
   </div>
 </div>
+<script>
+  document.querySelectorAll('.login-form input').forEach((input) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.closest('form').submit();
+      }
+    });
+  });
+</script>
 {% endblock %}
