@@ -654,7 +654,7 @@ button { font-family: inherit; cursor: pointer; }
 .result-num { font-size: 28px; font-weight: 600; line-height: 1; }
 .result-label { font-size: 11px; color: #6b6f7a; margin-top: 4px; font-weight: 500; }
 .card-ok   { border-top: 3px solid #4cb87a; } .num-ok   { color: #4cb87a; }
-.card-ng   { border-top: 3px solid #e5484d; } .num-ng   { color: #e5484d; }
+.card-ng   { border-top: 3px solid #f5a623; } .num-ng   { color: #f5a623; }   /* 보완 또는 확인 — 주황 */
 .card-warn { border-top: 3px solid #f5a623; } .num-warn { color: #f5a623; }
 .card-skip { border-top: 3px solid #9b9fa8; } .num-skip { color: #9b9fa8; }
 
@@ -816,9 +816,10 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* 좌측 카드 상태 배지 */
-.badge-ok   { background: #e8f7ee; color: #2d7d52; }
-.badge-warn { background: #fffbeb; color: #92650a; }
-.badge-skip { background: #f2f3f4; color: #6b6f7a; }
+.badge-ok    { background: #e8f7ee; color: #2d7d52; }
+.badge-issue { background: #fff4e0; color: #c67c00; border: 1px solid #f5d6a3; }
+.badge-warn  { background: #fffbeb; color: #92650a; }
+.badge-skip  { background: #f2f3f4; color: #6b6f7a; }
 
 /* 우측 — 상세 패널 */
 .doc-detail-panel {

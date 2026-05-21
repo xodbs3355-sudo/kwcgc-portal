@@ -70,6 +70,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
 
     <div class="result-card {% if verdict_pass %}card-verdict-pass{% else %}card-verdict-fail{% endif %}">
       <div class="result-num verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
+      <div class="result-label">검토 결과</div>
     </div>
 
     <a class="result-card card-pdf" href="{{ url_for('download_pdf') }}">
@@ -99,14 +100,13 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
             <button type="button" class="doc-list-head">
               <span class="doc-list-num">{{ doc.num }}</span>
               <span class="doc-list-name">{{ doc.name }}</span>
-              {% if ng_count > 0 %}
-                <span class="doc-badge badge-ng">NG {{ ng_count }}</span>
+              {% set issue_count = ng_count + warn_count %}
+              {% if issue_count > 0 %}
+                <span class="doc-badge badge-issue">보완 또는 확인 {{ issue_count }}</span>
               {% elif skip_count > 0 %}
-                <span class="doc-badge badge-skip">SKIP</span>
-              {% elif warn_count > 0 %}
-                <span class="doc-badge badge-warn">WARN {{ warn_count }}</span>
+                <span class="doc-badge badge-skip">해당 없음</span>
               {% else %}
-                <span class="doc-badge badge-ok">OK</span>
+                <span class="doc-badge badge-ok">양호</span>
               {% endif %}
             </button>
             <div class="doc-list-body">
