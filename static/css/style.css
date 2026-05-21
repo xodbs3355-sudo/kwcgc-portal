@@ -120,6 +120,26 @@ button { font-family: inherit; cursor: pointer; }
 .doc-table th.col-no { text-align: center; }
 .doc-table th.col-skip { text-align: center; }
 
+/* 파일첨부 헤더 안 라벨 + 안내 카드 */
+.doc-table th.col-upload .th-label {
+    margin-right: 10px;
+    vertical-align: middle;
+}
+.hint-card {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #92650a;
+    background: #fffbe6;
+    border: 1px solid #f5d76e;
+    border-radius: 4px;
+    vertical-align: middle;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+}
+
 .doc-table .col-no    { width: 4%; }
 .doc-table .col-name  { width: 22%; }
 .doc-table .col-skip  { width: 7%; }
