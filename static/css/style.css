@@ -924,7 +924,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .preview-section {
-    margin-bottom: 18px;
+    margin-bottom: 0;
 }
 .preview-section-label {
     font-size: 11px;

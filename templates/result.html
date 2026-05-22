@@ -139,7 +139,6 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
                data-doc-pane="{{ doc.id }}">
             <h2 class="doc-detail-title">{{ doc.name }}</h2>
             <div class="preview-section">
-              <div class="preview-section-label">첨부 파일</div>
               {% set files = file_names.get(doc.id, []) %}
               {% if files %}
                 <div class="preview-tabs" data-preview-tabs="{{ doc.id }}">
