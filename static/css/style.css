@@ -160,33 +160,31 @@ button { font-family: inherit; cursor: pointer; }
     font-weight: 600;
     color: #6b6f7a;
 }
-/* PLP 체크박스 필드 */
-.project-info-field-check { flex: 0 0 auto; }
+/* PLP 체크박스 필드 — 체크박스만, 카드 안에서 중앙정렬 */
+.project-info-field-check {
+    flex: 0 0 auto;
+    align-items: center;       /* label/체크박스 가로 중앙 */
+}
+.project-info-field-check label {
+    text-align: center;
+}
 .project-info-checkbox-wrap {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
     height: 32px;
-    padding: 0 10px;
+    padding: 0 16px;
     background: #fff;
     border: 1px solid #e5e5e8;
     border-radius: 6px;
     box-sizing: border-box;
 }
 .project-plp-check {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
     accent-color: #5e6ad2;
     margin: 0;
-}
-.project-plp-label {
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    color: #1a1a1a !important;
-    cursor: pointer;
-    margin: 0 !important;
-    line-height: 1;
 }
 .field-hint {
     margin-left: 6px;

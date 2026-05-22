@@ -7,18 +7,17 @@
   {% include "_header.html" %}
 
   <div class="project-info-card">
-    <div class="project-info-field">
-      <label for="pi-name">공사명</label>
-      <input type="text" id="pi-name" class="project-info-input"
-             data-field="name" value="{{ project_info.get('name', '') }}" placeholder="">
-    </div>
     <div class="project-info-field project-info-field-check">
       <label for="pi-plp">기존관 PLP 여부</label>
       <div class="project-info-checkbox-wrap">
         <input type="checkbox" id="pi-plp" class="project-plp-check"
                {% if project_info.get('plp') %}checked{% endif %}>
-        <label for="pi-plp" class="project-plp-label">PLP 시공</label>
       </div>
+    </div>
+    <div class="project-info-field">
+      <label for="pi-name">공사명</label>
+      <input type="text" id="pi-name" class="project-info-input"
+             data-field="name" value="{{ project_info.get('name', '') }}" placeholder="">
     </div>
     <div class="project-info-field">
       <label for="pi-date">준공일자</label>
