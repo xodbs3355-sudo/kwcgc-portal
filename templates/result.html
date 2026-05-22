@@ -56,25 +56,26 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
 
   <div class="result-summary">
     <div class="result-card card-ok">
-      <div class="result-num num-ok">{{ counts.OK }}</div>
       <div class="result-label">양호</div>
+      <div class="result-num num-ok">{{ counts.OK }}</div>
     </div>
     <div class="result-card card-ng">
-      <div class="result-num num-ng">{{ counts.NG + counts.WARN }}</div>
       <div class="result-label">보완 또는 확인</div>
+      <div class="result-num num-ng">{{ counts.NG + counts.WARN }}</div>
     </div>
     <div class="result-card card-skip">
-      <div class="result-num num-skip">{{ counts.SKIP }}</div>
       <div class="result-label">해당 없음</div>
+      <div class="result-num num-skip">{{ counts.SKIP }}</div>
     </div>
 
     <div class="result-card {% if verdict_pass %}card-verdict-pass{% else %}card-verdict-fail{% endif %}">
-      <div class="result-num verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
       <div class="result-label">검토 결과</div>
+      <div class="result-num verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
     </div>
 
     <a class="result-card card-pdf" href="{{ url_for('download_pdf') }}">
-      <div class="result-num">
+      <div class="result-label result-label-pdf">통합 PDF 출력</div>
+      <div class="result-num pdf-icon-wrap">
         <svg class="pdf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -82,7 +83,6 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
       </div>
-      <div class="result-label">통합 PDF 출력</div>
     </a>
   </div>
 

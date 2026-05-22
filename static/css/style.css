@@ -160,6 +160,34 @@ button { font-family: inherit; cursor: pointer; }
     font-weight: 600;
     color: #6b6f7a;
 }
+/* PLP 체크박스 필드 */
+.project-info-field-check { flex: 0 0 auto; }
+.project-info-checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+.project-plp-check {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #5e6ad2;
+    margin: 0;
+}
+.project-plp-label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #1a1a1a !important;
+    cursor: pointer;
+    margin: 0 !important;
+    line-height: 1;
+}
 .field-hint {
     margin-left: 6px;
     font-size: 10px;
@@ -637,53 +665,110 @@ button { font-family: inherit; cursor: pointer; }
     color: #c0392b;
 }
 
-/* ── Result page ────────────────────────────────────────────── */
+/* ── Result page — 결과 카드 (그라데이션 + 수평정렬) ────────── */
 .result-summary {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin: 16px 0 20px;
 }
 .result-card {
     flex: 1;
     border: 1px solid #e5e5e8;
-    border-radius: 8px;
-    padding: 14px;
+    border-radius: 10px;
+    padding: 14px 12px;
     text-align: center;
-    background: #f9f9f9;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 100px;
+    transition: box-shadow 0.15s, transform 0.12s;
 }
-.result-num { font-size: 28px; font-weight: 600; line-height: 1; }
-.result-label { font-size: 11px; color: #6b6f7a; margin-top: 4px; font-weight: 500; }
-.card-ok   { border-top: 3px solid #4cb87a; } .num-ok   { color: #4cb87a; }
-.card-ng   { border-top: 3px solid #f5a623; } .num-ng   { color: #f5a623; }   /* 보완 또는 확인 — 주황 */
-.card-warn { border-top: 3px solid #f5a623; } .num-warn { color: #f5a623; }
-.card-skip { border-top: 3px solid #9b9fa8; } .num-skip { color: #9b9fa8; }
-
-/* 최종 판정 카드 */
-.card-verdict-pass { border-top: 3px solid #4cb87a; }
-.card-verdict-pass .verdict-text { color: #4cb87a; }
-.card-verdict-fail { border-top: 3px solid #e5484d; }
-.card-verdict-fail .verdict-text { color: #e5484d; }
-.verdict-text {
-    font-size: 22px;
+.result-label {
+    font-size: 13px;
+    color: #6b6f7a;
     font-weight: 600;
     line-height: 1;
 }
+.result-num {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-/* PDF 다운로드 카드 */
+/* 양호 — 초록 그라데이션 */
+.card-ok {
+    border-top: 3px solid #4cb87a;
+    background: linear-gradient(180deg, #ffffff 0%, #e8f7ee 100%);
+}
+.num-ok { color: #2d7d52; }
+
+/* 보완 또는 확인 — 주황 그라데이션 */
+.card-ng {
+    border-top: 3px solid #f5a623;
+    background: linear-gradient(180deg, #ffffff 0%, #fff4e0 100%);
+}
+.num-ng { color: #c67c00; }
+
+/* 해당 없음 — 회색 그라데이션 */
+.card-skip {
+    border-top: 3px solid #9b9fa8;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f1f3 100%);
+}
+.num-skip { color: #6b6f7a; }
+
+/* 최종 판정 카드 */
+.card-verdict-pass {
+    border-top: 3px solid #4cb87a;
+    background: linear-gradient(180deg, #ffffff 0%, #e8f7ee 100%);
+}
+.card-verdict-pass .verdict-text { color: #2d7d52; }
+.card-verdict-fail {
+    border-top: 3px solid #e5484d;
+    background: linear-gradient(180deg, #ffffff 0%, #fff0f0 100%);
+}
+.card-verdict-fail .verdict-text { color: #c0392b; }
+.verdict-text {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+}
+
+/* PDF 다운로드 카드 → 검토시작 버튼 스타일 (보라 그라데이션) */
 .card-pdf {
-    border-top: 3px solid #5e6ad2;
+    border-top: 3px solid #4b58c5;
+    background: linear-gradient(135deg, #7682e0 0%, #5e6ad2 55%, #4b58c5 100%);
     text-decoration: none;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    color: #fff;
+    border: 1px solid #4b58c5;
+    box-shadow: 0 2px 6px rgba(94,106,210,0.25),
+                inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: filter 0.18s, box-shadow 0.18s, transform 0.12s;
 }
 .card-pdf:hover {
-    background: #f0f2fa;
-    box-shadow: 0 2px 6px rgba(94,106,210,0.12);
+    filter: brightness(1.08);
+    box-shadow: 0 4px 12px rgba(94,106,210,0.35),
+                inset 0 1px 0 rgba(255,255,255,0.22);
+    transform: translateY(-1px);
 }
+.card-pdf:active {
+    transform: translateY(0);
+    filter: brightness(0.96);
+}
+.card-pdf .result-label { color: #fff; }
+.pdf-icon-wrap { display: flex; align-items: center; justify-content: center; }
 .pdf-icon {
-    width: 28px;
-    height: 28px;
-    color: #5e6ad2;
+    width: 32px;
+    height: 32px;
+    color: #fff;
 }
 
 .verdict {

@@ -182,14 +182,18 @@ def save_skip(doc_id: str):
 
 @app.route("/project-info", methods=["POST"])
 def save_project_info():
-    """공사명/준공일자/준공금액 저장."""
+    """공사명/준공일자/준공금액/PLP 여부 저장."""
     if "company" not in session:
         return jsonify({"ok": False}), 401
     info = session.get("project_info", {})
     field = request.form.get("field", "")
     if field in ("name", "date", "amount"):
         info[field] = request.form.get("value", "")
-        session["project_info"] = info
+    elif field == "plp":
+        info["plp"] = (request.form.get("value", "") == "true")
+    else:
+        return jsonify({"ok": False, "error": "invalid field"}), 400
+    session["project_info"] = info
     return jsonify({"ok": True})
 
 

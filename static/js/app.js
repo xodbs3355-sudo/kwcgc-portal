@@ -92,6 +92,35 @@ document.querySelectorAll('.project-info-input').forEach((input) => {
   }
 });
 
+// ── PLP 체크박스 ↔ 화재위험작업허가서 해당없음 연동 ──────────────
+const plpCheck = document.getElementById('pi-plp');
+const fireSkip = document.querySelector('.skip-check[data-doc-id="doc09"]');
+const fireRow  = fireSkip ? fireSkip.closest('tr') : null;
+
+async function syncSkipServer(docId, checked) {
+  const fd = new FormData();
+  fd.append('skip', checked ? 'true' : 'false');
+  try { await fetch(`/skip/${docId}`, { method: 'POST', body: fd }); } catch (_) {}
+}
+
+if (plpCheck) {
+  plpCheck.addEventListener('change', async () => {
+    // 서버에 PLP 상태 저장
+    const fd = new FormData();
+    fd.append('field', 'plp');
+    fd.append('value', plpCheck.checked ? 'true' : 'false');
+    try { await fetch('/project-info', { method: 'POST', body: fd }); } catch (_) {}
+
+    // PLP 체크 시 → 화재위험 해당없음 해제 (검토 필요)
+    // PLP 해제 시 → 화재위험 해당없음 다시 체크 (기본 상태 복원)
+    if (fireSkip && fireRow) {
+      fireSkip.checked = !plpCheck.checked;
+      fireRow.classList.toggle('is-skipped', fireSkip.checked);
+      syncSkipServer('doc09', fireSkip.checked);
+    }
+  });
+}
+
 // ── 해당없음 체크박스 ─────────────────────────────────────────────
 document.querySelectorAll('.skip-check').forEach((cb) => {
   cb.addEventListener('change', async () => {
