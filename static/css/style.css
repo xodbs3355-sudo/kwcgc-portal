@@ -155,6 +155,10 @@ button { font-family: inherit; cursor: pointer; }
     gap: 4px;
     min-width: 0;
 }
+/* 공사명 — 폭 고정 (400px), 다른 필드들은 나머지 공간 균등 분배 */
+.project-info-field-name {
+    flex: 0 0 400px;
+}
 .project-info-field label {
     font-size: 12px;
     font-weight: 600;

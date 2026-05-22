@@ -67,10 +67,12 @@ function formatAmount(input) {
   }
 }
 
+const MONEY_FIELDS = new Set(['amount', 'land_fee']);
+
 document.querySelectorAll('.project-info-input').forEach((input) => {
   input.addEventListener('blur', async () => {
-    // 준공금액이면 콤마 포맷 후 저장
-    if (input.dataset.field === 'amount') {
+    // 금액 계열 필드면 콤마 포맷 후 저장
+    if (MONEY_FIELDS.has(input.dataset.field)) {
       formatAmount(input);
     }
     const fd = new FormData();
@@ -81,8 +83,8 @@ document.querySelectorAll('.project-info-input').forEach((input) => {
     } catch (_) {}
   });
 
-  // 준공금액: Enter 시 콤마 포맷 + 저장 (blur 트리거)
-  if (input.dataset.field === 'amount') {
+  // 금액 계열: Enter 시 콤마 포맷 + 저장 (blur 트리거)
+  if (MONEY_FIELDS.has(input.dataset.field)) {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
