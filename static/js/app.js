@@ -47,6 +47,8 @@ document.querySelectorAll('.file-input').forEach((input) => {
 // ── 파일 삭제 ─────────────────────────────────────────────────────
 document.querySelector('.doc-table').addEventListener('click', async (e) => {
   if (!e.target.classList.contains('file-chip-del')) return;
+  // 업로드 중 취소 버튼은 별도 핸들러에서 처리 (서버 호출 X)
+  if (e.target.classList.contains('file-chip-cancel')) return;
   const docId = e.target.dataset.docId;
   const idx = parseInt(e.target.dataset.idx, 10);
 
@@ -235,15 +237,54 @@ function addPendingChips(docId, names) {
     chip.innerHTML = `
       <span class="file-chip-spinner"></span>
       <span class="file-chip-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+      <button type="button" class="file-chip-del file-chip-cancel"
+              title="취소">×</button>
     `;
     container.appendChild(chip);
   }
+  updateFileCount(docId);
 }
 function removePendingChips(docId) {
   const container = document.querySelector(`[data-chips-for="${docId}"]`);
   if (!container) return;
   container.querySelectorAll('.file-chip-pending').forEach(c => c.remove());
+  updateFileCount(docId);
 }
+
+// pending 칩 × 클릭 → 그 칩만 제거 (서버 요청 보내봤자 응답 와도 무시되니 표시만 정리)
+document.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('file-chip-cancel')) return;
+  const chip = e.target.closest('.file-chip');
+  const container = chip ? chip.closest('.file-chips') : null;
+  if (chip) chip.remove();
+  if (container) {
+    const did = container.dataset.chipsFor;
+    if (did) updateFileCount(did);
+  }
+});
+
+// ── 파일 개수 배지 ────────────────────────────────────────────────
+function updateFileCount(docId) {
+  const container = document.querySelector(`[data-chips-for="${docId}"]`);
+  if (!container) return;
+  const hintBox = container.closest('.hint-box');
+  if (!hintBox) return;
+  // 기존 배지 제거
+  hintBox.querySelectorAll('.file-count-badge').forEach(b => b.remove());
+  const count = container.querySelectorAll('.file-chip').length;
+  if (count > 0) {
+    const badge = document.createElement('span');
+    badge.className = 'file-count-badge';
+    badge.textContent = `${count}건`;
+    hintBox.appendChild(badge);
+  }
+}
+
+// 페이지 로드 시 모든 행 카운트 초기화
+document.querySelectorAll('.file-chips').forEach((c) => {
+  const did = c.dataset.chipsFor;
+  if (did) updateFileCount(did);
+});
 
 // ── 칩 렌더링 ─────────────────────────────────────────────────────
 function renderChips(docId, fileNames) {
@@ -260,6 +301,7 @@ function renderChips(docId, fileNames) {
     `;
     container.appendChild(chip);
   });
+  updateFileCount(docId);
 }
 
 function escapeHtml(s) {

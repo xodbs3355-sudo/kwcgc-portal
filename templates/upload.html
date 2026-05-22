@@ -20,7 +20,10 @@
              data-field="name" value="{{ project_info.get('name', '') }}" placeholder="">
     </div>
     <div class="project-info-field">
-      <label for="pi-extension">준공 연장 (m)</label>
+      <label for="pi-extension">
+        준공 연장 (m)
+        <span class="field-hint">평면연장 기준</span>
+      </label>
       <input type="number" step="0.1" id="pi-extension" class="project-info-input"
              data-field="extension" value="{{ project_info.get('extension', '') }}" placeholder="">
     </div>
@@ -36,14 +39,6 @@
       </label>
       <input type="text" id="pi-land-fee" class="project-info-input"
              data-field="land_fee" value="{{ project_info.get('land_fee', '') }}" placeholder="">
-    </div>
-    <div class="project-info-field">
-      <label for="pi-amount">
-        준공금액
-        <span class="field-hint">(금액 입력 후 Enter 입력하면 천단위 쉼표 설정 가능)</span>
-      </label>
-      <input type="text" id="pi-amount" class="project-info-input"
-             data-field="amount" value="{{ project_info.get('amount', '') }}" placeholder="">
     </div>
   </div>
 

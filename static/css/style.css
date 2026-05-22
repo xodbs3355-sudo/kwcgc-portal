@@ -476,6 +476,33 @@ button { font-family: inherit; cursor: pointer; }
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+/* pending 칩의 × 취소 버튼 — file-chip-del 과 동일 디자인 */
+.file-chip-cancel {
+    background: transparent;
+    border: none;
+    color: #9b9fa8;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 4px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+.file-chip-cancel:hover { background: #e5e5e8; color: #1a1a1a; }
+
+/* 파일 개수 배지 (hint-box 안 우측 끝) */
+.file-count-badge {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 2px 8px;
+    background: #eef0fb;
+    border: 1px solid #d8dcf3;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #5e6ad2;
+    line-height: 1;
+    white-space: nowrap;
+}
 
 /* ── Note input ─────────────────────────────────────────────── */
 .note-input {
@@ -695,10 +722,10 @@ button { font-family: inherit; cursor: pointer; }
     line-height: 1;
 }
 .result-num {
-    font-size: 32px;
+    font-size: 26px;
     font-weight: 700;
     line-height: 1;
-    height: 36px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -732,7 +759,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .card-verdict-fail .verdict-text { color: #c0392b; }
 .verdict-text {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0.04em;
