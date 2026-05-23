@@ -1739,3 +1739,153 @@ button { font-family: inherit; cursor: pointer; }
     background: #fff0f0;
     border-color: #e89090;
 }
+
+/* ── API 사용량 페이지 ─────────────────────────────────────── */
+.usage-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.usage-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+.usage-card {
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 8px;
+    padding: 16px 18px;
+}
+.usage-card-cost {
+    background: linear-gradient(135deg, #f7f7fb 0%, #eef0fb 100%);
+    border-color: #c8cbf0;
+}
+.usage-card-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b6f7a;
+    margin-bottom: 8px;
+}
+.usage-card-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+.usage-card-cost .usage-card-value { color: #5e6ad2; }
+.usage-card-unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b6f7a;
+    margin-left: 4px;
+}
+.usage-card-sub {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b6f7a;
+}
+
+.usage-section {
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 8px;
+    padding: 16px 18px;
+}
+.usage-section-title {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* 일별 막대그래프 — 순수 CSS, 라이브러리 X */
+.usage-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 140px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e5e8;
+}
+.usage-bar-col {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    cursor: default;
+    position: relative;
+}
+.usage-bar-fill {
+    width: 100%;
+    background: linear-gradient(180deg, #5e6ad2 0%, #8b94e0 100%);
+    border-radius: 2px 2px 0 0;
+    min-height: 0;
+    transition: opacity 0.15s;
+}
+.usage-bar-col:hover .usage-bar-fill { opacity: 0.75; }
+.usage-bar-count {
+    position: absolute;
+    top: -16px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #5e6ad2;
+    pointer-events: none;
+}
+.usage-bars-xaxis {
+    position: relative;
+    height: 18px;
+    margin-top: 4px;
+}
+.usage-bar-date {
+    position: absolute;
+    top: 0;
+    font-size: 11px;
+    color: #6b6f7a;
+    white-space: nowrap;
+}
+
+/* 표 */
+.usage-tables {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.usage-table-wrap {
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 8px;
+    padding: 16px 18px;
+}
+.usage-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.usage-table th,
+.usage-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f3;
+    text-align: left;
+}
+.usage-table th {
+    font-weight: 600;
+    color: #6b6f7a;
+    background: #fafafb;
+}
+.usage-table td.num,
+.usage-table th.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.usage-table tr:last-child td { border-bottom: none; }
+.usage-table tr.row-empty td { color: #c4c7cf; }
+.usage-empty {
+    color: #6b6f7a;
+    font-size: 13px;
+    text-align: center;
+    padding: 24px 0;
+    margin: 0;
+}

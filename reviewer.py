@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 import config
 import prompts_store
+import usage_store
 from documents import DOCUMENTS
 
 
@@ -28,8 +29,12 @@ def _is_attachment_only(doc_id: str) -> bool:
 
 # ── Gemini 호출 (429 안전망 — 1회 재시도) ────────────────────────
 def _call_gemini(prompt: str, file_bytes: bytes, mime_type: str,
-                 max_retries: int = 1) -> str:
-    """Gemini 호출. 429(쿼터 초과) 발생 시 retry_delay 만큼 대기 후 1회 재시도."""
+                 max_retries: int = 1,
+                 company: str | None = None, doc_id: str | None = None) -> str:
+    """Gemini 호출. 429(쿼터 초과) 발생 시 retry_delay 만큼 대기 후 1회 재시도.
+
+    company/doc_id 가 주어지면 usage_store 에 토큰 사용량 기록.
+    """
     import google.generativeai as genai
     genai.configure(api_key=config.GEMINI_API_KEY)
     model = genai.GenerativeModel(config.GEMINI_MODEL)
@@ -38,6 +43,7 @@ def _call_gemini(prompt: str, file_bytes: bytes, mime_type: str,
     for attempt in range(max_retries + 1):
         try:
             response = model.generate_content([prompt, file_part])
+            _record_usage(response, company, doc_id)
             return response.text
         except Exception as e:
             error_msg = str(e)
@@ -48,6 +54,22 @@ def _call_gemini(prompt: str, file_bytes: bytes, mime_type: str,
                 time.sleep(min(wait_sec, 90))  # 최대 90초 cap
                 continue
             raise
+
+
+def _record_usage(response, company: str | None, doc_id: str | None) -> None:
+    """Gemini response 의 usage_metadata 를 usage_store 에 기록."""
+    if not company or not doc_id:
+        return
+    try:
+        meta = getattr(response, "usage_metadata", None)
+        if not meta:
+            return
+        pt = getattr(meta, "prompt_token_count", 0) or 0
+        ct = getattr(meta, "candidates_token_count", 0) or 0
+        usage_store.record(company, doc_id, pt, ct)
+    except Exception:
+        # usage 기록 실패가 검토를 막으면 안 됨
+        pass
 
 
 def _parse_json(raw: str) -> list[dict]:
@@ -114,14 +136,16 @@ MOCK_RESULT = [
 
 # ── 단일 파일 검토 ────────────────────────────────────────────────
 def review_file(doc_id: str, doc_name: str, file_bytes: bytes, filename: str,
-                project_info: dict | None = None) -> list[dict]:
+                project_info: dict | None = None,
+                company: str | None = None) -> list[dict]:
     if config.USE_MOCK:
         return MOCK_RESULT
 
     mime = _get_mime(filename)
     prompt = _build_prompt(doc_id, doc_name, project_info)
     try:
-        raw = _call_gemini(prompt, file_bytes, mime)
+        raw = _call_gemini(prompt, file_bytes, mime,
+                           company=company, doc_id=doc_id)
         return _parse_json(raw)
     except Exception as e:
         return [make_result("AI 검토 오류", "WARN", "-", str(e))]
@@ -192,7 +216,8 @@ def _aggregate_missing_types(per_file_results: list[list[dict]],
     return missing
 
 
-def _review_doc06_combined(files: list, project_info: dict | None) -> list[dict]:
+def _review_doc06_combined(files: list, project_info: dict | None,
+                            company: str | None = None) -> list[dict]:
     """산업안전보건관리비 — 하이브리드 방식.
 
     Step 1: AI가 멀티파일 호출로 구조화된 데이터 추출 (비교/판정 X)
@@ -212,7 +237,8 @@ def _review_doc06_combined(files: list, project_info: dict | None) -> list[dict]
         file_parts.append({"mime_type": mime, "data": file_bytes})
 
     try:
-        raw = _call_gemini_multifile(prompt, file_parts)
+        raw = _call_gemini_multifile(prompt, file_parts,
+                                     company=company, doc_id="doc06")
         data = _parse_json_object(raw)
     except Exception as e:
         return [make_result(
@@ -508,7 +534,9 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
 
 
 def _call_gemini_multifile(prompt: str, file_parts: list[dict],
-                            max_retries: int = 1) -> str:
+                            max_retries: int = 1,
+                            company: str | None = None,
+                            doc_id: str | None = None) -> str:
     """다중 파일을 한 번에 보내는 Gemini 호출. 429 시 재시도."""
     import google.generativeai as genai
     genai.configure(api_key=config.GEMINI_API_KEY)
@@ -518,6 +546,7 @@ def _call_gemini_multifile(prompt: str, file_parts: list[dict],
     for attempt in range(max_retries + 1):
         try:
             response = model.generate_content(content)
+            _record_usage(response, company, doc_id)
             return response.text
         except Exception as e:
             error_msg = str(e)
@@ -531,7 +560,8 @@ def _call_gemini_multifile(prompt: str, file_parts: list[dict],
 
 # ── 서류 전체 검토 (여러 파일) ────────────────────────────────────
 def review_document(doc_id: str, doc_name: str, files: list,
-                    project_info: dict | None = None) -> list[dict]:
+                    project_info: dict | None = None,
+                    company: str | None = None) -> list[dict]:
     """
     files: list of (filename, bytes) tuples
     project_info: {"name": ..., "date": ..., "amount": ...}
@@ -548,7 +578,7 @@ def review_document(doc_id: str, doc_name: str, files: list,
 
     # doc06 — 6개 파일 멀티파일 통합 호출 (특수 처리)
     if doc_id == "doc06":
-        return _review_doc06_combined(files, project_info)
+        return _review_doc06_combined(files, project_info, company=company)
 
     # doc05: 서류 첨부 여부 행 제외 (각 파일 유형 식별로 갈음)
     is_type_id_doc = doc_id in _TYPE_ID_DOCS
@@ -562,12 +592,12 @@ def review_document(doc_id: str, doc_name: str, files: list,
     if len(files) == 1:
         filename, file_bytes = files[0]
         per_file_results.append(
-            review_file(doc_id, doc_name, file_bytes, filename, project_info)
+            review_file(doc_id, doc_name, file_bytes, filename, project_info, company=company)
         )
     else:
         with ThreadPoolExecutor(max_workers=len(files)) as executor:
             future_to_idx = {
-                executor.submit(review_file, doc_id, doc_name, fb, fn, project_info): idx
+                executor.submit(review_file, doc_id, doc_name, fb, fn, project_info, company): idx
                 for idx, (fn, fb) in enumerate(files)
             }
             # 순서 보존 — 인덱스로 정렬

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% set active_tab = 'usage' %}
+{% set has_result = session.get('review_results') is not none %}
+{% block title %}API 사용량 — 준공서류 검토 프로그램{% endblock %}
+{% block body %}
+<div class="page">
+  {% include "_header.html" %}
+
+  <div class="usage-page">
+    <!-- 요약 카드 4개 -->
+    <div class="usage-summary">
+      <div class="usage-card">
+        <div class="usage-card-label">오늘 호출</div>
+        <div class="usage-card-value">{{ summary.today_count }}<span class="usage-card-unit">회</span></div>
+        <div class="usage-card-sub">{{ '{:,.2f}'.format(summary.today_cost) }}원</div>
+      </div>
+      <div class="usage-card">
+        <div class="usage-card-label">이번 달 호출</div>
+        <div class="usage-card-value">{{ summary.month_count }}<span class="usage-card-unit">회</span></div>
+        <div class="usage-card-sub">{{ '{:,.2f}'.format(summary.month_cost) }}원</div>
+      </div>
+      <div class="usage-card">
+        <div class="usage-card-label">전체 호출</div>
+        <div class="usage-card-value">{{ '{:,}'.format(summary.total_count) }}<span class="usage-card-unit">회</span></div>
+        <div class="usage-card-sub">누적 {{ '{:,.0f}'.format(summary.total_cost) }}원</div>
+      </div>
+      <div class="usage-card usage-card-cost">
+        <div class="usage-card-label">이번 달 비용</div>
+        <div class="usage-card-value">{{ '{:,.0f}'.format(summary.month_cost) }}<span class="usage-card-unit">원</span></div>
+        <div class="usage-card-sub">Flash Lite · 1,350원/USD</div>
+      </div>
+    </div>
+
+    <!-- 일별 막대그래프 (CSS 순수, 라이브러리 X) -->
+    <div class="usage-section">
+      <h3 class="usage-section-title">최근 30일 일별 호출 수</h3>
+      {% set max_count = (daily | map(attribute='count') | max) or 1 %}
+      <div class="usage-bars">
+        {% for d in daily %}
+          {% set pct = (d.count * 100 / max_count) if max_count else 0 %}
+          <div class="usage-bar-col" title="{{ d.date }} — {{ d.count }}회 / {{ '{:,.2f}'.format(d.cost_krw) }}원">
+            <div class="usage-bar-fill" style="height: {{ pct }}%"></div>
+            <div class="usage-bar-count">{{ d.count if d.count > 0 else '' }}</div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="usage-bars-xaxis">
+        {% for d in daily %}
+          {% if loop.index0 % 5 == 0 or loop.last %}
+            <span class="usage-bar-date" style="left: calc({{ loop.index0 * 100 / (daily|length - 1) }}% - 18px)">{{ d.date[5:] }}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 서류별 / 회사별 표 -->
+    <div class="usage-tables">
+      <div class="usage-table-wrap">
+        <h3 class="usage-section-title">서류별 (이번 달)</h3>
+        {% if by_doc %}
+        <table class="usage-table">
+          <thead>
+            <tr>
+              <th>서류</th><th class="num">호출</th><th class="num">비용(원)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in by_doc %}
+              <tr>
+                <td>{{ r.doc }}</td>
+                <td class="num">{{ r.count }}</td>
+                <td class="num">{{ '{:,.2f}'.format(r.cost_krw) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p class="usage-empty">이번 달 호출 기록 없음</p>
+        {% endif %}
+      </div>
+
+      <div class="usage-table-wrap">
+        <h3 class="usage-section-title">회사별 (이번 달)</h3>
+        {% if by_company %}
+        <table class="usage-table">
+          <thead>
+            <tr>
+              <th>회사</th><th class="num">호출</th><th class="num">비용(원)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in by_company %}
+              <tr>
+                <td>{{ r.company }}</td>
+                <td class="num">{{ r.count }}</td>
+                <td class="num">{{ '{:,.2f}'.format(r.cost_krw) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p class="usage-empty">이번 달 호출 기록 없음</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 일별 상세 표 -->
+    <div class="usage-section">
+      <h3 class="usage-section-title">일별 상세 (최근 30일)</h3>
+      <table class="usage-table">
+        <thead>
+          <tr>
+            <th>일자</th>
+            <th class="num">호출</th>
+            <th class="num">Input 토큰</th>
+            <th class="num">Output 토큰</th>
+            <th class="num">비용(원)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in daily|reverse %}
+            <tr {% if d.count == 0 %}class="row-empty"{% endif %}>
+              <td>{{ d.date }}</td>
+              <td class="num">{{ d.count }}</td>
+              <td class="num">{{ '{:,}'.format(d.prompt_tokens) }}</td>
+              <td class="num">{{ '{:,}'.format(d.completion_tokens) }}</td>
+              <td class="num">{{ '{:,.2f}'.format(d.cost_krw) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

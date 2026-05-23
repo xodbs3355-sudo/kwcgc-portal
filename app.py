@@ -20,6 +20,7 @@ import reviewer
 import output
 import prompts_store
 import unit_prices_store
+import usage_store
 from documents import DOCUMENTS
 
 
@@ -263,6 +264,7 @@ def review():
     uploaded = load_uploaded()
     skips = session.get("skips", {})
     project_info = session.get("project_info", {})
+    company = session.get("company", "")
 
     all_results = {}
     jobs = []
@@ -285,7 +287,7 @@ def review():
     if jobs:
         with ThreadPoolExecutor(max_workers=len(jobs)) as executor:
             futures = {
-                executor.submit(reviewer.review_document, did, name, files, project_info): name
+                executor.submit(reviewer.review_document, did, name, files, project_info, company): name
                 for did, name, files in jobs
             }
             for future, name in futures.items():
@@ -534,6 +536,23 @@ def admin_unit_prices_delete():
         return jsonify({"ok": False, "error": "연도 필수"}), 400
     unit_prices_store.delete_year(year)
     return jsonify({"ok": True})
+
+
+# ── API 사용량 관리자 라우트 ────────────────────────────────────
+@app.route("/admin/usage", methods=["GET"])
+def admin_usage():
+    if "company" not in session:
+        return redirect(url_for("login"))
+    if not _is_admin():
+        return redirect(url_for("index"))
+    return render_template(
+        "admin_usage.html",
+        company=session["company"],
+        summary=usage_store.summary(),
+        daily=usage_store.daily(30),
+        by_doc=usage_store.by_doc("month"),
+        by_company=usage_store.by_company("month"),
+    )
 
 
 @app.route("/status")
