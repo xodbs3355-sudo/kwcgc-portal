@@ -334,23 +334,6 @@ def result():
     )
 
 
-@app.route("/download/excel")
-def download_excel():
-    if "company" not in session:
-        return redirect(url_for("login"))
-    all_results = session.get("review_results")
-    if not all_results:
-        return redirect(url_for("index"))
-
-    excel_bytes = output.results_to_excel(all_results)
-    return send_file(
-        io.BytesIO(excel_bytes),
-        as_attachment=True,
-        download_name="준공서류검토결과.xlsx",
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-
-
 @app.route("/preview/<doc_id>/<int:idx>")
 def preview_file(doc_id: str, idx: int):
     """첨부 파일 미리보기 — 검토 결과 우측 패널에서 사용."""

@@ -75,17 +75,15 @@
           <th class="col-hint">
             <div class="hint-header-row">
               <span class="hint-card">
-                <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <!-- 머리 -->
-                  <ellipse cx="6" cy="5" rx="2.8" ry="3.2"/>
-                  <!-- 몸통/어깨 곡선 -->
-                  <path d="M2 21 v-4 c0-3 1.6-5 4-5 c2.4 0 4 1.5 4 4"/>
-                  <!-- 팔 (확성기까지) -->
-                  <path d="M10 13 q3 -1 5 -2.5"/>
-                  <!-- 확성기 -->
-                  <path d="M14 8 L20.5 5.5 L20.5 14 L14 11.5 Z"/>
-                  <line x1="20.5" y1="9" x2="22" y2="9"/>
+                <svg class="hint-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <!-- 확성기 본체 (사다리꼴: 좌측 넓음, 우측 좁음) -->
+                  <path d="M3 9 L3 15 L16 19 L16 5 Z"/>
+                  <!-- 손잡이 (아래쪽) -->
+                  <path d="M6 16 L7 21 a1.8 1.8 0 0 0 3.5 -0.5 L9 16.5 Z"/>
+                  <!-- 소리 파동 (우측 3선) -->
+                  <path d="M19 8 L21.5 7 M19 12 L22 12 M19 16 L21.5 17"
+                        stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" fill="none"/>
                 </svg>
                 TIP : 행 클릭 후 붙여넣기(Ctrl+V)로도 첨부 가능
                 <span class="hint-sub">(다수 파일 첨부 가능)</span>

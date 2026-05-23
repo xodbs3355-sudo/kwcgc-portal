@@ -1,5 +1,4 @@
 Flask>=3.0
-openpyxl
 Pillow
 google-generativeai
 pypdf>=4.0
