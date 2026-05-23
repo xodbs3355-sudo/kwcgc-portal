@@ -18,6 +18,7 @@ import auth
 import reviewer
 import output
 import prompts_store
+import unit_prices_store
 from documents import DOCUMENTS
 
 
@@ -58,6 +59,15 @@ _ASSET_VERSION_CACHE = {"value": _compute_asset_version()}
 def inject_asset_version():
     # 매 요청마다 재계산 (실시간 반영). production에서는 한번만 계산해도 무방.
     return {"asset_version": _compute_asset_version()}
+
+
+@app.context_processor
+def inject_global_session_info():
+    """헤더 등에서 사용할 전역 데이터 — 등록된 연도 / 현재 선택 연도."""
+    return {
+        "available_years": unit_prices_store.list_years(),
+        "sess_project_info": session.get("project_info", {}),
+    }
 
 
 # ── 세션 저장소 (업로드된 파일 bytes 는 디스크 임시 파일로) ─────────
@@ -213,7 +223,8 @@ def save_project_info():
         return jsonify({"ok": False}), 401
     info = session.get("project_info", {})
     field = request.form.get("field", "")
-    if field in ("name", "date", "amount", "extension", "order_extension", "land_fee", "road_material"):
+    if field in ("name", "date", "amount", "extension", "order_extension",
+                 "land_fee", "road_material", "year"):
         info[field] = request.form.get("value", "")
     elif field == "plp":
         info["plp"] = (request.form.get("value", "") == "true")
@@ -446,6 +457,78 @@ def admin_prompts_reset():
     doc = next((d for d in DOCUMENTS if d["id"] == doc_id), None)
     default_prompt = prompts_store.get_default(doc["name"], doc["id"]) if doc else ""
     return jsonify({"ok": True, "default_prompt": default_prompt})
+
+
+# ── 연간단가표 관리자 라우트 ────────────────────────────────────
+@app.route("/admin/unit-prices", methods=["GET"])
+def admin_unit_prices():
+    if "company" not in session:
+        return redirect(url_for("login"))
+    if not _is_admin():
+        return redirect(url_for("index"))
+    years = unit_prices_store.list_years()
+    selected = request.args.get("year") or (years[0] if years else "")
+    prices = unit_prices_store.get_year(selected) if selected else unit_prices_store._empty_year()
+    return render_template(
+        "admin_unit_prices.html",
+        company=session["company"],
+        years=years,
+        selected_year=selected,
+        prices=prices,
+        length_keys=unit_prices_store.LENGTH_KEYS,
+        material_keys=unit_prices_store.MATERIAL_KEYS,
+        material_display=unit_prices_store.MATERIAL_DISPLAY,
+        plp_key=unit_prices_store.PLP_KEY,
+    )
+
+
+@app.route("/admin/unit-prices/save", methods=["POST"])
+def admin_unit_prices_save():
+    if not _is_admin():
+        return jsonify({"ok": False}), 403
+    year = (request.form.get("year") or "").strip()
+    if not year:
+        return jsonify({"ok": False, "error": "연도 필수"}), 400
+
+    prices = {}
+    for mat in unit_prices_store.MATERIAL_KEYS:
+        prices[mat] = {}
+        for lk in unit_prices_store.LENGTH_KEYS:
+            raw = (request.form.get(f"{mat}__{lk}") or "0").replace(",", "").strip()
+            try:
+                prices[mat][lk] = int(raw) if raw else 0
+            except ValueError:
+                prices[mat][lk] = 0
+        plp_raw = (request.form.get(f"{mat}__{unit_prices_store.PLP_KEY}") or "0").replace(",", "").strip()
+        try:
+            prices[mat][unit_prices_store.PLP_KEY] = int(plp_raw) if plp_raw else 0
+        except ValueError:
+            prices[mat][unit_prices_store.PLP_KEY] = 0
+
+    unit_prices_store.set_year(year, prices)
+    return jsonify({"ok": True})
+
+
+@app.route("/admin/unit-prices/add", methods=["POST"])
+def admin_unit_prices_add():
+    if not _is_admin():
+        return jsonify({"ok": False}), 403
+    year = (request.form.get("year") or "").strip()
+    if not year.isdigit() or len(year) != 4:
+        return jsonify({"ok": False, "error": "4자리 연도를 입력하세요"}), 400
+    added = unit_prices_store.add_year(year)
+    return jsonify({"ok": True, "added": added})
+
+
+@app.route("/admin/unit-prices/delete", methods=["POST"])
+def admin_unit_prices_delete():
+    if not _is_admin():
+        return jsonify({"ok": False}), 403
+    year = (request.form.get("year") or "").strip()
+    if not year:
+        return jsonify({"ok": False, "error": "연도 필수"}), 400
+    unit_prices_store.delete_year(year)
+    return jsonify({"ok": True})
 
 
 @app.route("/status")

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% set active_tab = 'unit_prices' %}
+{% block title %}연간단가표 — 준공서류 검토 프로그램{% endblock %}
+
+{% block body %}
+<div class="page">
+  {% include "_header.html" %}
+
+  <div class="unit-prices-page">
+    <!-- 연도 탭 + 새 연도 추가 -->
+    <div class="year-tabs">
+      {% for y in years %}
+        <a class="year-tab {% if y == selected_year %}active{% endif %}"
+           href="{{ url_for('admin_unit_prices', year=y) }}">{{ y }}</a>
+      {% else %}
+        <span class="year-tabs-empty">등록된 연도가 없습니다. → "+ 새 연도"로 추가</span>
+      {% endfor %}
+      <button type="button" class="year-tab year-tab-add" id="add-year-btn">+ 새 연도 추가</button>
+    </div>
+
+    {% if selected_year %}
+    <form id="unit-prices-form" method="post" action="{{ url_for('admin_unit_prices_save') }}">
+      <input type="hidden" name="year" value="{{ selected_year }}">
+
+      {% for mat in material_keys %}
+        <div class="material-section">
+          <h3 class="material-title">도로재질: {{ material_display[mat] }}</h3>
+          <div class="price-grid">
+            {% for lk in length_keys %}
+              <div class="price-row">
+                <label for="p-{{ mat }}-{{ lk }}">{{ lk }}</label>
+                <input id="p-{{ mat }}-{{ lk }}" type="text"
+                       name="{{ mat }}__{{ lk }}"
+                       value="{% if prices[mat][lk] %}{{ '{:,}'.format(prices[mat][lk]) }}{% endif %}"
+                       class="price-input" inputmode="numeric" placeholder="0">
+              </div>
+            {% endfor %}
+            <div class="price-row price-row-plp">
+              <label for="p-{{ mat }}-plp">PLP 옵션</label>
+              <input id="p-{{ mat }}-plp" type="text"
+                     name="{{ mat }}__{{ plp_key }}"
+                     value="{% if prices[mat][plp_key] %}{{ '{:,}'.format(prices[mat][plp_key]) }}{% endif %}"
+                     class="price-input" inputmode="numeric" placeholder="0">
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <div class="unit-prices-actions">
+        <button type="button" id="delete-year-btn" class="btn-danger-sm">이 연도 삭제</button>
+        <button type="submit" class="btn-primary-sm">저장</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 새 연도 추가
+document.getElementById('add-year-btn')?.addEventListener('click', async () => {
+  const year = prompt('추가할 연도(4자리)를 입력하세요. 예: 2027', new Date().getFullYear().toString());
+  if (!year) return;
+  const trimmed = year.trim();
+  if (!/^\d{4}$/.test(trimmed)) {
+    alert('4자리 숫자로 된 연도를 입력하세요.');
+    return;
+  }
+  const fd = new FormData();
+  fd.append('year', trimmed);
+  try {
+    const res = await fetch('/admin/unit-prices/add', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = '/admin/unit-prices?year=' + encodeURIComponent(trimmed);
+    } else {
+      alert(data.error || '추가 실패');
+    }
+  } catch (e) {
+    alert('네트워크 오류: ' + e);
+  }
+});
+
+// 이 연도 삭제
+document.getElementById('delete-year-btn')?.addEventListener('click', async () => {
+  const year = document.querySelector('input[name="year"]')?.value;
+  if (!year) return;
+  if (!confirm(`${year}년 단가표를 삭제하시겠습니까? (복원 불가)`)) return;
+  const fd = new FormData();
+  fd.append('year', year);
+  try {
+    const res = await fetch('/admin/unit-prices/delete', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = '/admin/unit-prices';
+    } else {
+      alert(data.error || '삭제 실패');
+    }
+  } catch (e) {
+    alert('네트워크 오류: ' + e);
+  }
+});
+
+// 저장 (AJAX)
+document.getElementById('unit-prices-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector('button[type="submit"]');
+  const original = btn.textContent;
+  btn.textContent = '저장 중…';
+  btn.disabled = true;
+  try {
+    const res = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+    const data = await res.json();
+    if (data.ok) {
+      btn.textContent = '저장됨 ✓';
+      setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+    } else {
+      alert(data.error || '저장 실패');
+      btn.textContent = original; btn.disabled = false;
+    }
+  } catch (err) {
+    alert('네트워크 오류: ' + err);
+    btn.textContent = original; btn.disabled = false;
+  }
+});
+
+// 천단위 콤마 자동 포맷
+document.querySelectorAll('.price-input').forEach((input) => {
+  input.addEventListener('blur', () => {
+    const raw = input.value.replace(/[^0-9]/g, '');
+    input.value = raw ? Number(raw).toLocaleString('ko-KR') : '';
+  });
+  input.addEventListener('focus', () => {
+    // 포커스 시 콤마 제거 → 입력 편하게
+    input.value = input.value.replace(/,/g, '');
+  });
+});
+</script>
+{% endblock %}

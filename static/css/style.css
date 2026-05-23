@@ -63,6 +63,34 @@ button { font-family: inherit; cursor: pointer; }
 .login-title {
     white-space: nowrap;
 }
+/* 헤더 연도 선택 드롭다운 */
+.year-select {
+    height: 30px;
+    padding: 0 26px 0 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #1a1a1a;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6f7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 12px 12px;
+    margin-right: 8px;
+    transition: border-color 0.15s;
+}
+.year-select:hover { border-color: #c8cbf0; }
+.year-select:focus {
+    outline: none;
+    border-color: #5e6ad2;
+    box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
+}
+
 .company-badge {
     display: inline-flex;
     align-items: center;
@@ -1463,7 +1491,10 @@ button { font-family: inherit; cursor: pointer; }
 .status-err    { color: #c0392b; }
 
 /* 관리자 탭 스타일 */
-.tab-admin { margin-left: auto; }
+/* 관리자 탭들 — 우측 정렬 (첫 번째 관리자 탭만 margin-left auto) */
+.tab-prices { margin-left: auto; }
+.tab-admin { /* 이전: 단독으로 margin-left auto. 이제는 tab-prices 다음에 붙음 */ }
+.tabs:not(:has(.tab-prices)) .tab-admin { margin-left: auto; }
 
 /* 기존 .result-details 호환 (사용 안 함, 그대로 둠) */
 .result-details {
@@ -1533,3 +1564,134 @@ button { font-family: inherit; cursor: pointer; }
 .status-ng   { background: #fff4e0; color: #c67c00; }   /* 보완 또는 확인 — 주황 */
 .status-warn { background: #fff4e0; color: #c67c00; }   /* WARN 도 같은 주황 톤 */
 .status-skip { background: #f2f3f4; color: #6b6f7a; }
+
+/* ── 연간단가표 admin 페이지 ─────────────────────────────────── */
+.unit-prices-page {
+    padding: 16px 0 40px;
+}
+.year-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e5e8;
+    flex-wrap: wrap;
+}
+.year-tab {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b6f7a;
+    background: #f7f7f9;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.year-tab:hover {
+    background: #eef0fb;
+    border-color: #c8cbf0;
+    color: #1a1a1a;
+}
+.year-tab.active {
+    background: #5e6ad2;
+    border-color: #5e6ad2;
+    color: #fff;
+}
+.year-tab-add {
+    background: #fff;
+    border: 1px dashed #c4c7cf;
+    color: #6b6f7a;
+}
+.year-tab-add:hover {
+    background: #f7f7f9;
+    border-color: #5e6ad2;
+    color: #5e6ad2;
+}
+.year-tabs-empty {
+    font-size: 13px;
+    color: #9b9fa8;
+    margin-right: 8px;
+}
+.material-section {
+    margin-bottom: 16px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 8px;
+}
+.material-title {
+    margin: 0 0 14px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e5e8;
+}
+.price-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px 16px;
+}
+.price-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.price-row label {
+    flex: 0 0 60px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b6f7a;
+    text-align: right;
+}
+.price-row-plp {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed #e5e5e8;
+}
+.price-row-plp label {
+    color: #5e6ad2;
+    flex: 0 0 80px;
+}
+.price-input {
+    flex: 1;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    outline: none;
+    text-align: right;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.price-input:focus {
+    border-color: #5e6ad2;
+    box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
+}
+.unit-prices-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+.btn-danger-sm {
+    height: 34px;
+    padding: 0 16px;
+    background: #fff;
+    color: #c0392b;
+    border: 1px solid #f5c6c6;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-danger-sm:hover {
+    background: #fff0f0;
+    border-color: #e89090;
+}
