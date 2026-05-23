@@ -7,18 +7,18 @@
   {% include "_header.html" %}
 
   <div class="project-info-card">
-    <div class="project-info-field project-info-field-check">
-      <label for="pi-plp">기존관 PLP</label>
-      <div class="project-info-checkbox-wrap">
-        <span class="project-plp-text">해당</span>
-        <input type="checkbox" id="pi-plp" class="project-plp-check"
-               {% if project_info.get('plp') %}checked{% endif %}>
-      </div>
-    </div>
     <div class="project-info-field project-info-field-name">
       <label for="pi-name">공사명</label>
       <input type="text" id="pi-name" class="project-info-input"
              data-field="name" value="{{ project_info.get('name', '') }}" placeholder="">
+    </div>
+    <div class="project-info-field project-info-field-check">
+      <label for="pi-plp">기존관 PLP</label>
+      <div class="project-info-checkbox-wrap">
+        <span class="project-plp-text">해당 시 Check</span>
+        <input type="checkbox" id="pi-plp" class="project-plp-check"
+               {% if project_info.get('plp') %}checked{% endif %}>
+      </div>
     </div>
     <div class="project-info-field project-info-field-extension">
       <label for="pi-extension">
@@ -28,19 +28,17 @@
       <input type="number" step="0.1" id="pi-extension" class="project-info-input"
              data-field="extension" value="{{ project_info.get('extension', '') }}" placeholder="">
     </div>
-    <div class="project-info-field">
+    <div class="project-info-field project-info-field-date">
       <label for="pi-date">준공일자</label>
       <input type="date" id="pi-date" class="project-info-input"
              data-field="date" value="{{ project_info.get('date', '') }}">
     </div>
     <div class="project-info-field project-info-field-fee">
-      <label for="pi-land-fee">
-        일시점용료
-        <span class="field-hint">(금액 입력 후 Enter 입력하면 천단위 쉼표 설정 가능)</span>
-      </label>
+      <label for="pi-land-fee">일시점용료</label>
       <input type="text" id="pi-land-fee" class="project-info-input"
              data-field="land_fee" value="{{ project_info.get('land_fee', '') }}" placeholder="">
     </div>
+    <div class="fee-hint-absolute">* 금액 입력 후 Enter 입력하면 천단위 쉼표 설정 가능</div>
   </div>
 
   <form id="review-form" method="post" action="{{ url_for('review') }}">

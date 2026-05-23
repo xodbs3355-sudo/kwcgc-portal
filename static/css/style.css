@@ -142,11 +142,20 @@ button { font-family: inherit; cursor: pointer; }
     background: #fff;
     border: 1px solid #e5e5e8;
     border-radius: 8px;
-    padding: 12px 16px;
+    padding: 12px 16px 20px 16px;
     margin-bottom: 14px;
     display: flex;
     gap: 14px;
     align-items: flex-end;
+    position: relative;
+}
+.fee-hint-absolute {
+    position: absolute;
+    right: 16px;
+    bottom: 3px;
+    font-size: 10px;
+    color: #9b9fa8;
+    white-space: nowrap;
 }
 .project-info-field {
     flex: 1;
@@ -155,26 +164,25 @@ button { font-family: inherit; cursor: pointer; }
     gap: 4px;
     min-width: 0;
 }
-/* 공사명 — 폭 고정 (400px), 다른 필드들은 나머지 공간 균등 분배 */
+/* 공사명 — 남은 폭 모두 차지 (가장 왼쪽) */
 .project-info-field-name {
-    flex: 0 0 400px;
+    flex: 1;
+    min-width: 0;
 }
-/* 준공 연장 — 좁게 고정 */
-.project-info-field-extension {
-    flex: 0 0 110px;
-}
-/* 일시점용료 — 다른 필드 2배 */
+/* 준공 연장 / 준공일자 / 일시점용료 — 동일 폭 180px 고정 */
+.project-info-field-extension,
+.project-info-field-date,
 .project-info-field-fee {
-    flex: 2;
+    flex: 0 0 180px;
 }
 .project-info-field label {
     font-size: 12px;
     font-weight: 600;
     color: #6b6f7a;
 }
-/* PLP 체크박스 필드 — 체크박스만, 카드 안에서 중앙정렬 */
+/* PLP 체크박스 필드 — 150px 고정 */
 .project-info-field-check {
-    flex: 0 0 auto;
+    flex: 0 0 150px;
     align-items: center;       /* label/체크박스 가로 중앙 */
 }
 .project-info-field-check label {
