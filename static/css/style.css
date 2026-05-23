@@ -163,7 +163,7 @@ button { font-family: inherit; cursor: pointer; }
     font-weight: 600;
     background: rgba(255, 255, 255, 0.2);
     border-color: #e5e5e8;
-    border-bottom-color: transparent;   /* 시트와 연결된 느낌 — 하단 테두리 끊기 */
+    border-bottom-color: #fff;          /* .tabs 회색 아래선을 1px 가려서 시트와 연결된 느낌 */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .tab.disabled {
