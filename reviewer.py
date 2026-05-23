@@ -134,7 +134,8 @@ _DOC06_REQUIRED_TYPES = [
 ]
 
 # 서류 유형 식별 방식 적용 대상 (각 파일이 어떤 유형인지 AI가 식별 + 누락 집계)
-_TYPE_ID_DOCS = {"doc05", "doc06"}
+# doc06은 멀티파일 통합 호출 (_review_doc06_combined)로 별도 처리.
+_TYPE_ID_DOCS = {"doc05"}
 
 
 def _required_types_for(doc_id: str) -> list[str]:
@@ -165,6 +166,79 @@ def _aggregate_missing_types(per_file_results: list[list[dict]],
     return missing
 
 
+def _review_doc06_combined(files: list, project_info: dict | None) -> list[dict]:
+    """산업안전보건관리비 — 6개 파일을 한 번에 Gemini로 보내 통합 검증.
+
+    파일별 유형 식별 + 6개 검증 룰을 단일 멀티파일 호출로 처리.
+    Python은 결과 파싱 + 누락 유형 보강만 담당.
+    """
+    if config.USE_MOCK:
+        return MOCK_RESULT
+
+    if not files:
+        return [make_result("서류 첨부 여부", "NG", "미첨부", "파일이 업로드되지 않음")]
+
+    # 멀티파일 호출 — 프롬프트 + 모든 파일 part
+    prompt = _build_prompt("doc06", "산업안전보건관리비 내역서", project_info)
+    file_parts = []
+    for filename, file_bytes in files:
+        mime = _get_mime(filename)
+        file_parts.append({"mime_type": mime, "data": file_bytes})
+
+    try:
+        raw = _call_gemini_multifile(prompt, file_parts)
+        ai_results = _parse_json(raw)
+    except Exception as e:
+        return [make_result(
+            "AI 검토 오류", "WARN", "-", str(e)[:300]
+        )]
+
+    # 누락 유형 집계 (AI 결과에서 식별된 유형을 확인 후 빠진 유형 NG로 표시)
+    found = set()
+    for r in ai_results:
+        extracted = (r.get("추출값") or "").strip()
+        if extracted in _DOC06_REQUIRED_TYPES:
+            found.add(extracted)
+
+    missing_rows: list[dict] = []
+    # 조건부 SKIP (비용 사용 없음) 케이스에는 누락 체크 안 함
+    is_zero_cost_case = any(
+        "비용 사용 없음" in (r.get("항목") or "")
+        for r in ai_results
+    )
+    if not is_zero_cost_case:
+        for req in _DOC06_REQUIRED_TYPES:
+            if req not in found:
+                missing_rows.append(make_result(
+                    f"(미첨부) {req}", "NG", "",
+                    f"'{req}' 유형 파일이 식별되지 않음"
+                ))
+
+    return ai_results + missing_rows
+
+
+def _call_gemini_multifile(prompt: str, file_parts: list[dict],
+                            max_retries: int = 1) -> str:
+    """다중 파일을 한 번에 보내는 Gemini 호출. 429 시 재시도."""
+    import google.generativeai as genai
+    genai.configure(api_key=config.GEMINI_API_KEY)
+    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    content = [prompt] + file_parts
+
+    for attempt in range(max_retries + 1):
+        try:
+            response = model.generate_content(content)
+            return response.text
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg and attempt < max_retries:
+                m = re.search(r"retry_delay\s*\{?\s*seconds:\s*(\d+)", error_msg)
+                wait_sec = (int(m.group(1)) + 2) if m else 60
+                time.sleep(min(wait_sec, 90))
+                continue
+            raise
+
+
 # ── 서류 전체 검토 (여러 파일) ────────────────────────────────────
 def review_document(doc_id: str, doc_name: str, files: list,
                     project_info: dict | None = None) -> list[dict]:
@@ -182,7 +256,11 @@ def review_document(doc_id: str, doc_name: str, files: list,
             "첨부 확인 (AI 검토 생략 — 첨부만 확인하는 서류)"
         )]
 
-    # doc05/doc06: 서류 첨부 여부 행 제외 (각 파일 유형 식별로 갈음)
+    # doc06 — 6개 파일 멀티파일 통합 호출 (특수 처리)
+    if doc_id == "doc06":
+        return _review_doc06_combined(files, project_info)
+
+    # doc05: 서류 첨부 여부 행 제외 (각 파일 유형 식별로 갈음)
     is_type_id_doc = doc_id in _TYPE_ID_DOCS
     if is_type_id_doc:
         results = []
@@ -216,13 +294,15 @@ def review_document(doc_id: str, doc_name: str, files: list,
 
     # 라벨 처리
     if is_type_id_doc:
-        # 식별된 유형 이름을 항목으로 사용, 추출값은 비움 (중복 제거)
-        for file_results in per_file_results:
+        # 유형 식별 행: 식별된 유형 이름을 항목으로 사용, 추출값은 비움
+        for idx, file_results in enumerate(per_file_results):
             for r in file_results:
-                extracted = (r.get("추출값") or "").strip()
-                if extracted:
-                    r["항목"] = extracted
-                    r["추출값"] = ""
+                item = (r.get("항목") or "").strip()
+                if "유형 식별" in item:
+                    extracted = (r.get("추출값") or "").strip()
+                    if extracted:
+                        r["항목"] = extracted
+                        r["추출값"] = ""
     elif len(files) > 1:
         # 일반 다중 파일: [파일 N] prefix
         for i, file_results in enumerate(per_file_results):
@@ -232,7 +312,7 @@ def review_document(doc_id: str, doc_name: str, files: list,
     # 결과 통합
     for file_results in per_file_results:
         results.extend(file_results)
-    # 빠진 유형이 있으면 그것만 NG로 표시 (OK 유형은 파일별 행에서 이미 보임)
+    # 빠진 유형이 있으면 NG로 표시
     results.extend(missing_rows)
 
     return results
