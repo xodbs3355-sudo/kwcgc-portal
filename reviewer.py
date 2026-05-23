@@ -125,13 +125,23 @@ _DOC05_REQUIRED_TYPES = [
 ]
 
 _DOC06_REQUIRED_TYPES = [
-    "산업안전보건관리비 갑지",
+    "산업안전보건관리비 사용내역서",
     "항목 별 사용내역",
     "사진대지",
     "세금계산서",
     "거래명세서",
     "지급대장",
 ]
+
+
+def _normalize_text(s: str) -> str:
+    """매칭 비교용 정규화 — 공백/탭/줄바꿈을 전부 제거.
+    "산업안전보건관리비 사용내역서" / "산업안전보건관리비사용내역서" /
+    "산업 안전 보건관리비 사용내역서" 모두 동일하게 처리.
+    """
+    if not s:
+        return ""
+    return "".join(s.split())
 
 # 서류 유형 식별 방식 적용 대상 (각 파일이 어떤 유형인지 AI가 식별 + 누락 집계)
 # doc06은 멀티파일 통합 호출 (_review_doc06_combined)로 별도 처리.
@@ -148,13 +158,18 @@ def _required_types_for(doc_id: str) -> list[str]:
 
 def _aggregate_missing_types(per_file_results: list[list[dict]],
                              required: list[str]) -> list[dict]:
-    """필수 유형 중 빠진 것만 NG 행으로 반환 (OK는 파일별 표시로 갈음)."""
-    found = set()
+    """필수 유형 중 빠진 것만 NG 행으로 반환 (OK는 파일별 표시로 갈음).
+    공백 무관 매칭 — 띄어쓰기 달라도 같은 유형으로 인식.
+    """
+    # 정규화된 키 → canonical name 매핑
+    norm_to_canonical = {_normalize_text(req): req for req in required}
+    found = set()  # canonical names
     for file_results in per_file_results:
         for r in file_results:
             extracted = (r.get("추출값") or "").strip()
-            if extracted in required:
-                found.add(extracted)
+            norm = _normalize_text(extracted)
+            if norm in norm_to_canonical:
+                found.add(norm_to_canonical[norm])
 
     missing = []
     for req in required:
@@ -193,12 +208,18 @@ def _review_doc06_combined(files: list, project_info: dict | None) -> list[dict]
             "AI 검토 오류", "WARN", "-", str(e)[:300]
         )]
 
-    # 누락 유형 집계 (AI 결과에서 식별된 유형을 확인 후 빠진 유형 NG로 표시)
+    # 누락 유형 집계 — 공백 무관 매칭 + canonical name으로 교정
+    norm_to_canonical = {_normalize_text(req): req for req in _DOC06_REQUIRED_TYPES}
     found = set()
     for r in ai_results:
         extracted = (r.get("추출값") or "").strip()
-        if extracted in _DOC06_REQUIRED_TYPES:
-            found.add(extracted)
+        norm = _normalize_text(extracted)
+        if norm in norm_to_canonical:
+            canonical = norm_to_canonical[norm]
+            found.add(canonical)
+            # AI가 띄어쓰기 다르게 적었으면 canonical name으로 교정 (UI 일관성)
+            if extracted != canonical:
+                r["추출값"] = canonical
 
     missing_rows: list[dict] = []
     # 조건부 SKIP (비용 사용 없음) 케이스에는 누락 체크 안 함
