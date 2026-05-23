@@ -165,7 +165,9 @@ button { font-family: inherit; cursor: pointer; }
     background-attachment: fixed;       /* body와 동일한 fixed 그라데이션 → 시트와 색 일치 */
     border-color: #e5e5e8;
     border-bottom-color: transparent;   /* 그라데이션 background 가 1px 영역까지 그려져 .tabs 회색선 자동 가림 */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.04),
+                -2px 0 4px rgba(0, 0, 0, 0.03),
+                2px 0 4px rgba(0, 0, 0, 0.03);  /* 상/좌/우만 — 시트와 연결된 하단은 그림자 X */
 }
 .tab.disabled {
     color: #c4c7cf;
