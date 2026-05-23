@@ -203,9 +203,19 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
         <div class="info-col">
           <div class="info-pair">
             <span class="info-label">최종 공사비</span>
-            <span class="info-value-box">-</span>
+            {% if final_cost is not none %}
+              <span class="info-value-box info-value-cost">{{ '{:,}'.format(final_cost) }}원</span>
+            {% else %}
+              <span class="info-value-box">-</span>
+            {% endif %}
           </div>
-          <div class="info-hint">&nbsp;&nbsp;&nbsp;* 공사비(연단가) + 일시점용료</div>
+          <div class="info-hint">
+            {% if final_cost_meta %}
+              &nbsp;&nbsp;&nbsp;* {{ final_cost_meta }}
+            {% else %}
+              &nbsp;&nbsp;&nbsp;* 공사비(연단가) + 일시점용료
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>

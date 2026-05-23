@@ -363,6 +363,43 @@ def result():
         adjustment_label = "-"
         adjustment_required = None
 
+    # 최종 공사비 계산 — 연간단가표 lookup + 일시점용료 가산
+    # 공식: 단가표[연도][도로재질][N m] + (PLP 옵션 가산) + 일시점용료
+    final_cost = None
+    final_cost_meta = None      # 사용자에게 보여줄 산식 메타 (e.g. "5m 기준 + PLP + 일시점용료")
+    try:
+        year = (project_info.get("year") or "").strip()
+        road_material = (project_info.get("road_material") or "").strip()
+        ext_raw = (project_info.get("extension") or "").strip()
+        plp = bool(project_info.get("plp"))
+        land_fee_raw = (project_info.get("land_fee") or "").strip()
+
+        ext_m = None
+        if ext_raw:
+            try:
+                ext_m = int(round(float(ext_raw)))
+            except (ValueError, TypeError):
+                ext_m = None
+
+        if year and road_material and ext_m and 1 <= ext_m <= 10:
+            base = unit_prices_store.lookup_price(year, road_material, ext_m, plp)
+            if base is not None and base > 0:
+                land_fee = 0
+                if land_fee_raw:
+                    try:
+                        land_fee = int(round(float(land_fee_raw.replace(",", ""))))
+                    except (ValueError, TypeError):
+                        land_fee = 0
+                final_cost = base + land_fee
+                parts = [f"{ext_m}m 단가"]
+                if plp:
+                    parts.append("PLP")
+                if land_fee > 0:
+                    parts.append("일시점용료")
+                final_cost_meta = " + ".join(parts)
+    except Exception:
+        final_cost = None
+
     return render_template(
         "result.html",
         company=session["company"],
@@ -374,6 +411,8 @@ def result():
         project_info=project_info,
         adjustment_label=adjustment_label,
         adjustment_required=adjustment_required,
+        final_cost=final_cost,
+        final_cost_meta=final_cost_meta,
     )
 
 

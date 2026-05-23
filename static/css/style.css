@@ -973,6 +973,12 @@ button { font-family: inherit; cursor: pointer; }
     border-color: #b9e2c9;
     color: #2d8a4f;
 }
+.info-value-cost {
+    background: #eef0fb;
+    border-color: #c8cbf0;
+    color: #5e6ad2;
+    font-variant-numeric: tabular-nums;
+}
 .info-hint {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 11px;
