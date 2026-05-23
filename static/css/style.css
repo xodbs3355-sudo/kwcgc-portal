@@ -196,8 +196,9 @@ button { font-family: inherit; cursor: pointer; }
     flex: 1;
     min-width: 0;
 }
-/* 준공 연장 / 준공일자 / 일시점용료 — 동일 폭 180px 고정 */
+/* 준공 연장 / 발주 연장 / 준공일자 / 일시점용료 — 동일 폭 180px 고정 */
 .project-info-field-extension,
+.project-info-field-order-extension,
 .project-info-field-date,
 .project-info-field-fee {
     flex: 0 0 180px;
@@ -207,13 +208,9 @@ button { font-family: inherit; cursor: pointer; }
     font-weight: 600;
     color: #6b6f7a;
 }
-/* PLP 체크박스 필드 — 150px 고정 */
+/* PLP 체크박스 필드 — 180px 고정, 라벨은 좌측 정렬 (다른 필드와 동일) */
 .project-info-field-check {
-    flex: 0 0 150px;
-    align-items: center;       /* label/체크박스 가로 중앙 */
-}
-.project-info-field-check label {
-    text-align: center;
+    flex: 0 0 180px;
 }
 .project-info-checkbox-wrap {
     display: flex;
@@ -226,6 +223,7 @@ button { font-family: inherit; cursor: pointer; }
     border: 1px solid #e5e5e8;
     border-radius: 6px;
     box-sizing: border-box;
+    width: 100%;
 }
 .project-plp-text {
     font-size: 13px;

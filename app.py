@@ -188,7 +188,7 @@ def save_project_info():
         return jsonify({"ok": False}), 401
     info = session.get("project_info", {})
     field = request.form.get("field", "")
-    if field in ("name", "date", "amount", "extension", "land_fee"):
+    if field in ("name", "date", "amount", "extension", "order_extension", "land_fee"):
         info[field] = request.form.get("value", "")
     elif field == "plp":
         info["plp"] = (request.form.get("value", "") == "true")
