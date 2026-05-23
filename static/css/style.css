@@ -338,7 +338,7 @@ button { font-family: inherit; cursor: pointer; }
 .doc-table tr.is-skipped .upload-btn,
 .doc-table tr.is-skipped .note-input {
     pointer-events: none;
-    opacity: 0.55;
+    opacity: 0.4;
 }
 
 /* 활성 행 (클릭 선택 후 Ctrl+V 가능) */
