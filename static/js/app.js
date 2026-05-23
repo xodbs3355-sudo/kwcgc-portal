@@ -150,7 +150,10 @@ function formatAmount(input) {
 const MONEY_FIELDS = new Set(['amount', 'land_fee']);
 
 document.querySelectorAll('.project-info-input').forEach((input) => {
-  input.addEventListener('blur', async () => {
+  // select는 change에서 즉시 저장 (blur 기다리지 않음)
+  const isSelect = input.tagName === 'SELECT';
+  const saveEvent = isSelect ? 'change' : 'blur';
+  input.addEventListener(saveEvent, async () => {
     // 금액 계열 필드면 콤마 포맷 후 저장
     if (MONEY_FIELDS.has(input.dataset.field)) {
       formatAmount(input);

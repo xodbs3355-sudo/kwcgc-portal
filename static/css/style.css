@@ -196,21 +196,28 @@ button { font-family: inherit; cursor: pointer; }
     flex: 1;
     min-width: 0;
 }
-/* 준공 연장 / 발주 연장 / 준공일자 / 일시점용료 — 동일 폭 180px 고정 */
+/* 준공 연장 / 발주 연장 — 180px 고정 */
 .project-info-field-extension,
-.project-info-field-order-extension,
+.project-info-field-order-extension {
+    flex: 0 0 180px;
+}
+/* 준공일자 / 일시점용료 — 140px 고정 (도로재질 신설에 따른 폭 양보) */
 .project-info-field-date,
 .project-info-field-fee {
-    flex: 0 0 180px;
+    flex: 0 0 140px;
 }
 .project-info-field label {
     font-size: 12px;
     font-weight: 600;
     color: #6b6f7a;
 }
-/* PLP 체크박스 필드 — 180px 고정, 라벨은 좌측 정렬 (다른 필드와 동일) */
+/* PLP 체크박스 필드 — 150px 고정, 라벨은 좌측 정렬 (다른 필드와 동일) */
 .project-info-field-check {
-    flex: 0 0 180px;
+    flex: 0 0 150px;
+}
+/* 도로재질 — 110px 고정 (드롭다운) */
+.project-info-field-road {
+    flex: 0 0 110px;
 }
 .project-info-checkbox-wrap {
     display: flex;
@@ -269,6 +276,18 @@ button { font-family: inherit; cursor: pointer; }
 .project-info-input:focus {
     border-color: #5e6ad2;
     box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
+}
+/* select 박스 — input과 동일한 외형 + 화살표 */
+.project-info-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6f7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px 12px;
+    padding-right: 26px;
+    cursor: pointer;
 }
 
 /* ── Document table ─────────────────────────────────────────── */

@@ -20,6 +20,16 @@
                {% if project_info.get('plp') %}checked{% endif %}>
       </div>
     </div>
+    <div class="project-info-field project-info-field-road">
+      <label for="pi-road">도로재질</label>
+      <select id="pi-road" class="project-info-input project-info-select"
+              data-field="road_material">
+        <option value=""></option>
+        <option value="ASP" {% if project_info.get('road_material') == 'ASP' %}selected{% endif %}>ASP</option>
+        <option value="CON`C" {% if project_info.get('road_material') == 'CON`C' %}selected{% endif %}>CON`C</option>
+        <option value="B.B" {% if project_info.get('road_material') == 'B.B' %}selected{% endif %}>B.B</option>
+      </select>
+    </div>
     <div class="project-info-field project-info-field-order-extension">
       <label for="pi-order-extension">발주 연장(m)</label>
       <input type="number" step="0.1" id="pi-order-extension" class="project-info-input"
