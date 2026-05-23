@@ -159,6 +159,14 @@ button { font-family: inherit; cursor: pointer; }
 .project-info-field-name {
     flex: 0 0 400px;
 }
+/* 준공 연장 — 좁게 고정 */
+.project-info-field-extension {
+    flex: 0 0 110px;
+}
+/* 일시점용료 — 다른 필드 2배 */
+.project-info-field-fee {
+    flex: 2;
+}
 .project-info-field label {
     font-size: 12px;
     font-weight: 600;
