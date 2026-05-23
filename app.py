@@ -22,6 +22,7 @@ import prompts_store
 import unit_prices_store
 import usage_store
 import chat
+import share_store
 from documents import DOCUMENTS
 
 
@@ -460,12 +461,81 @@ def download_pdf():
         flash("첨부된 파일이 없습니다.", "error")
         return redirect(url_for("result"))
 
-    pdf_bytes = output.merge_attachments_to_pdf(uploaded, DOCUMENTS)
+    # 검토 결과를 share_store 에 저장하고 QR URL 생성
+    # 동일 세션 내 첫 다운로드 시에만 새 review_id 생성, 재다운로드 시 재사용
+    share_url = None
+    all_results = session.get("review_results") or {}
+    project_info = session.get("project_info", {})
+    company = session.get("company", "")
+    if all_results:
+        review_id = session.get("share_review_id")
+        # 기존 ID 가 만료/삭제됐는지 확인
+        if review_id and not share_store.load(review_id):
+            review_id = None
+        if not review_id:
+            try:
+                review_id = share_store.save({
+                    "company": company,
+                    "project_info": project_info,
+                    "all_results": all_results,
+                })
+                session["share_review_id"] = review_id
+            except Exception:
+                review_id = None
+        if review_id:
+            share_url = url_for("share_result", review_id=review_id, _external=True)
+
+    pdf_bytes = output.merge_attachments_to_pdf(
+        uploaded, DOCUMENTS,
+        share_url=share_url,
+        project_name=project_info.get("name", ""),
+    )
     return send_file(
         io.BytesIO(pdf_bytes),
         as_attachment=True,
         download_name="준공서류_첨부통합.pdf",
         mimetype="application/pdf",
+    )
+
+
+# ── 검토 결과 공유 (QR 스캔용, 인증 X) ──────────────────────────
+@app.route("/r/<review_id>")
+def share_result(review_id: str):
+    """발주처용 read-only 검토 결과 페이지. UUID 가 비공개 보안 역할."""
+    record = share_store.load(review_id)
+    if not record:
+        return render_template("share_expired.html"), 404
+    payload = record.get("payload", {})
+    all_results = payload.get("all_results", {})
+    project_info = payload.get("project_info", {})
+
+    counts = {"OK": 0, "NG": 0, "WARN": 0, "SKIP": 0}
+    for _name, rows in all_results.items():
+        if not rows:
+            continue
+        has_ng = any(r["결과"] == "NG" for r in rows)
+        has_warn = any(r["결과"] == "WARN" for r in rows)
+        all_skip = all(r["결과"] == "SKIP" for r in rows)
+        if all_skip:
+            counts["SKIP"] += 1
+        elif has_ng:
+            counts["NG"] += 1
+        elif has_warn:
+            counts["WARN"] += 1
+        else:
+            counts["OK"] += 1
+    verdict_pass = (counts["NG"] == 0 and counts["WARN"] == 0)
+
+    return render_template(
+        "share_result.html",
+        documents=DOCUMENTS,
+        all_results=all_results,
+        project_info=project_info,
+        counts=counts,
+        verdict_pass=verdict_pass,
+        saved_at=record.get("saved_at", ""),
+        expires_at=record.get("expires_at", ""),
+        company=payload.get("company", ""),
     )
 
 

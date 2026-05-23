@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}검토 결과 공유 — 준공서류 검토 프로그램{% endblock %}
+{% block body %}
+<div class="share-page">
+  <header class="share-header">
+    <div class="share-header-inner">
+      <span class="share-logo">준공서류 검토 결과</span>
+      <span class="share-saved">발행: {{ saved_at[:10] }} · 유효: {{ expires_at[:10] }}까지</span>
+    </div>
+  </header>
+
+  <main class="share-main">
+    <!-- 공사 정보 -->
+    <section class="share-section share-info">
+      <h2 class="share-section-title">공사 정보</h2>
+      <div class="share-info-grid">
+        {% if project_info.get('name') %}
+          <div class="share-info-row">
+            <span class="share-info-label">공사명</span>
+            <span class="share-info-value">{{ project_info.get('name') }}</span>
+          </div>
+        {% endif %}
+        {% if project_info.get('date') %}
+          <div class="share-info-row">
+            <span class="share-info-label">준공일자</span>
+            <span class="share-info-value">{{ project_info.get('date') }}</span>
+          </div>
+        {% endif %}
+        {% if project_info.get('amount') %}
+          <div class="share-info-row">
+            <span class="share-info-label">준공금액</span>
+            <span class="share-info-value">{{ project_info.get('amount') }}</span>
+          </div>
+        {% endif %}
+        {% if project_info.get('extension') %}
+          <div class="share-info-row">
+            <span class="share-info-label">준공연장</span>
+            <span class="share-info-value">{{ project_info.get('extension') }}m</span>
+          </div>
+        {% endif %}
+        {% if project_info.get('road_material') %}
+          <div class="share-info-row">
+            <span class="share-info-label">도로재질</span>
+            <span class="share-info-value">{{ project_info.get('road_material') }}</span>
+          </div>
+        {% endif %}
+        {% if company %}
+          <div class="share-info-row">
+            <span class="share-info-label">시공사</span>
+            <span class="share-info-value">{{ company }}</span>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- 결과 요약 -->
+    <section class="share-section">
+      <h2 class="share-section-title">검토 요약</h2>
+      <div class="share-summary">
+        <div class="share-stat share-stat-ok">
+          <div class="share-stat-num">{{ counts.OK }}</div>
+          <div class="share-stat-label">양호</div>
+        </div>
+        <div class="share-stat share-stat-ng">
+          <div class="share-stat-num">{{ counts.NG + counts.WARN }}</div>
+          <div class="share-stat-label">보완 또는 확인</div>
+        </div>
+        <div class="share-stat share-stat-skip">
+          <div class="share-stat-num">{{ counts.SKIP }}</div>
+          <div class="share-stat-label">해당 없음</div>
+        </div>
+        <div class="share-stat {% if verdict_pass %}share-stat-pass{% else %}share-stat-fail{% endif %}">
+          <div class="share-stat-num">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
+          <div class="share-stat-label">최종 판정</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 서류별 상세 -->
+    <section class="share-section">
+      <h2 class="share-section-title">서류별 상세</h2>
+      <div class="share-docs">
+        {% for doc in documents %}
+          {% set rows = all_results.get(doc.name) %}
+          {% if rows %}
+            {% set ng_count = rows | selectattr('결과', 'equalto', 'NG') | list | length %}
+            {% set warn_count = rows | selectattr('결과', 'equalto', 'WARN') | list | length %}
+            {% set skip_count = rows | selectattr('결과', 'equalto', 'SKIP') | list | length %}
+            {% set issue_count = ng_count + warn_count %}
+            <details class="share-doc" {% if issue_count > 0 %}open{% endif %}>
+              <summary class="share-doc-head">
+                <span class="share-doc-num">{{ doc.num }}</span>
+                <span class="share-doc-name">{{ doc.name }}</span>
+                {% if issue_count > 0 %}
+                  <span class="share-badge share-badge-issue">보완 또는 확인 {{ issue_count }}</span>
+                {% elif skip_count == rows|length %}
+                  <span class="share-badge share-badge-skip">해당 없음</span>
+                {% else %}
+                  <span class="share-badge share-badge-ok">양호</span>
+                {% endif %}
+              </summary>
+              <div class="share-doc-body">
+                {% for item in rows %}
+                  <div class="share-row share-row-{{ item['결과']|lower }}">
+                    <span class="share-row-status status-{{ item['결과']|lower }}">{{ item['결과'] }}</span>
+                    <div class="share-row-content">
+                      <div class="share-row-title">{{ item['항목'] }}</div>
+                      {% if item.get('추출값') and item['추출값'] not in ('-', '') %}
+                        <div class="share-row-meta"><strong>추출값:</strong> {{ item['추출값'] }}</div>
+                      {% endif %}
+                      {% if item.get('비고') %}
+                        <div class="share-row-meta"><strong>비고:</strong> {{ item['비고'] }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </details>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <footer class="share-footer">
+    <p>본 페이지는 발주처 확인용 read-only 결과입니다. 원본 서류는 시공사로 문의해주세요.</p>
+  </footer>
+</div>
+{% endblock %}

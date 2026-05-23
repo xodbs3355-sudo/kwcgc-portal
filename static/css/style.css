@@ -2079,3 +2079,239 @@ button { font-family: inherit; cursor: pointer; }
 .chat-send:hover { background: #4d58c2; }
 .chat-send:disabled { background: #c4c7cf; cursor: not-allowed; }
 .chat-send svg { width: 16px; height: 16px; }
+
+/* ── 검토 결과 공유 페이지 (QR 스캔 진입) — 모바일 친화 ─────── */
+.share-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 16px 60px;
+}
+.share-header {
+    border-bottom: 1px solid #e5e5e8;
+    padding: 16px 0;
+    margin-bottom: 20px;
+}
+.share-header-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.share-logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+.share-saved {
+    font-size: 12px;
+    color: #6b6f7a;
+}
+.share-main {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.share-section {
+    background: #fff;
+    border: 1px solid #e5e5e8;
+    border-radius: 10px;
+    padding: 16px 18px;
+}
+.share-section-title {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f3;
+}
+.share-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.share-info-row {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+}
+.share-info-label {
+    flex: 0 0 80px;
+    color: #6b6f7a;
+    font-weight: 500;
+}
+.share-info-value {
+    flex: 1;
+    color: #1a1a1a;
+    font-weight: 500;
+    word-break: break-all;
+}
+.share-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+.share-stat {
+    padding: 14px 8px;
+    border-radius: 8px;
+    text-align: center;
+    background: #fafafb;
+    border: 1px solid #e5e5e8;
+}
+.share-stat-num {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+}
+.share-stat-label {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #6b6f7a;
+}
+.share-stat-ok .share-stat-num   { color: #2d7d52; }
+.share-stat-ng .share-stat-num   { color: #c0392b; }
+.share-stat-skip .share-stat-num { color: #6b6f7a; }
+.share-stat-pass {
+    background: #e8f5ee;
+    border-color: #b8dec7;
+}
+.share-stat-pass .share-stat-num { color: #2d7d52; font-size: 18px; padding-top: 4px; }
+.share-stat-fail {
+    background: #fdecec;
+    border-color: #f5c6c6;
+}
+.share-stat-fail .share-stat-num { color: #c0392b; font-size: 18px; padding-top: 4px; }
+
+.share-docs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.share-doc {
+    border: 1px solid #e5e5e8;
+    border-radius: 8px;
+    background: #fafafb;
+}
+.share-doc[open] { background: #fff; }
+.share-doc-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+.share-doc-head::-webkit-details-marker { display: none; }
+.share-doc-head::before {
+    content: "▸";
+    color: #9a9ea9;
+    font-size: 11px;
+    transition: transform 0.15s;
+}
+.share-doc[open] .share-doc-head::before { transform: rotate(90deg); }
+.share-doc-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: #6b6f7a;
+    color: #fff;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 12px;
+}
+.share-doc-name {
+    flex: 1;
+    color: #1a1a1a;
+    word-break: keep-all;
+}
+.share-badge {
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.share-badge-ok    { background: #e8f5ee; color: #2d7d52; }
+.share-badge-issue { background: #fdecec; color: #c0392b; }
+.share-badge-skip  { background: #f0f0f3; color: #6b6f7a; }
+.share-doc-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px 14px 14px;
+}
+.share-row {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #fafafb;
+    border-radius: 6px;
+    border-left: 3px solid #e5e5e8;
+}
+.share-row-ng   { border-left-color: #c0392b; background: #fdf5f5; }
+.share-row-warn { border-left-color: #d4a017; background: #fdf9ec; }
+.share-row-ok   { border-left-color: #2d7d52; }
+.share-row-skip { border-left-color: #c4c7cf; }
+.share-row-status {
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #fff;
+    border: 1px solid currentColor;
+}
+.share-row-status.status-ng   { color: #c0392b; }
+.share-row-status.status-warn { color: #d4a017; }
+.share-row-status.status-ok   { color: #2d7d52; }
+.share-row-status.status-skip { color: #6b6f7a; }
+.share-row-content {
+    flex: 1;
+    font-size: 13px;
+}
+.share-row-title {
+    color: #1a1a1a;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.share-row-meta {
+    color: #4a4d54;
+    font-size: 12px;
+    margin-top: 2px;
+    word-break: break-all;
+}
+.share-row-meta strong { color: #6b6f7a; font-weight: 600; }
+
+.share-footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 11px;
+    color: #9a9ea9;
+}
+
+.share-empty {
+    text-align: center;
+    padding: 48px 20px;
+}
+.share-empty-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 12px 0;
+}
+.share-empty-text {
+    color: #6b6f7a;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* 모바일 — 4열 요약을 2열로 */
+@media (max-width: 480px) {
+    .share-summary { grid-template-columns: repeat(2, 1fr); }
+    .share-info-label { flex: 0 0 70px; }
+    .share-logo { font-size: 17px; }
+}

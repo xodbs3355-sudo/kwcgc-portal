@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}만료된 링크 — 준공서류 검토 프로그램{% endblock %}
+{% block body %}
+<div class="share-page">
+  <header class="share-header">
+    <div class="share-header-inner">
+      <span class="share-logo">준공서류 검토 결과</span>
+    </div>
+  </header>
+  <main class="share-main">
+    <div class="share-empty">
+      <h2 class="share-empty-title">링크가 만료되었거나 존재하지 않습니다</h2>
+      <p class="share-empty-text">
+        검토 결과 공유 링크는 발행일로부터 90일간 유효합니다.<br>
+        새 검토 결과가 필요하시면 시공사로 문의해주세요.
+      </p>
+    </div>
+  </main>
+</div>
+{% endblock %}
