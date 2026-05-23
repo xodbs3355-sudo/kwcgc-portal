@@ -625,7 +625,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 /* 진행 막대 — 0 → 95% 자동 채우기 (12s ease-out), 응답 도착 시 redirect */
 .review-progress {
-    margin-top: 14px;
+    margin: 14px auto 0;
     width: 320px;
     height: 6px;
     background: #eef0f3;
