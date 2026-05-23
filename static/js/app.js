@@ -46,16 +46,19 @@ document.querySelectorAll('.file-input').forEach((input) => {
 
 // ── 파일 삭제 ─────────────────────────────────────────────────────
 document.querySelector('.doc-table').addEventListener('click', async (e) => {
-  if (!e.target.classList.contains('file-chip-del')) return;
-  // 업로드 중 취소 버튼은 별도 핸들러에서 처리 (서버 호출 X)
-  if (e.target.classList.contains('file-chip-cancel')) return;
-  const docId = e.target.dataset.docId;
-  const idx = parseInt(e.target.dataset.idx, 10);
+  const delBtn = e.target.closest('.file-chip-del');
+  if (!delBtn) return;
+  // 업로드 중 취소 버튼은 별도 핸들러
+  if (delBtn.classList.contains('file-chip-cancel')) return;
+  const docId = delBtn.dataset.docId;
+  const idx = parseInt(delBtn.dataset.idx, 10);
+  if (!docId || isNaN(idx)) return;
 
   try {
     const res = await fetch(`/remove/${docId}/${idx}`, { method: 'POST' });
     const data = await res.json();
     if (data.ok) renderChips(docId, data.files);
+    else alert('삭제 실패: ' + (data.error || ''));
   } catch (err) {
     alert('삭제 실패: ' + err.message);
   }
@@ -253,8 +256,9 @@ function removePendingChips(docId) {
 
 // pending 칩 × 클릭 → 그 칩만 제거 (서버 요청 보내봤자 응답 와도 무시되니 표시만 정리)
 document.addEventListener('click', (e) => {
-  if (!e.target.classList.contains('file-chip-cancel')) return;
-  const chip = e.target.closest('.file-chip');
+  const cancelBtn = e.target.closest('.file-chip-cancel');
+  if (!cancelBtn) return;
+  const chip = cancelBtn.closest('.file-chip');
   const container = chip ? chip.closest('.file-chips') : null;
   if (chip) chip.remove();
   if (container) {

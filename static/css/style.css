@@ -176,12 +176,19 @@ button { font-family: inherit; cursor: pointer; }
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     height: 32px;
-    padding: 0 16px;
+    padding: 0 14px;
     background: #fff;
     border: 1px solid #e5e5e8;
     border-radius: 6px;
     box-sizing: border-box;
+}
+.project-plp-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1;
 }
 .project-plp-check {
     width: 18px;
