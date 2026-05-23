@@ -694,6 +694,17 @@ button { font-family: inherit; cursor: pointer; }
     -webkit-text-fill-color: transparent;
     color: transparent;
     display: inline-block;
+    animation: brandRiseIn 1s ease-out;
+}
+@keyframes brandRiseIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 .login-title {
     font-family: 'GmarketSansBold', 'Inter', sans-serif;
