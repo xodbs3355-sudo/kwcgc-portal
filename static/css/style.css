@@ -636,6 +636,15 @@ button { font-family: inherit; cursor: pointer; }
     background: linear-gradient(90deg, #7682e0 0%, #5e6ad2 60%, #4b58c5 100%);
     border-radius: 3px;
 }
+.review-status-text {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #9b9fa8;
+    text-align: center;
+    min-height: 18px;
+    letter-spacing: -0.1px;
+    transition: opacity 0.18s ease-out;
+}
 
 /* ── 검토시작 버튼 (신설 헤더 셀 안 우측) ──────────────────── */
 .hint-header-row {
@@ -894,7 +903,7 @@ button { font-family: inherit; cursor: pointer; }
     line-height: 1.45;
     color: #9b9fa8;
     letter-spacing: -0.1px;
-    margin-left: 66px;   /* 라벨 폭(56) + 갭(10)과 맞춰 입력박스 시작점에 정렬 */
+    margin-left: 0;   /* 라벨 아래(왼쪽 정렬). 들여쓰기는 nbsp로 처리 */
 }
 /* 우측 60% — 5개 결과 카드 묶음 */
 .result-summary-right {

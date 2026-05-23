@@ -1,21 +1,68 @@
-// ── 검토 시작 시 오버레이 + 진행 막대 ──────────────────────────────
+// ── 검토 시작 시 오버레이 + 진행 막대 + 상태 텍스트 순환 ──────────
 const reviewForm = document.getElementById('review-form');
 const reviewOverlay = document.getElementById('review-overlay');
 const reviewProgressBar = document.getElementById('review-progress-bar');
+const reviewStatusText = document.getElementById('review-status-text');
+
+// 서류별 검토 항목 — 회색 안내 텍스트 순환용 (시각 효과)
+// 실제 검토는 백엔드에서 병렬 처리되며, 이 목록은 사용자 체감용 progress.
+const REVIEW_FLOW = {
+  doc01: { name: "준공계", items: ["서류 첨부 여부", "공사명 확인", "준공일자 확인", "준공금액 확인", "서명/날인 확인"] },
+  doc02: { name: "하도급 공종별 작업내역서", items: ["서류 첨부 여부", "공공측량 용역 항목 존재", "타 테이블 빈 상태", "수량 1식 여부", "계약단가 25,000원 여부", "요율 10% 및 계 27,500원 여부"] },
+  doc03: { name: "기밀시험 데이터", items: ["서류 첨부 여부", "압력 유지 여부"] },
+  doc04: { name: "융착 데이터", items: ["서류 첨부 확인"] },
+  doc10: { name: "자재성적서", items: ["서류 첨부 확인"] },
+  doc05: { name: "교육일지/작업일보/스케치도면", items: ["작업일보", "안전보건환경 교육 및 TBM일지", "교육 및 TBM 사진", "스케치도면"] },
+  doc06: { name: "산업안전보건관리비 내역서", items: ["산업안전보건관리비 갑지", "항목 별 사용내역", "사진대지", "세금계산서", "거래명세서", "지급대장"] },
+  doc09: { name: "화재위험작업허가서", items: ["서류 첨부 여부", "공사명 확인", "준공일자 확인", "준공금액 확인", "서명/날인 확인"] },
+  doc07: { name: "저심도배관현황", items: ["서류 첨부 여부", "깊이 기록", "위치 표기"] },
+  doc08: { name: "기타서류", items: ["서류 첨부 여부"] }
+};
+const DOC_ORDER = ["doc01", "doc02", "doc03", "doc04", "doc10", "doc05", "doc06", "doc09", "doc07", "doc08"];
+
+function buildReviewSteps() {
+  // 해당없음 체크된 서류는 제외
+  const skipped = new Set();
+  document.querySelectorAll('.skip-check:checked').forEach(cb => {
+    if (cb.dataset.docId) skipped.add(cb.dataset.docId);
+  });
+  const steps = [];
+  for (const docId of DOC_ORDER) {
+    if (skipped.has(docId)) continue;
+    const doc = REVIEW_FLOW[docId];
+    if (!doc) continue;
+    for (const item of doc.items) {
+      steps.push(`${doc.name} 검토 중 - ${item}`);
+    }
+  }
+  return steps;
+}
+
 if (reviewForm && reviewOverlay) {
   reviewForm.addEventListener('submit', () => {
     reviewOverlay.hidden = false;
-    // 진행 막대 — 12초에 걸쳐 95%까지 ease-out으로 채움. 서버 응답 오면 redirect 발생.
+    // 진행 막대 — 12초에 걸쳐 95%까지 ease-out으로 채움
     if (reviewProgressBar) {
       reviewProgressBar.style.transition = 'none';
       reviewProgressBar.style.width = '0%';
-      // 다음 프레임에 애니메이션 시작 (스타일 초기화 반영 후)
       requestAnimationFrame(() => {
         reviewProgressBar.style.transition = 'width 12s cubic-bezier(0.1, 0.7, 0.1, 1)';
         reviewProgressBar.style.width = '95%';
       });
     }
-    // 버튼도 비활성
+    // 상태 텍스트 순환 — 500ms 간격, 끝까지 가면 다시 처음으로
+    if (reviewStatusText) {
+      const steps = buildReviewSteps();
+      if (steps.length > 0) {
+        let idx = 0;
+        reviewStatusText.textContent = steps[0];
+        setInterval(() => {
+          idx = (idx + 1) % steps.length;
+          reviewStatusText.textContent = steps[idx];
+        }, 500);
+      }
+    }
+    // 버튼 비활성
     const btn = reviewForm.querySelector('.btn-review');
     if (btn) {
       btn.disabled = true;
