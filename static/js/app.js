@@ -1,10 +1,21 @@
-// ── 검토 시작 시 오버레이 표시 ────────────────────────────────────
+// ── 검토 시작 시 오버레이 + 진행 막대 ──────────────────────────────
 const reviewForm = document.getElementById('review-form');
 const reviewOverlay = document.getElementById('review-overlay');
+const reviewProgressBar = document.getElementById('review-progress-bar');
 if (reviewForm && reviewOverlay) {
   reviewForm.addEventListener('submit', () => {
     reviewOverlay.hidden = false;
-    // 버튼도 비활성 + 텍스트 변경
+    // 진행 막대 — 12초에 걸쳐 95%까지 ease-out으로 채움. 서버 응답 오면 redirect 발생.
+    if (reviewProgressBar) {
+      reviewProgressBar.style.transition = 'none';
+      reviewProgressBar.style.width = '0%';
+      // 다음 프레임에 애니메이션 시작 (스타일 초기화 반영 후)
+      requestAnimationFrame(() => {
+        reviewProgressBar.style.transition = 'width 12s cubic-bezier(0.1, 0.7, 0.1, 1)';
+        reviewProgressBar.style.width = '95%';
+      });
+    }
+    // 버튼도 비활성
     const btn = reviewForm.querySelector('.btn-review');
     if (btn) {
       btn.disabled = true;
@@ -12,6 +23,23 @@ if (reviewForm && reviewOverlay) {
     }
   });
 }
+
+// ── Gemini 워밍업 — 사용자가 검토 시작 누르기 전 미리 호출 ──────────
+// 검토 시작 버튼 hover / 첫 파일 업로드 등으로 트리거하여 cold start 줄임
+let _warmupTriggered = false;
+function triggerWarmup() {
+  if (_warmupTriggered) return;
+  _warmupTriggered = true;
+  fetch('/warmup', { method: 'POST' }).catch(() => {});
+}
+document.querySelectorAll('.btn-review').forEach(btn => {
+  btn.addEventListener('mouseenter', triggerWarmup, { once: true });
+  btn.addEventListener('focus', triggerWarmup, { once: true });
+});
+// 파일 업로드 발생 시점에도 한 번 warmup (검토까지 일반적으로 5초 이상 소요됨)
+document.querySelectorAll('.file-input').forEach(input => {
+  input.addEventListener('change', triggerWarmup, { once: true });
+});
 
 // ── 파일 업로드 (AJAX) ───────────────────────────────────────────
 document.querySelectorAll('.file-input').forEach((input) => {

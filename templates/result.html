@@ -22,6 +22,17 @@ document.querySelectorAll('.doc-list-head').forEach((head) => {
     if (item.classList.contains('active')) {
       document.querySelectorAll('.doc-detail-pane').forEach(p =>
         p.classList.toggle('active', p.dataset.docPane === target));
+
+      // 첨부 이미지 사전 로딩 — 탭 클릭 시 즉각 표시되도록 백그라운드 다운로드
+      const tabs = document.querySelectorAll(`[data-preview-tabs="${target}"] .preview-tab`);
+      tabs.forEach((tab) => {
+        const idx = tab.dataset.idx;
+        const filename = (tab.dataset.filename || '').toLowerCase();
+        if (filename.endsWith('.png') || filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+          const img = new Image();
+          img.src = `/preview/${target}/${idx}`;
+        }
+      });
     }
   });
 });
@@ -55,35 +66,65 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
   {% include "_header.html" %}
 
   <div class="result-summary">
-    <div class="result-card card-ok">
-      <div class="result-label">양호</div>
-      <div class="result-num num-ok">{{ counts.OK }}</div>
-    </div>
-    <div class="result-card card-ng">
-      <div class="result-label">보완 또는 확인</div>
-      <div class="result-num num-ng">{{ counts.NG + counts.WARN }}</div>
-    </div>
-    <div class="result-card card-skip">
-      <div class="result-label">해당 없음</div>
-      <div class="result-num num-skip">{{ counts.SKIP }}</div>
-    </div>
-
-    <div class="result-card {% if verdict_pass %}card-verdict-pass{% else %}card-verdict-fail{% endif %}">
-      <div class="result-label">검토 결과</div>
-      <div class="result-num verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
-    </div>
-
-    <a class="result-card card-pdf" href="{{ url_for('download_pdf') }}">
-      <div class="result-label result-label-pdf">통합 PDF 출력</div>
-      <div class="result-num pdf-icon-wrap">
-        <svg class="pdf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
+    <!-- 좌측 40% — 공사 요약 카드 -->
+    <div class="result-info-card">
+      <div class="info-row-name">
+        <span class="info-label-name">공사명</span>
+        <span class="info-value-name">{{ project_info.get('name', '-') or '-' }}</span>
       </div>
-    </a>
+      <div class="info-row-double">
+        <div class="info-col">
+          <div class="info-pair">
+            <span class="info-label">정산 여부</span>
+            <span class="info-value-box info-value-adjust
+                  {% if adjustment_required == True %}info-adjust-yes
+                  {% elif adjustment_required == False %}info-adjust-no
+                  {% endif %}">
+              {{ adjustment_label }}
+            </span>
+          </div>
+          <div class="info-hint">* 발주연장 대비 1m이상 증감 시</div>
+        </div>
+        <div class="info-col">
+          <div class="info-pair">
+            <span class="info-label">최종 공사비</span>
+            <span class="info-value-box">-</span>
+          </div>
+          <div class="info-hint">* 공사비(연단가) + 일시점용료</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우측 60% — 5개 결과 카드 -->
+    <div class="result-summary-right">
+      <div class="result-card card-ok">
+        <div class="result-label">양호</div>
+        <div class="result-num num-ok">{{ counts.OK }}</div>
+      </div>
+      <div class="result-card card-ng">
+        <div class="result-label">보완 또는 확인</div>
+        <div class="result-num num-ng">{{ counts.NG + counts.WARN }}</div>
+      </div>
+      <div class="result-card card-skip">
+        <div class="result-label">해당 없음</div>
+        <div class="result-num num-skip">{{ counts.SKIP }}</div>
+      </div>
+      <div class="result-card {% if verdict_pass %}card-verdict-pass{% else %}card-verdict-fail{% endif %}">
+        <div class="result-label">검토 결과</div>
+        <div class="result-num verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
+      </div>
+      <a class="result-card card-pdf" href="{{ url_for('download_pdf') }}">
+        <div class="result-label result-label-pdf">통합 PDF 출력</div>
+        <div class="result-num pdf-icon-wrap">
+          <svg class="pdf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+      </a>
+    </div>
   </div>
 
   <div class="result-split">

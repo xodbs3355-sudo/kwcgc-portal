@@ -35,6 +35,31 @@ def inject_admin_flag():
     return {"is_admin": _is_admin()}
 
 
+# 정적 파일 캐시 무효화용 버전 — style.css/app.js의 mtime 합산
+def _compute_asset_version() -> str:
+    base = os.path.dirname(os.path.abspath(__file__))
+    paths = [
+        os.path.join(base, "static", "css", "style.css"),
+        os.path.join(base, "static", "js", "app.js"),
+    ]
+    mtimes = []
+    for p in paths:
+        try:
+            mtimes.append(int(os.path.getmtime(p)))
+        except OSError:
+            pass
+    return str(sum(mtimes)) if mtimes else "0"
+
+
+_ASSET_VERSION_CACHE = {"value": _compute_asset_version()}
+
+
+@app.context_processor
+def inject_asset_version():
+    # 매 요청마다 재계산 (실시간 반영). production에서는 한번만 계산해도 무방.
+    return {"asset_version": _compute_asset_version()}
+
+
 # ── 세션 저장소 (업로드된 파일 bytes 는 디스크 임시 파일로) ─────────
 SESSION_DIR = os.path.join(tempfile.gettempdir(), "kwcgc_uploads")
 os.makedirs(SESSION_DIR, exist_ok=True)
@@ -268,6 +293,22 @@ def result():
     uploaded = load_uploaded()
     file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
 
+    # 정산 여부 계산 — 발주 연장 대비 준공 연장이 1.0m 이상 차이나면 정산 대상
+    project_info = session.get("project_info", {})
+    try:
+        ext_raw = (project_info.get("extension", "") or "").strip()
+        order_raw = (project_info.get("order_extension", "") or "").strip()
+        if ext_raw and order_raw:
+            diff = abs(float(ext_raw) - float(order_raw))
+            adjustment_label = "정산 대상" if diff >= 1.0 else "정산 비대상"
+            adjustment_required = diff >= 1.0
+        else:
+            adjustment_label = "-"
+            adjustment_required = None
+    except (ValueError, TypeError):
+        adjustment_label = "-"
+        adjustment_required = None
+
     return render_template(
         "result.html",
         company=session["company"],
@@ -276,6 +317,9 @@ def result():
         verdict_pass=verdict_pass,
         documents=DOCUMENTS,
         file_names=file_names,
+        project_info=project_info,
+        adjustment_label=adjustment_label,
+        adjustment_required=adjustment_required,
     )
 
 
@@ -313,12 +357,32 @@ def preview_file(doc_id: str, idx: int):
         "jpeg": "image/jpeg",
         "png":  "image/png",
     }.get(ext, "application/octet-stream")
-    return send_file(
+    response = send_file(
         io.BytesIO(file_bytes),
         mimetype=mime,
         download_name=filename,
         as_attachment=False,
     )
+    # 1시간 브라우저 캐시 (같은 파일 재요청 시 즉시 표시)
+    response.headers["Cache-Control"] = "private, max-age=3600"
+    return response
+
+
+@app.route("/warmup", methods=["POST"])
+def warmup():
+    """Gemini 모델 워밍업 — 결과 검토 전 cold start 줄임."""
+    if "company" not in session:
+        return jsonify({"ok": False}), 401
+    if not config.GEMINI_API_KEY:
+        return jsonify({"ok": False, "reason": "no_key"})
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=config.GEMINI_API_KEY)
+        model = genai.GenerativeModel(config.GEMINI_MODEL)
+        _ = model.generate_content("ping").text  # 최소 호출로 connection/auth 워밍업
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)[:120]})
 
 
 @app.route("/download/pdf")

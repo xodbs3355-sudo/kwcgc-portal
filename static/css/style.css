@@ -619,6 +619,21 @@ button { font-family: inherit; cursor: pointer; }
     font-size: 13px;
     color: #6b6f7a;
 }
+/* 진행 막대 — 0 → 95% 자동 채우기 (12s ease-out), 응답 도착 시 redirect */
+.review-progress {
+    margin-top: 14px;
+    width: 320px;
+    height: 6px;
+    background: #eef0f3;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.review-progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #7682e0 0%, #5e6ad2 60%, #4b58c5 100%);
+    border-radius: 3px;
+}
 
 /* ── 검토시작 버튼 (신설 헤더 셀 안 우측) ──────────────────── */
 .hint-header-row {
@@ -794,12 +809,106 @@ button { font-family: inherit; cursor: pointer; }
     display: flex;
     gap: 12px;
     margin: 16px 0 20px;
+    align-items: stretch;
+}
+/* 좌측 40% — 공사 요약 카드 */
+.result-info-card {
+    flex: 0 0 40%;
+    border: 1px solid #e5e5e8;
+    border-radius: 10px;
+    padding: 12px 16px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 60px;
+}
+.info-row-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.info-label-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b6f7a;
+    flex-shrink: 0;
+}
+.info-value-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #f7f7f9;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    padding: 4px 10px;
+    min-height: 22px;
+}
+.info-row-double {
+    display: flex;
+    gap: 12px;
+}
+.info-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.info-pair {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b6f7a;
+    flex-shrink: 0;
+}
+.info-value-box {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    background: #f7f7f9;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    padding: 4px 10px;
+    min-height: 22px;
+    color: #1a1a1a;
+    text-align: center;
+}
+.info-value-adjust.info-adjust-yes {
+    background: #fff0f0;
+    border-color: #f5c6c6;
+    color: #c0392b;
+}
+.info-value-adjust.info-adjust-no {
+    background: #ecf9f1;
+    border-color: #b9e2c9;
+    color: #2d8a4f;
+}
+.info-hint {
+    font-size: 10px;
+    color: #9b9fa8;
+}
+/* 우측 60% — 5개 결과 카드 묶음 */
+.result-summary-right {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+}
+.result-summary-right .result-card {
+    flex: 1;
+    min-width: 0;
 }
 .result-card {
     flex: 1;
     border: 1px solid #e5e5e8;
     border-radius: 10px;
-    padding: 8px 12px;
+    padding: 8px 8px;
     text-align: center;
     background: #fff;
     display: flex;
@@ -809,6 +918,14 @@ button { font-family: inherit; cursor: pointer; }
     gap: 4px;
     min-height: 60px;
     transition: box-shadow 0.15s, transform 0.12s;
+}
+/* 5개 우측 카드 — 폭 좁아진 만큼 폰트도 살짝 축소 */
+.result-summary-right .result-label {
+    font-size: 11px;
+}
+.result-summary-right .result-num {
+    font-size: 22px;
+    height: 26px;
 }
 .result-label {
     font-size: 13px;
