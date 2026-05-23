@@ -627,7 +627,7 @@ button { font-family: inherit; cursor: pointer; }
     background: linear-gradient(315deg, #f6f7f9 0%, #eef0f3 50%, #e4e7eb 100%);
     border: 1px solid #e5e5e8;
     border-radius: 10px;
-    padding: 36px 40px;
+    padding: 28px 40px 36px 40px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.14);
 }
 .brand-name {
@@ -637,7 +637,7 @@ button { font-family: inherit; cursor: pointer; }
     line-height: 1.2;
     margin: 0 0 0 0;
     text-align: left;
-    background: linear-gradient(180deg, #969696 0%, #b5b5b5 30%, #d4d4d4 100%);
+    background: linear-gradient(180deg, #a8a8a8 0%, #b8b8b8 30%, #d4d4d4 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -646,7 +646,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .login-title {
     font-family: 'GmarketSansBold', 'Inter', sans-serif;
-    margin: 0 0 8px 0;
+    margin: 0 0 14px 0;
     font-size: 27px;
     font-weight: 700;
 }
