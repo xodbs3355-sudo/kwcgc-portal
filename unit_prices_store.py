@@ -43,7 +43,7 @@ LENGTH_KEYS = ["1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m", "10m"]
 MATERIAL_KEYS = ["ASP", "CONC_BLOCK"]
 MATERIAL_DISPLAY = {
     "ASP": "ASP",
-    "CONC_BLOCK": "CON`C 및 보도블럭",
+    "CONC_BLOCK": "CON`C 및 보도블럭(ASP 外)",
 }
 PLP_KEY = "PLP옵션"
 
