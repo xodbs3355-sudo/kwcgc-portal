@@ -69,7 +69,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
     <!-- 좌측 40% — 공사 요약 카드 -->
     <div class="result-info-card">
       <div class="info-row-name">
-        <span class="info-label-name">공사명</span>
+        <span class="info-label">공 사 명</span>
         <span class="info-value-name">{{ project_info.get('name', '-') or '-' }}</span>
       </div>
       <div class="info-row-double">
@@ -83,7 +83,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
               {{ adjustment_label }}
             </span>
           </div>
-          <div class="info-hint">* 발주연장 대비 1m이상 증감 시</div>
+          <div class="info-hint">* 발주연장 대비 1m이상 증감 시평면연장 기준</div>
         </div>
         <div class="info-col">
           <div class="info-pair">

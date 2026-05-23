@@ -116,7 +116,7 @@ def review_file(doc_id: str, doc_name: str, file_bytes: bytes, filename: str,
         return [make_result("AI 검토 오류", "WARN", "-", str(e))]
 
 
-# ── doc05 집계: 4가지 유형 첨부 자동 확인 ───────────────────────
+# ── doc05/doc06 — 파일별 서류 유형 식별 + 누락 유형만 집계 ───────
 _DOC05_REQUIRED_TYPES = [
     "작업일보",
     "안전보건환경 교육 및 TBM일지",
@@ -124,26 +124,45 @@ _DOC05_REQUIRED_TYPES = [
     "스케치도면",
 ]
 
+_DOC06_REQUIRED_TYPES = [
+    "산업안전보건관리비 갑지",
+    "항목 별 사용내역",
+    "사진대지",
+    "세금계산서",
+    "거래명세서",
+    "지급대장",
+]
 
-def _aggregate_doc05(per_file_results: list[list[dict]]) -> list[dict]:
-    """교육일지/작업일보/스케치도면 — 4가지 유형 모두 첨부됐는지 집계."""
+# 서류 유형 식별 방식 적용 대상 (각 파일이 어떤 유형인지 AI가 식별 + 누락 집계)
+_TYPE_ID_DOCS = {"doc05", "doc06"}
+
+
+def _required_types_for(doc_id: str) -> list[str]:
+    if doc_id == "doc05":
+        return _DOC05_REQUIRED_TYPES
+    if doc_id == "doc06":
+        return _DOC06_REQUIRED_TYPES
+    return []
+
+
+def _aggregate_missing_types(per_file_results: list[list[dict]],
+                             required: list[str]) -> list[dict]:
+    """필수 유형 중 빠진 것만 NG 행으로 반환 (OK는 파일별 표시로 갈음)."""
     found = set()
     for file_results in per_file_results:
         for r in file_results:
             extracted = (r.get("추출값") or "").strip()
-            if extracted in _DOC05_REQUIRED_TYPES:
+            if extracted in required:
                 found.add(extracted)
 
-    aggregate = []
-    for req in _DOC05_REQUIRED_TYPES:
-        if req in found:
-            aggregate.append(make_result(f"[종합] {req} 첨부", "OK", "첨부됨", ""))
-        else:
-            aggregate.append(make_result(
-                f"[종합] {req} 첨부", "NG", "미첨부",
+    missing = []
+    for req in required:
+        if req not in found:
+            missing.append(make_result(
+                f"(미첨부) {req}", "NG", "",
                 f"'{req}' 유형 파일이 식별되지 않음"
             ))
-    return aggregate
+    return missing
 
 
 # ── 서류 전체 검토 (여러 파일) ────────────────────────────────────
@@ -163,7 +182,12 @@ def review_document(doc_id: str, doc_name: str, files: list,
             "첨부 확인 (AI 검토 생략 — 첨부만 확인하는 서류)"
         )]
 
-    results = [make_result("서류 첨부 여부", "OK", f"{len(files)}개 파일 첨부", "첨부 확인")]
+    # doc05/doc06: 서류 첨부 여부 행 제외 (각 파일 유형 식별로 갈음)
+    is_type_id_doc = doc_id in _TYPE_ID_DOCS
+    if is_type_id_doc:
+        results = []
+    else:
+        results = [make_result("서류 첨부 여부", "OK", f"{len(files)}개 파일 첨부", "첨부 확인")]
 
     # 파일별 검토 — 다중 파일은 병렬 처리 (단일 파일은 그대로)
     per_file_results: list[list[dict]] = []
@@ -183,16 +207,32 @@ def review_document(doc_id: str, doc_name: str, files: list,
             indexed.sort(key=lambda x: x[0])
             per_file_results = [r for _, r in indexed]
 
-        # [파일 N] 라벨 부여
+    # 누락 유형 집계 — 라벨 변경 전 원본 추출값을 사용해야 매칭 가능
+    missing_rows: list[dict] = []
+    if is_type_id_doc:
+        missing_rows = _aggregate_missing_types(
+            per_file_results, _required_types_for(doc_id)
+        )
+
+    # 라벨 처리
+    if is_type_id_doc:
+        # 식별된 유형 이름을 항목으로 사용, 추출값은 비움 (중복 제거)
+        for file_results in per_file_results:
+            for r in file_results:
+                extracted = (r.get("추출값") or "").strip()
+                if extracted:
+                    r["항목"] = extracted
+                    r["추출값"] = ""
+    elif len(files) > 1:
+        # 일반 다중 파일: [파일 N] prefix
         for i, file_results in enumerate(per_file_results):
             for r in file_results:
                 r["항목"] = f"[파일 {i+1}] {r['항목']}"
 
+    # 결과 통합
     for file_results in per_file_results:
         results.extend(file_results)
-
-    # doc05 — 4가지 유형 첨부 자동 집계
-    if doc_id == "doc05":
-        results.extend(_aggregate_doc05(per_file_results))
+    # 빠진 유형이 있으면 그것만 NG로 표시 (OK 유형은 파일별 행에서 이미 보임)
+    results.extend(missing_rows)
 
     return results

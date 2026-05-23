@@ -828,11 +828,29 @@ button { font-family: inherit; cursor: pointer; }
     align-items: center;
     gap: 10px;
 }
-.info-label-name {
+.info-row-double {
+    display: flex;
+    gap: 12px;
+}
+.info-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.info-pair {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+/* 공통 라벨 — 공사명/정산여부/최종공사비 모두 동일 폭으로 정렬 */
+.info-label {
     font-size: 12px;
     font-weight: 600;
     color: #6b6f7a;
     flex-shrink: 0;
+    min-width: 56px;
 }
 .info-value-name {
     flex: 1;
@@ -844,28 +862,6 @@ button { font-family: inherit; cursor: pointer; }
     border-radius: 6px;
     padding: 4px 10px;
     min-height: 22px;
-}
-.info-row-double {
-    display: flex;
-    gap: 12px;
-}
-.info-col {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-}
-.info-pair {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.info-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b6f7a;
-    flex-shrink: 0;
 }
 .info-value-box {
     flex: 1;
@@ -890,8 +886,13 @@ button { font-family: inherit; cursor: pointer; }
     color: #2d8a4f;
 }
 .info-hint {
-    font-size: 10px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.45;
     color: #9b9fa8;
+    letter-spacing: -0.1px;
+    margin-left: 66px;   /* 라벨 폭(56) + 갭(10)과 맞춰 입력박스 시작점에 정렬 */
 }
 /* 우측 60% — 5개 결과 카드 묶음 */
 .result-summary-right {
@@ -979,20 +980,22 @@ button { font-family: inherit; cursor: pointer; }
 
 /* PDF 다운로드 카드 → 검토시작 버튼 스타일 (보라 그라데이션) */
 .card-pdf {
-    background: linear-gradient(135deg, #7682e0 0%, #5e6ad2 55%, #4b58c5 100%);
+    background: linear-gradient(135deg, #8c97e8 0%, #5e6ad2 45%, #3d49b8 100%);
     text-decoration: none;
     cursor: pointer;
     color: #fff;
-    border: 1px solid #4b58c5;
-    box-shadow: 0 2px 6px rgba(94,106,210,0.25),
-                inset 0 1px 0 rgba(255,255,255,0.18);
+    border: 1px solid #3d49b8;
+    box-shadow: 0 6px 16px rgba(94,106,210,0.42),
+                0 2px 4px rgba(75,88,197,0.30),
+                inset 0 1px 0 rgba(255,255,255,0.28);
     transition: filter 0.18s, box-shadow 0.18s, transform 0.12s;
 }
 .card-pdf:hover {
     filter: brightness(1.08);
-    box-shadow: 0 4px 12px rgba(94,106,210,0.35),
-                inset 0 1px 0 rgba(255,255,255,0.22);
-    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(94,106,210,0.55),
+                0 3px 6px rgba(75,88,197,0.35),
+                inset 0 1px 0 rgba(255,255,255,0.32);
+    transform: translateY(-1.5px);
 }
 .card-pdf:active {
     transform: translateY(0);
