@@ -633,7 +633,7 @@ button { font-family: inherit; cursor: pointer; }
 .brand-name {
     font-family: 'GmarketSansBold', 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 22px;
     line-height: 1;
     margin: 0 0 0 0;
     text-align: left;
@@ -646,26 +646,36 @@ button { font-family: inherit; cursor: pointer; }
 }
 .login-title {
     font-family: 'GmarketSansBold', 'Inter', sans-serif;
-    margin: 0 0 24px 0;
+    margin: 0 0 8px 0;
     font-size: 27px;
     font-weight: 700;
 }
 .login-sub {
-    width: 50%;
-    margin: 0 0 -2px 0;
+    margin: 0 0 16px 0;
     text-align: left;
     color: #6b6f7a;
     font-size: 13px;
 }
+.login-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+.login-alert-area {
+    flex: 1;
+    min-width: 0;
+}
 .login-form {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: stretch;
     gap: 10px;
+    width: 50%;
+    flex-shrink: 0;
 }
 .login-form input,
 .login-form button {
-    width: 50%;
+    width: 100%;
 }
 .login-form input {
     height: 36px;

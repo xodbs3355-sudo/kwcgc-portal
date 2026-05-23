@@ -5,19 +5,22 @@
   <div class="login-card">
     <div class="brand-name">강원도시가스</div>
     <h1 class="login-title">준공서류 검토 프로그램<sup class="portal-logo-sub">(63A &amp; 10m이하 수요가배관 전용)</sup></h1>
+    <p class="login-sub">각 협력회사 계정으로 로그인하세요</p>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, msg in messages %}
-        <div class="alert alert-{{ category }}">{{ msg }}</div>
-      {% endfor %}
-    {% endwith %}
-
-    <form method="post" action="{{ url_for('login') }}" class="login-form">
-      <p class="login-sub">각 협력회사 계정으로 로그인하세요</p>
-      <input type="text" name="username" placeholder="아이디" autocomplete="username" required autofocus>
-      <input type="password" name="password" placeholder="비밀번호" autocomplete="current-password" required>
-      <button type="submit" class="btn-primary">로그인</button>
-    </form>
+    <div class="login-row">
+      <div class="login-alert-area">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+      </div>
+      <form method="post" action="{{ url_for('login') }}" class="login-form">
+        <input type="text" name="username" placeholder="아이디" autocomplete="username" required autofocus>
+        <input type="password" name="password" placeholder="비밀번호" autocomplete="current-password" required>
+        <button type="submit" class="btn-primary">로그인</button>
+      </form>
+    </div>
   </div>
 </div>
 <script>
