@@ -6,6 +6,7 @@ import os
 import pickle
 import secrets
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
@@ -207,6 +208,7 @@ def review():
     project_info = session.get("project_info", {})
 
     all_results = {}
+    jobs = []
     for doc in DOCUMENTS:
         did = doc["id"]
         name = doc["name"]
@@ -220,7 +222,17 @@ def review():
             }]
             continue
         files = uploaded.get(did, [])
-        all_results[name] = reviewer.review_document(did, name, files, project_info)
+        jobs.append((did, name, files))
+
+    # Gemini API 병렬 호출 — 서류별로 동시에 검토
+    if jobs:
+        with ThreadPoolExecutor(max_workers=len(jobs)) as executor:
+            futures = {
+                executor.submit(reviewer.review_document, did, name, files, project_info): name
+                for did, name, files in jobs
+            }
+            for future, name in futures.items():
+                all_results[name] = future.result()
 
     session["review_results"] = all_results
     return redirect(url_for("result"))

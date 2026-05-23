@@ -103,7 +103,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
               {% set issue_count = ng_count + warn_count %}
               {% if issue_count > 0 %}
                 <span class="doc-badge badge-issue">보완 또는 확인 {{ issue_count }}</span>
-              {% elif skip_count > 0 %}
+              {% elif skip_count == rows|length %}
                 <span class="doc-badge badge-skip">해당 없음</span>
               {% else %}
                 <span class="doc-badge badge-ok">양호</span>
