@@ -21,6 +21,7 @@ import output
 import prompts_store
 import unit_prices_store
 import usage_store
+import chat
 from documents import DOCUMENTS
 
 
@@ -169,6 +170,10 @@ def login():
 @app.route("/logout", methods=["POST"])
 def logout():
     clear_uploaded()
+    # 채팅 컨텍스트 메모리 해제
+    chat_id = session.get("chat_id")
+    if chat_id:
+        chat.clear(chat_id)
     session.clear()
     return redirect(url_for("login"))
 
@@ -294,6 +299,20 @@ def review():
                 all_results[name] = future.result()
 
     session["review_results"] = all_results
+
+    # 채팅 컨텍스트 구축 (검토 결과 + PDF 텍스트 추출본) — In-memory 보관
+    try:
+        old_chat_id = session.get("chat_id")
+        if old_chat_id:
+            chat.clear(old_chat_id)
+        new_id = chat.new_chat_id()
+        context = chat.build_context(all_results, uploaded, project_info, DOCUMENTS)
+        chat.save(new_id, context)
+        session["chat_id"] = new_id
+    except Exception:
+        # 채팅 컨텍스트 빌드 실패가 검토 자체를 막으면 안 됨
+        session.pop("chat_id", None)
+
     return redirect(url_for("result"))
 
 
@@ -400,6 +419,36 @@ def warmup():
         return jsonify({"ok": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:120]})
+
+
+# ── 검토 결과 채팅 ────────────────────────────────────────────
+@app.route("/chat", methods=["POST"])
+def chat_ask():
+    if "company" not in session:
+        return jsonify({"ok": False, "error": "로그인이 필요합니다."}), 401
+    chat_id = session.get("chat_id")
+    if not chat_id:
+        return jsonify({"ok": False, "error": "검토 결과가 없습니다. 먼저 검토를 진행해주세요."}), 400
+    message = (request.form.get("message") or "").strip()
+    if not message:
+        return jsonify({"ok": False, "error": "메시지가 비어있습니다."}), 400
+    if len(message) > 2000:
+        return jsonify({"ok": False, "error": "메시지가 너무 깁니다 (2000자 이내)."}), 400
+    res = chat.ask(chat_id, message, company=session.get("company", ""))
+    if not res["ok"]:
+        return jsonify({"ok": False, "error": res.get("error") or "알 수 없는 오류"}), 500
+    return jsonify({"ok": True, "answer": res["answer"]})
+
+
+@app.route("/chat/history", methods=["GET"])
+def chat_history():
+    """페이지 로드 시 이전 대화 복원용."""
+    if "company" not in session:
+        return jsonify({"ok": False, "history": []}), 401
+    chat_id = session.get("chat_id")
+    if not chat_id:
+        return jsonify({"ok": True, "history": []})
+    return jsonify({"ok": True, "history": chat.get_history(chat_id)})
 
 
 @app.route("/download/pdf")

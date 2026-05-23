@@ -58,6 +58,121 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
     }
   });
 });
+
+// ── 검토 결과 채팅 위젯 ─────────────────────────────────────────
+(function(){
+  const toggle = document.getElementById('chat-toggle');
+  const panel = document.getElementById('chat-panel');
+  const closeBtn = document.getElementById('chat-close');
+  const body = document.getElementById('chat-body');
+  const form = document.getElementById('chat-form');
+  const input = document.getElementById('chat-input');
+  const send = document.getElementById('chat-send');
+  if (!toggle || !panel) return;
+
+  let busy = false;
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function appendMsg(role, text) {
+    // 첫 메시지면 empty placeholder 제거
+    const empty = body.querySelector('.chat-empty');
+    if (empty) empty.remove();
+    const div = document.createElement('div');
+    div.className = 'chat-msg chat-msg-' + role;
+    // 줄바꿈 → <br>, 그 외는 escape
+    div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+    return div;
+  }
+
+  function appendThinking() {
+    const empty = body.querySelector('.chat-empty');
+    if (empty) empty.remove();
+    const div = document.createElement('div');
+    div.className = 'chat-msg chat-msg-assistant chat-msg-thinking';
+    div.innerHTML = '<span class="chat-dot"></span><span class="chat-dot"></span><span class="chat-dot"></span>';
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+    return div;
+  }
+
+  // 토글 동작
+  toggle.addEventListener('click', () => {
+    const hidden = panel.hasAttribute('hidden');
+    if (hidden) {
+      panel.removeAttribute('hidden');
+      toggle.classList.add('chat-toggle-open');
+      setTimeout(() => input?.focus(), 50);
+    } else {
+      panel.setAttribute('hidden', '');
+      toggle.classList.remove('chat-toggle-open');
+    }
+  });
+  closeBtn?.addEventListener('click', () => {
+    panel.setAttribute('hidden', '');
+    toggle.classList.remove('chat-toggle-open');
+  });
+
+  // Enter 전송, Shift+Enter 줄바꿈
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  // 전송
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    const text = (input.value || '').trim();
+    if (!text) return;
+    busy = true;
+    send.disabled = true;
+    input.disabled = true;
+    appendMsg('user', text);
+    input.value = '';
+    const thinking = appendThinking();
+    try {
+      const fd = new FormData();
+      fd.append('message', text);
+      const res = await fetch('/chat', { method: 'POST', body: fd });
+      const data = await res.json();
+      thinking.remove();
+      if (data.ok) {
+        appendMsg('assistant', data.answer || '(빈 응답)');
+      } else {
+        appendMsg('assistant-error', data.error || '오류가 발생했습니다.');
+      }
+    } catch (err) {
+      thinking.remove();
+      appendMsg('assistant-error', '네트워크 오류: ' + err);
+    } finally {
+      busy = false;
+      send.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  });
+
+  // 페이지 로드 시 이전 대화 복원
+  (async () => {
+    try {
+      const res = await fetch('/chat/history');
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.history) && data.history.length > 0) {
+        data.history.forEach((h) => {
+          appendMsg(h.role === 'user' ? 'user' : 'assistant', h.text || '');
+        });
+      }
+    } catch (_) { /* 복원 실패 무시 */ }
+  })();
+})();
 </script>
 {% endblock %}
 
@@ -170,6 +285,40 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
         {% endif %}
       {% endfor %}
     </aside>
+
+    <!-- 검토 결과 채팅 위젯 — 우측 하단 fixed -->
+    <div class="chat-widget">
+      <button type="button" id="chat-toggle" class="chat-toggle" title="검토 결과에 대해 질문하기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+        <span>AI에게 질문</span>
+      </button>
+      <div class="chat-panel" id="chat-panel" hidden>
+        <div class="chat-header">
+          <span class="chat-title">검토 결과 Q&amp;A</span>
+          <button type="button" id="chat-close" class="chat-close" title="닫기">×</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+          <div class="chat-empty">
+            검토 결과에 대해 자유롭게 질문해보세요.<br>
+            <span class="chat-empty-sub">예: "doc06 어떤 룰에서 NG가 났는지 설명해줘"</span>
+          </div>
+        </div>
+        <form class="chat-form" id="chat-form" autocomplete="off">
+          <textarea id="chat-input" placeholder="질문을 입력하세요 (Enter 전송, Shift+Enter 줄바꿈)"
+                    rows="2" maxlength="2000"></textarea>
+          <button type="submit" class="chat-send" id="chat-send" title="전송">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
 
     <!-- 우측: 첨부 파일 미리보기만 -->
     <section class="doc-detail-panel">
