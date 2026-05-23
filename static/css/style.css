@@ -404,7 +404,9 @@ button { font-family: inherit; cursor: pointer; }
     border-bottom: 1px solid #e5e5e8;
     transition: background 0.12s;
 }
-.doc-table tbody tr:hover { background: #fafafa; }
+.doc-table tbody tr:hover {
+    background: linear-gradient(315deg, #eef0fb 0%, #f3f5fc 50%, #fbfcfe 100%);
+}
 
 .doc-table td {
     padding: 10px 12px;
