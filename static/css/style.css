@@ -135,6 +135,7 @@ button { font-family: inherit; cursor: pointer; }
     display: flex;
     gap: 4px;
     align-items: flex-end;
+    border-bottom: 1px solid #e5e5e8;
     margin-bottom: 16px;
 }
 .tab {
