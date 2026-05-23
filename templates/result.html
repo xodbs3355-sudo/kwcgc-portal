@@ -95,7 +95,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
           {% set ng_count = rows | selectattr('결과', 'equalto', 'NG') | list | length %}
           {% set warn_count = rows | selectattr('결과', 'equalto', 'WARN') | list | length %}
           {% set skip_count = rows | selectattr('결과', 'equalto', 'SKIP') | list | length %}
-          <div class="doc-list-item {% if loop.first %}active{% endif %}"
+          <div class="doc-list-item"
                data-doc-target="{{ doc.id }}">
             <button type="button" class="doc-list-head">
               <span class="doc-list-num">{{ doc.num }}</span>
@@ -135,7 +135,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
       {% for doc in documents %}
         {% set rows = all_results.get(doc.name) %}
         {% if rows %}
-          <div class="doc-detail-pane {% if loop.first %}active{% endif %}"
+          <div class="doc-detail-pane"
                data-doc-pane="{{ doc.id }}">
             <h2 class="doc-detail-title">{{ doc.name }}</h2>
             <div class="preview-section">

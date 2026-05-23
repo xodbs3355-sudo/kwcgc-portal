@@ -6,6 +6,7 @@ import io
 import json
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image
 import config
@@ -164,14 +165,30 @@ def review_document(doc_id: str, doc_name: str, files: list,
 
     results = [make_result("서류 첨부 여부", "OK", f"{len(files)}개 파일 첨부", "첨부 확인")]
 
+    # 파일별 검토 — 다중 파일은 병렬 처리 (단일 파일은 그대로)
     per_file_results: list[list[dict]] = []
-    for i, (filename, file_bytes) in enumerate(files):
-        file_results = review_file(doc_id, doc_name, file_bytes, filename, project_info)
-        per_file_results.append(file_results)
-        # 다중 파일일 때만 항목명 앞에 파일 표시
-        if len(files) > 1:
+    if len(files) == 1:
+        filename, file_bytes = files[0]
+        per_file_results.append(
+            review_file(doc_id, doc_name, file_bytes, filename, project_info)
+        )
+    else:
+        with ThreadPoolExecutor(max_workers=len(files)) as executor:
+            future_to_idx = {
+                executor.submit(review_file, doc_id, doc_name, fb, fn, project_info): idx
+                for idx, (fn, fb) in enumerate(files)
+            }
+            # 순서 보존 — 인덱스로 정렬
+            indexed = [(future_to_idx[f], f.result()) for f in future_to_idx]
+            indexed.sort(key=lambda x: x[0])
+            per_file_results = [r for _, r in indexed]
+
+        # [파일 N] 라벨 부여
+        for i, file_results in enumerate(per_file_results):
             for r in file_results:
                 r["항목"] = f"[파일 {i+1}] {r['항목']}"
+
+    for file_results in per_file_results:
         results.extend(file_results)
 
     # doc05 — 4가지 유형 첨부 자동 집계
