@@ -13,6 +13,7 @@ import os
 from typing import Optional
 
 from documents import DOCUMENTS
+from prompt_defaults import PROMPTS as PER_DOC_DEFAULTS
 
 
 def _resolve_prompts_file() -> str:
@@ -28,8 +29,8 @@ def _resolve_prompts_file() -> str:
 PROMPTS_FILE = _resolve_prompts_file()
 
 
-def _default_prompt(doc_name: str) -> str:
-    """관리자가 따로 입력하지 않은 서류용 기본 프롬프트."""
+def _generic_default_prompt(doc_name: str) -> str:
+    """서류별 전용 프롬프트가 없을 때 쓰는 generic 템플릿."""
     return f"""\
 도시가스 공사 준공서류 - 「{doc_name}」 검토.
 첨부된 서류를 분석하여 다음 항목을 검토하고 **JSON 배열만** 응답하세요. (다른 설명/마크다운 금지)
@@ -60,6 +61,13 @@ def _default_prompt(doc_name: str) -> str:
 """
 
 
+def _default_prompt(doc_id: str, doc_name: str) -> str:
+    """서류 기본 프롬프트 — 서류별 전용이 있으면 그것, 없으면 generic."""
+    if doc_id in PER_DOC_DEFAULTS:
+        return PER_DOC_DEFAULTS[doc_id]
+    return _generic_default_prompt(doc_name)
+
+
 def load_all() -> dict:
     """저장된 모든 프롬프트 dict 반환 ({doc_id: prompt_text})."""
     if not os.path.exists(PROMPTS_FILE):
@@ -79,13 +87,13 @@ def save_all(prompts: dict) -> None:
 
 
 def get_effective_prompt(doc_id: str, doc_name: str) -> str:
-    """관리자가 저장한 프롬프트가 있으면 사용, 없으면 기본 프롬프트."""
+    """관리자가 저장한 프롬프트가 있으면 사용, 없으면 서류별 기본 프롬프트."""
     saved = load_all().get(doc_id, "").strip()
-    return saved if saved else _default_prompt(doc_name)
+    return saved if saved else _default_prompt(doc_id, doc_name)
 
 
 def list_for_admin() -> list[dict]:
-    """관리자 페이지용 — DOCUMENTS 순서대로 (id, name, prompt, is_default) 리스트."""
+    """관리자 페이지용 — DOCUMENTS 순서대로 (id, name, prompt, is_custom) 리스트."""
     saved = load_all()
     out = []
     for d in DOCUMENTS:
@@ -95,11 +103,12 @@ def list_for_admin() -> list[dict]:
             "id": did,
             "num": d["num"],
             "name": d["name"],
-            "prompt": prompt or _default_prompt(d["name"]),
+            "prompt": prompt or _default_prompt(did, d["name"]),
             "is_custom": bool(prompt),
         })
     return out
 
 
-def get_default(doc_name: str) -> str:
-    return _default_prompt(doc_name)
+def get_default(doc_name: str, doc_id: str = "") -> str:
+    """하위 호환 — 가능한 경우 doc_id로 서류별 기본값 반환, 아니면 generic."""
+    return _default_prompt(doc_id, doc_name)

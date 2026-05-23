@@ -380,7 +380,7 @@ def admin_prompts_reset():
     prompts_store.save_all(all_prompts)
     # 기본 프롬프트 반환
     doc = next((d for d in DOCUMENTS if d["id"] == doc_id), None)
-    default_prompt = prompts_store.get_default(doc["name"]) if doc else ""
+    default_prompt = prompts_store.get_default(doc["name"], doc["id"]) if doc else ""
     return jsonify({"ok": True, "default_prompt": default_prompt})
 
 

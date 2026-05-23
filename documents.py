@@ -1,13 +1,14 @@
 # 인입 규모 준공서류
+# attachment_only=True 인 서류는 AI 검토 호출을 생략하고 첨부 여부만 확인
 DOCUMENTS = [
-    {"id": "doc01", "num": "1",  "name": "준공계",                        "condition": "",                          "default_skip": False},
-    {"id": "doc02", "num": "2",  "name": "하도급 공종별 작업내역서",       "condition": "품목·단가·수량·금액 포함",   "default_skip": False},
-    {"id": "doc03", "num": "3",  "name": "기밀시험 데이터",                "condition": "",                          "default_skip": False},
-    {"id": "doc04", "num": "4",  "name": "융착 데이터",                    "condition": "",                          "default_skip": False},
-    {"id": "doc10", "num": "5",  "name": "자재성적서",                     "condition": "",                          "default_skip": False},
-    {"id": "doc05", "num": "6",  "name": "교육일지/작업일보/스케치도면",   "condition": "",                          "default_skip": False},
-    {"id": "doc06", "num": "7",  "name": "산업안전보건관리비 내역서",      "condition": "사용할 경우",                "default_skip": False},
-    {"id": "doc09", "num": "8",  "name": "화재위험작업허가서",             "condition": "기존관 PLP 시",              "default_skip": True},
-    {"id": "doc07", "num": "9",  "name": "저심도배관현황",                 "condition": "해당 시",                    "default_skip": True},
-    {"id": "doc08", "num": "10", "name": "기타서류",                       "condition": "해당 시",                    "default_skip": True},
+    {"id": "doc01", "num": "1",  "name": "준공계",                        "condition": "",                          "default_skip": False, "attachment_only": False},
+    {"id": "doc02", "num": "2",  "name": "하도급 공종별 작업내역서",       "condition": "품목·단가·수량·금액 포함",   "default_skip": False, "attachment_only": False},
+    {"id": "doc03", "num": "3",  "name": "기밀시험 데이터",                "condition": "",                          "default_skip": False, "attachment_only": False},
+    {"id": "doc04", "num": "4",  "name": "융착 데이터",                    "condition": "",                          "default_skip": False, "attachment_only": True},
+    {"id": "doc10", "num": "5",  "name": "자재성적서",                     "condition": "",                          "default_skip": False, "attachment_only": True},
+    {"id": "doc05", "num": "6",  "name": "교육일지/작업일보/스케치도면",   "condition": "",                          "default_skip": False, "attachment_only": False},
+    {"id": "doc06", "num": "7",  "name": "산업안전보건관리비 내역서",      "condition": "사용할 경우",                "default_skip": False, "attachment_only": False},
+    {"id": "doc09", "num": "8",  "name": "화재위험작업허가서",             "condition": "기존관 PLP 시",              "default_skip": True,  "attachment_only": False},
+    {"id": "doc07", "num": "9",  "name": "저심도배관현황",                 "condition": "해당 시",                    "default_skip": True,  "attachment_only": False},
+    {"id": "doc08", "num": "10", "name": "기타서류",                       "condition": "해당 시",                    "default_skip": True,  "attachment_only": False},
 ]
