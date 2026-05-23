@@ -630,14 +630,30 @@ button { font-family: inherit; cursor: pointer; }
     padding: 36px 40px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.14);
 }
+.brand-name {
+    font-family: 'GmarketSansBold', 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1;
+    margin: 0 0 4px 0;
+    text-align: left;
+    background: linear-gradient(180deg, #4a4a4a 0%, #8a8a8a 50%, #c4c4c4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    display: inline-block;
+}
 .login-title {
     font-family: 'GmarketSansBold', 'Inter', sans-serif;
-    margin: 0;
+    margin: 0 0 24px 0;
     font-size: 27px;
     font-weight: 700;
 }
 .login-sub {
-    margin: 4px 0 24px;
+    width: 50%;
+    margin: 0 0 -2px 0;
+    text-align: left;
     color: #6b6f7a;
     font-size: 13px;
 }
