@@ -4,8 +4,8 @@
   </div>
   <div class="portal-header-right">
     {% if available_years %}
-      <select class="year-select" id="header-year" title="검토 연도 선택">
-        <option value="">연도 선택</option>
+      <span class="year-label">단가 적용 연도</span>
+      <select class="year-select" id="header-year" title="단가 적용 연도 선택">
         {% for y in available_years %}
           <option value="{{ y }}" {% if sess_project_info.get('year') == y %}selected{% endif %}>{{ y }}</option>
         {% endfor %}

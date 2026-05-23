@@ -7,6 +7,7 @@ import pickle
 import secrets
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
@@ -68,6 +69,26 @@ def inject_global_session_info():
         "available_years": unit_prices_store.list_years(),
         "sess_project_info": session.get("project_info", {}),
     }
+
+
+@app.before_request
+def _auto_set_default_year():
+    """로그인 상태에서 session 에 year 없으면 자동으로 현재 연도 또는 최신 연도 설정.
+    헤더 드롭다운이 항상 합리적인 기본값을 갖도록.
+    """
+    if "company" not in session:
+        return
+    info = session.get("project_info", {})
+    if info.get("year"):
+        return
+    years = unit_prices_store.list_years()
+    if not years:
+        return
+    current_year = str(datetime.now().year)
+    chosen = current_year if current_year in years else years[0]
+    info = dict(info)
+    info["year"] = chosen
+    session["project_info"] = info
 
 
 # ── 세션 저장소 (업로드된 파일 bytes 는 디스크 임시 파일로) ─────────
