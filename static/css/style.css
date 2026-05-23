@@ -146,6 +146,7 @@ button { font-family: inherit; cursor: pointer; }
     background: transparent;
     border: 1px solid transparent;
     border-radius: 8px 8px 0 0;
+    margin-bottom: -1px;     /* active 탭 하단을 .tabs 아래 회색선 위로 1px 겹쳐 끊김 효과 */
     transition: color 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
     display: inline-flex;
     align-items: center;
@@ -160,8 +161,9 @@ button { font-family: inherit; cursor: pointer; }
 .tab.active {
     color: #5e6ad2;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.2);
     border-color: #e5e5e8;
+    border-bottom-color: transparent;   /* 시트와 연결된 느낌 — 하단 테두리 끊기 */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .tab.disabled {
