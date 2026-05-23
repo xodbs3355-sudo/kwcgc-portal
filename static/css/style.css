@@ -634,10 +634,10 @@ button { font-family: inherit; cursor: pointer; }
     font-family: 'GmarketSansBold', 'Inter', sans-serif;
     font-weight: 700;
     font-size: 22px;
-    line-height: 1;
+    line-height: 1.2;
     margin: 0 0 0 0;
     text-align: left;
-    background: linear-gradient(180deg, #7a7a7a 0%, #aaaaaa 50%, #d4d4d4 100%);
+    background: linear-gradient(180deg, #969696 0%, #b5b5b5 30%, #d4d4d4 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -652,7 +652,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .login-sub {
     margin: 0 0 16px 0;
-    text-align: left;
+    text-align: right;
     color: #6b6f7a;
     font-size: 13px;
 }
