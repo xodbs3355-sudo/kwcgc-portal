@@ -22,29 +22,53 @@
     <form id="unit-prices-form" method="post" action="{{ url_for('admin_unit_prices_save') }}">
       <input type="hidden" name="year" value="{{ selected_year }}">
 
-      {% for mat in material_keys %}
-        <div class="material-section">
-          <h3 class="material-title">도로재질: {{ material_display[mat] }}</h3>
-          <div class="price-grid">
+      <div class="price-3col-grid">
+        <!-- 컬럼 1: ASP -->
+        <div class="price-column">
+          <h3 class="price-column-title">도로재질 : {{ material_display['ASP'] }}</h3>
+          <div class="price-column-body">
             {% for lk in length_keys %}
-              <div class="price-row">
-                <label for="p-{{ mat }}-{{ lk }}">{{ lk }}</label>
-                <input id="p-{{ mat }}-{{ lk }}" type="text"
-                       name="{{ mat }}__{{ lk }}"
-                       value="{% if prices[mat][lk] %}{{ '{:,}'.format(prices[mat][lk]) }}{% endif %}"
+              <div class="price-row-v">
+                <span class="price-length">{{ lk }}</span>
+                <input type="text" name="ASP__{{ lk }}"
+                       value="{% if prices['ASP'][lk] %}{{ '{:,}'.format(prices['ASP'][lk]) }}{% endif %}"
                        class="price-input" inputmode="numeric" placeholder="0">
+                <span class="price-unit">원</span>
               </div>
             {% endfor %}
-            <div class="price-row price-row-plp">
-              <label for="p-{{ mat }}-plp">PLP 옵션</label>
-              <input id="p-{{ mat }}-plp" type="text"
-                     name="{{ mat }}__{{ plp_key }}"
-                     value="{% if prices[mat][plp_key] %}{{ '{:,}'.format(prices[mat][plp_key]) }}{% endif %}"
+          </div>
+        </div>
+
+        <!-- 컬럼 2: CON`C 및 보도블럭 -->
+        <div class="price-column">
+          <h3 class="price-column-title">도로재질 : {{ material_display['CONC_BLOCK'] }}</h3>
+          <div class="price-column-body">
+            {% for lk in length_keys %}
+              <div class="price-row-v">
+                <span class="price-length">{{ lk }}</span>
+                <input type="text" name="CONC_BLOCK__{{ lk }}"
+                       value="{% if prices['CONC_BLOCK'][lk] %}{{ '{:,}'.format(prices['CONC_BLOCK'][lk]) }}{% endif %}"
+                       class="price-input" inputmode="numeric" placeholder="0">
+                <span class="price-unit">원</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- 컬럼 3: PLP 옵션 (단일 필드) -->
+        <div class="price-column price-column-plp">
+          <h3 class="price-column-title">PLP 옵션</h3>
+          <div class="price-column-body">
+            <div class="price-row-v price-row-plp-single">
+              <span class="price-length-note">연장/도로재질 규격 무관</span>
+              <input type="text" name="{{ plp_key }}"
+                     value="{% if prices[plp_key] %}{{ '{:,}'.format(prices[plp_key]) }}{% endif %}"
                      class="price-input" inputmode="numeric" placeholder="0">
+              <span class="price-unit">원</span>
             </div>
           </div>
         </div>
-      {% endfor %}
+      </div>
 
       <div class="unit-prices-actions">
         <button type="button" id="delete-year-btn" class="btn-danger-sm">이 연도 삭제</button>
@@ -133,7 +157,6 @@ document.querySelectorAll('.price-input').forEach((input) => {
     input.value = raw ? Number(raw).toLocaleString('ko-KR') : '';
   });
   input.addEventListener('focus', () => {
-    // 포커스 시 콤마 제거 → 입력 편하게
     input.value = input.value.replace(/,/g, '');
   });
 });

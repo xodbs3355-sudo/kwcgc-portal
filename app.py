@@ -482,11 +482,12 @@ def admin_unit_prices_save():
                 prices[mat][lk] = int(raw) if raw else 0
             except ValueError:
                 prices[mat][lk] = 0
-        plp_raw = (request.form.get(f"{mat}__{unit_prices_store.PLP_KEY}") or "0").replace(",", "").strip()
-        try:
-            prices[mat][unit_prices_store.PLP_KEY] = int(plp_raw) if plp_raw else 0
-        except ValueError:
-            prices[mat][unit_prices_store.PLP_KEY] = 0
+    # PLP 옵션은 연도 최상위 단일 필드 (도로재질/연장 무관)
+    plp_raw = (request.form.get(unit_prices_store.PLP_KEY) or "0").replace(",", "").strip()
+    try:
+        prices[unit_prices_store.PLP_KEY] = int(plp_raw) if plp_raw else 0
+    except ValueError:
+        prices[unit_prices_store.PLP_KEY] = 0
 
     unit_prices_store.set_year(year, prices)
     return jsonify({"ok": True})

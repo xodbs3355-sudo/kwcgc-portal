@@ -1630,63 +1630,92 @@ button { font-family: inherit; cursor: pointer; }
     color: #9b9fa8;
     margin-right: 8px;
 }
-.material-section {
+/* 3컬럼 세로 배치 — ASP / CONC+보도블럭 / PLP옵션 */
+.price-3col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
     margin-bottom: 16px;
-    padding: 16px 20px;
+}
+.price-column {
     background: #fff;
     border: 1px solid #e5e5e8;
     border-radius: 8px;
+    padding: 14px 16px;
+    min-width: 0;
 }
-.material-title {
-    margin: 0 0 14px 0;
-    font-size: 14px;
+.price-column-plp {
+    background: linear-gradient(180deg, #fff 0%, #f7f7fb 100%);
+    border-color: #c8cbf0;
+}
+.price-column-title {
+    margin: 0 0 12px 0;
+    font-size: 13px;
     font-weight: 700;
     color: #1a1a1a;
     padding-bottom: 8px;
     border-bottom: 1px solid #e5e5e8;
+    white-space: nowrap;
 }
-.price-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 8px 16px;
+.price-column-plp .price-column-title {
+    color: #5e6ad2;
+    border-bottom-color: #c8cbf0;
 }
-.price-row {
+.price-column-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.price-row-v {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
-.price-row label {
-    flex: 0 0 60px;
+.price-length {
+    flex: 0 0 36px;
     font-size: 12px;
     font-weight: 600;
     color: #6b6f7a;
-    text-align: right;
+    text-align: center;
+    background: #f7f7f9;
+    padding: 6px 0;
+    border-radius: 4px;
 }
-.price-row-plp {
-    grid-column: 1 / -1;
-    margin-top: 8px;
-    padding-top: 10px;
-    border-top: 1px dashed #e5e5e8;
-}
-.price-row-plp label {
-    color: #5e6ad2;
-    flex: 0 0 80px;
+.price-length-note {
+    flex: 1;
+    font-size: 11px;
+    color: #6b6f7a;
+    padding: 6px 8px;
+    background: #f7f7f9;
+    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
 }
 .price-input {
     flex: 1;
-    height: 32px;
+    height: 30px;
     padding: 0 10px;
     font-size: 13px;
     font-family: 'Inter', sans-serif;
     border: 1px solid #e5e5e8;
-    border-radius: 6px;
+    border-radius: 5px;
     outline: none;
     text-align: right;
+    min-width: 0;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 .price-input:focus {
     border-color: #5e6ad2;
     box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
+}
+.price-unit {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b6f7a;
+}
+.price-row-plp-single {
+    margin-top: 2px;
 }
 .unit-prices-actions {
     display: flex;

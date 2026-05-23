@@ -9,11 +9,17 @@
 데이터 구조:
 {
   "2026": {
-    "ASP_CONC":   {"1m": 1000000, ..., "10m": 4000000, "PLP옵션": 500000},
-    "보도블럭":    {"1m": 800000,  ..., "10m": 3500000, "PLP옵션": 400000}
+    "ASP":        {"1m": 1000000, ..., "10m": 4000000},
+    "CONC_BLOCK": {"1m": 800000,  ..., "10m": 3500000},
+    "PLP옵션":    500000                              ← 연도 최상위 (도로재질·연장 무관)
   },
   "2025": { ... }
 }
+
+도로재질 매핑 (사용자 입력 콤보박스 → 단가표 키):
+  ASP        → ASP
+  CON`C      → CONC_BLOCK
+  보도블럭   → CONC_BLOCK
 """
 import json
 import os
@@ -34,19 +40,26 @@ def _resolve_file() -> str:
 UNIT_PRICES_FILE = _resolve_file()
 
 LENGTH_KEYS = ["1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m", "10m"]
-MATERIAL_KEYS = ["ASP_CONC", "보도블럭"]
+MATERIAL_KEYS = ["ASP", "CONC_BLOCK"]
 MATERIAL_DISPLAY = {
-    "ASP_CONC": "ASP / CON`C",
-    "보도블럭": "보도블럭",
+    "ASP": "ASP",
+    "CONC_BLOCK": "CON`C 및 보도블럭",
 }
 PLP_KEY = "PLP옵션"
 
+# 사용자 콤보박스 값 → 단가표 카테고리 키 매핑
+ROAD_MATERIAL_MAP = {
+    "ASP": "ASP",
+    "CON`C": "CONC_BLOCK",
+    "보도블럭": "CONC_BLOCK",
+}
+
 
 def _empty_year() -> dict:
-    return {
-        mat: {**{lk: 0 for lk in LENGTH_KEYS}, PLP_KEY: 0}
-        for mat in MATERIAL_KEYS
-    }
+    """빈 연도 데이터 골격."""
+    data = {mat: {lk: 0 for lk in LENGTH_KEYS} for mat in MATERIAL_KEYS}
+    data[PLP_KEY] = 0
+    return data
 
 
 def load_all() -> dict:
@@ -71,13 +84,12 @@ def list_years() -> list[str]:
 
 
 def get_year(year: str) -> dict:
-    """특정 연도 데이터. 없으면 빈 구조 반환."""
     data = load_all()
     return _ensure_shape(data.get(year))
 
 
 def _ensure_shape(year_data: dict | None) -> dict:
-    """저장된 데이터에 빠진 필드가 있으면 0으로 채움."""
+    """저장된 데이터에 빠진 필드가 있으면 0으로 채움. 신구 구조 모두 대응."""
     out = _empty_year()
     if not year_data:
         return out
@@ -88,10 +100,10 @@ def _ensure_shape(year_data: dict | None) -> dict:
                 out[mat][lk] = int(src.get(lk) or 0)
             except (TypeError, ValueError):
                 out[mat][lk] = 0
-        try:
-            out[mat][PLP_KEY] = int(src.get(PLP_KEY) or 0)
-        except (TypeError, ValueError):
-            out[mat][PLP_KEY] = 0
+    try:
+        out[PLP_KEY] = int(year_data.get(PLP_KEY) or 0)
+    except (TypeError, ValueError):
+        out[PLP_KEY] = 0
     return out
 
 
@@ -118,23 +130,17 @@ def delete_year(year: str) -> None:
 
 
 def lookup_price(year: str, road_material: str, extension_m: int, plp: bool) -> int | None:
-    """검토 단계에서 최종 공사비 산출용 — 단가 + (PLP 옵션) 조회.
+    """검토 단계 최종 공사비 산출용 — 단가 + (PLP 옵션) 조회.
 
-    road_material: "ASP", "CON`C", "보도블럭" 중 하나 (입력 탭의 콤보박스 값)
-    extension_m: 1~10 정수 (소수점은 반올림하여 사용)
-    plp: True 시 PLP 옵션 가산
+    road_material: 사용자 콤보박스 값 ("ASP" / "CON`C" / "보도블럭")
+    extension_m: 1~10 정수
+    plp: True 시 PLP 옵션 가산 (연도별 단일 값)
     """
-    # 콤보 값을 단가표 키로 매핑
-    if road_material in ("ASP", "CON`C"):
-        mat_key = "ASP_CONC"
-    elif road_material == "보도블럭":
-        mat_key = "보도블럭"
-    else:
-        return None
-    if extension_m < 1 or extension_m > 10:
+    mat_key = ROAD_MATERIAL_MAP.get(road_material)
+    if mat_key is None or extension_m < 1 or extension_m > 10:
         return None
     year_data = get_year(year)
     base = year_data[mat_key][f"{extension_m}m"]
     if plp:
-        base += year_data[mat_key][PLP_KEY]
+        base += year_data[PLP_KEY]
     return base
