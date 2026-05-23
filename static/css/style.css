@@ -600,7 +600,9 @@ button { font-family: inherit; cursor: pointer; }
     padding: 36px 48px;
     text-align: center;
     box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-    min-width: 320px;
+    width: 520px;
+    max-width: calc(100vw - 40px);
+    box-sizing: border-box;
 }
 .spinner-large {
     width: 48px;
@@ -641,9 +643,14 @@ button { font-family: inherit; cursor: pointer; }
     font-size: 12px;
     color: #9b9fa8;
     text-align: center;
-    min-height: 18px;
+    min-height: 32px;
     letter-spacing: -0.1px;
     transition: opacity 0.18s ease-out;
+    word-break: keep-all;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ── 검토시작 버튼 (신설 헤더 셀 안 우측) ──────────────────── */
