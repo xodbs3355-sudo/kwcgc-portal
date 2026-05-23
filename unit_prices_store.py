@@ -21,6 +21,7 @@
   CON`C      → CONC_BLOCK
   보도블럭   → CONC_BLOCK
 """
+import datetime
 import json
 import os
 
@@ -46,6 +47,12 @@ MATERIAL_DISPLAY = {
     "CONC_BLOCK": "CON`C 및 보도블럭(ASP 外)",
 }
 PLP_KEY = "PLP옵션"
+
+
+def default_applicable_year() -> int:
+    """오늘 기준 단가 적용 연도. 단가계약 기간은 당해년도 5/1 ~ 익년도 4/30."""
+    today = datetime.date.today()
+    return today.year if today.month >= 5 else today.year - 1
 
 # 사용자 콤보박스 값 → 단가표 카테고리 키 매핑
 ROAD_MATERIAL_MAP = {

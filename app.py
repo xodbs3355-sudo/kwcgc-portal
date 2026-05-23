@@ -84,7 +84,7 @@ def _auto_set_default_year():
     years = unit_prices_store.list_years()
     if not years:
         return
-    current_year = str(datetime.now().year)
+    current_year = str(unit_prices_store.default_applicable_year())
     chosen = current_year if current_year in years else years[0]
     info = dict(info)
     info["year"] = chosen
