@@ -365,19 +365,35 @@ def result():
 
     # 최종 공사비 계산 — 연간단가표 lookup + 일시점용료 가산
     # 공식: 단가표[연도][도로재질][N m] + (PLP 옵션 가산) + 일시점용료
+    # 단가 적용 연장 룰:
+    #   - 정산 대상(1m 이상 증감)   → 준공연장 ceiling (올림)
+    #   - 정산 비대상 / 정보 부족    → 발주연장 그대로
+    import math as _math
     final_cost = None
-    final_cost_meta = None      # 사용자에게 보여줄 산식 메타 (e.g. "5m 기준 + PLP + 일시점용료")
+    final_cost_meta = None      # 사용자에게 보여줄 산식 메타
     try:
         year = (project_info.get("year") or "").strip()
         road_material = (project_info.get("road_material") or "").strip()
-        ext_raw = (project_info.get("extension") or "").strip()
         plp = bool(project_info.get("plp"))
         land_fee_raw = (project_info.get("land_fee") or "").strip()
 
+        # 단가에 적용할 연장 결정
         ext_m = None
-        if ext_raw:
+        ext_basis = ""   # 메타에 보여줄 표기 ("준공 4m 올림" / "발주 3m")
+        if adjustment_required is True:
+            # 정산 대상: 준공연장 ceiling
             try:
-                ext_m = int(round(float(ext_raw)))
+                done_ext = float((project_info.get("extension") or "").strip())
+                ext_m = _math.ceil(done_ext)
+                ext_basis = f"준공 {ext_m}m(올림)"
+            except (ValueError, TypeError):
+                ext_m = None
+        else:
+            # 정산 비대상 또는 정보 부족 → 발주연장 그대로
+            try:
+                order_ext = float((project_info.get("order_extension") or "").strip())
+                ext_m = int(round(order_ext))
+                ext_basis = f"발주 {ext_m}m"
             except (ValueError, TypeError):
                 ext_m = None
 
@@ -391,7 +407,7 @@ def result():
                     except (ValueError, TypeError):
                         land_fee = 0
                 final_cost = base + land_fee
-                parts = [f"{ext_m}m 단가"]
+                parts = [f"{ext_basis} 단가"] if ext_basis else [f"{ext_m}m 단가"]
                 if plp:
                     parts.append("PLP")
                 if land_fee > 0:

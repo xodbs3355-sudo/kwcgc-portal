@@ -32,7 +32,7 @@ USAGE_FILE = _resolve_file()
 # Flash Lite 단가 (USD per 1M tokens)
 PRICE_INPUT_PER_M = 0.075
 PRICE_OUTPUT_PER_M = 0.30
-USD_TO_KRW = 1350
+USD_TO_KRW = 1500   # 약 1,500원 기준 (사용자 정책)
 
 
 def _calc_cost_krw(prompt_tokens: int, completion_tokens: int) -> float:
