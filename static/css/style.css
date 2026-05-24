@@ -1811,7 +1811,7 @@ button { font-family: inherit; cursor: pointer; }
     align-items: flex-end;
     gap: 3px;
     height: 140px;
-    padding: 8px 0;
+    padding: 8px 24px;   /* 좌우 24px 여백 — 양 끝 날짜 라벨이 카드에 닿지 않도록 */
     border-bottom: 1px solid #e5e5e8;
 }
 .usage-bar-col {
@@ -1843,7 +1843,7 @@ button { font-family: inherit; cursor: pointer; }
 .usage-bars-xaxis {
     position: relative;
     height: 18px;
-    margin-top: 4px;
+    margin: 4px 24px 0;   /* 막대그래프와 동일하게 좌우 24px 여백 */
 }
 .usage-bar-date {
     position: absolute;
