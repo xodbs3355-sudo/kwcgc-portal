@@ -289,7 +289,20 @@ def _won(n) -> str:
 
 
 def _doc06_apply_rules(data: dict) -> list[dict]:
-    """추출된 구조화 데이터에 6개 룰 적용 → 결과 행 리스트 반환."""
+    """추출된 구조화 데이터에 검증 룰 적용 → 서류별 통합 결과 카드 반환.
+
+    카드 구조 (최대 6개 + 누락 카드):
+      · (미첨부) X         — 필수 유형 중 식별 안 된 서류
+      1) 산업안전보건관리비 사용내역서  — 기준=합계 + 안전관리자 날인 + 현장소장 날인
+      2) 항목별 사용내역                — 사용내역서와 7개 항목 금액 비교
+      3) 사진대지                       — 공사명 + 품목 매칭
+      4) 세금계산서                     — 보호구 품목과 매핑
+      5) 거래명세서                     — 세금계산서와 매칭
+      6) 지급대장                       — 수량 매칭
+
+    각 카드: 모든 sub-check OK → OK / 하나라도 NG → NG (비고에 어디가 어긋났는지)
+    "파일 1" 같은 식별 요약 카드는 결과에서 제외 (내부 디버그 정보).
+    """
     results: list[dict] = []
 
     # 조건부 SKIP: 비용 사용 없음
@@ -307,16 +320,8 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
     지급대장 = data.get("지급대장") or []
     식별_요약 = data.get("식별_요약") or []
 
-    # ── 식별 요약 (각 파일이 어떤 유형으로 식별됐는지) ────────────
-    for entry in 식별_요약:
-        파일 = entry.get("파일", "?")
-        유형 = entry.get("유형", "미식별")
-        if 유형 == "미식별":
-            results.append(make_result(파일, "WARN", "미식별", "유형 식별 실패"))
-        else:
-            results.append(make_result(파일, "OK", 유형, ""))
-
     # ── 누락 유형 (필수 유형 중 식별 안 된 것) ────────────────────
+    # 식별 요약 자체는 결과 카드에 포함 X (파일 1, 파일 2 같은 표현 제거)
     found_types = {entry.get("유형") for entry in 식별_요약 if entry.get("유형") in _DOC06_REQUIRED_TYPES}
     for req in _DOC06_REQUIRED_TYPES:
         if req not in found_types:
@@ -325,48 +330,55 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
                 f"'{req}' 유형 파일이 식별되지 않음"
             ))
 
-    # ── 룰 1-가: 기준금액 == 합계금액 ─────────────────────────────
+    # ── 카드 1: 산업안전보건관리비 사용내역서 ─────────────────────
+    # 룰 1-가 (기준=합계) + 1-나 (안전관리자 날인) + 1-다 (현장소장 날인) 통합
     if 사용내역서:
+        sub_results: list[str] = []
+        ng_reasons: list[str] = []
+
+        # 기준 vs 합계
         a = 사용내역서.get("기준금액")
         b = 사용내역서.get("합계금액")
         if a is None or b is None:
-            results.append(make_result(
-                "[룰1-가] 기준금액 = 합계금액", "SKIP", "", "값 추출 실패"
-            ))
+            sub_results.append("기준/합계 추출 실패")
+            ng_reasons.append("기준금액 또는 합계금액 추출 실패")
         elif a == b:
+            sub_results.append(f"기준 {_won(a)} = 합계 {_won(b)}")
+        else:
+            sub_results.append(f"기준 {_won(a)} ≠ 합계 {_won(b)}")
+            ng_reasons.append(f"기준 vs 합계 불일치 (기준 {_won(a)} vs 합계 {_won(b)})")
+
+        # 안전관리자 날인
+        if 사용내역서.get("안전관리자_날인"):
+            sub_results.append("안전관리자 날인 ✓")
+        else:
+            sub_results.append("안전관리자 날인 ✗")
+            ng_reasons.append("안전관리자 날인 없음")
+
+        # 현장소장 날인
+        if 사용내역서.get("현장소장_날인"):
+            sub_results.append("현장소장 날인 ✓")
+        else:
+            sub_results.append("현장소장 날인 ✗")
+            ng_reasons.append("현장소장 날인 없음")
+
+        if not ng_reasons:
             results.append(make_result(
-                "[룰1-가] 기준금액 = 합계금액", "OK", _won(a), "일치"
+                "산업안전보건관리비 사용내역서", "OK",
+                " / ".join(sub_results), "모든 항목 일치"
             ))
         else:
             results.append(make_result(
-                "[룰1-가] 기준금액 = 합계금액", "NG", "",
-                f"기준 {_won(a)} vs 합계 {_won(b)}"
+                "산업안전보건관리비 사용내역서", "NG",
+                " / ".join(sub_results), " · ".join(ng_reasons)
             ))
     else:
         results.append(make_result(
-            "[룰1-가] 기준금액 = 합계금액", "SKIP", "", "사용내역서 미첨부"
+            "산업안전보건관리비 사용내역서", "SKIP", "", "사용내역서 미첨부"
         ))
 
-    # ── 룰 1-나: 안전관리자 날인 ──────────────────────────────────
-    if 사용내역서:
-        if 사용내역서.get("안전관리자_날인"):
-            results.append(make_result("[룰1-나] 안전관리자 날인", "OK", "있음", ""))
-        else:
-            results.append(make_result("[룰1-나] 안전관리자 날인", "NG", "없음", ""))
-    else:
-        results.append(make_result("[룰1-나] 안전관리자 날인", "SKIP", "", "사용내역서 미첨부"))
-
-    # ── 룰 1-다: 현장소장 날인 ────────────────────────────────────
-    if 사용내역서:
-        if 사용내역서.get("현장소장_날인"):
-            results.append(make_result("[룰1-다] 현장소장 날인", "OK", "있음", ""))
-        else:
-            results.append(make_result("[룰1-다] 현장소장 날인", "NG", "없음", ""))
-    else:
-        results.append(make_result("[룰1-다] 현장소장 날인", "SKIP", "", "사용내역서 미첨부"))
-
-    # ── 룰 2-가: 항목별 금액 7쌍 비교 ─────────────────────────────
-    if 사용내역서 and 항목별:
+    # ── 카드 2: 항목별 사용내역 (룰 2-가) ────────────────────────
+    if 항목별 and 사용내역서:
         a_amounts = 사용내역서.get("항목금액") or []
         b_amounts = 항목별.get("항목소계") or []
         if len(a_amounts) == 7 and len(b_amounts) == 7:
@@ -378,34 +390,38 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
                     )
             if not mismatches:
                 results.append(make_result(
-                    "[룰2-가] 항목별 금액 비교", "OK", "전 7개 항목 일치", ""
+                    "항목별 사용내역", "OK",
+                    "전 7개 항목 사용내역서와 일치", "모든 항목 일치"
                 ))
             else:
                 results.append(make_result(
-                    "[룰2-가] 항목별 금액 비교", "NG",
+                    "항목별 사용내역", "NG",
                     f"{len(mismatches)}개 항목 불일치",
-                    " / ".join(mismatches)
+                    " · ".join(mismatches)
                 ))
         else:
             results.append(make_result(
-                "[룰2-가] 항목별 금액 비교", "SKIP", "",
+                "항목별 사용내역", "SKIP", "",
                 f"항목 금액 추출 부족 (사용내역서 {len(a_amounts)}개 / 항목별 {len(b_amounts)}개)"
             ))
+    elif 항목별 and not 사용내역서:
+        results.append(make_result(
+            "항목별 사용내역", "SKIP", "",
+            "사용내역서 미첨부 (비교 대상 부족)"
+        ))
     else:
         results.append(make_result(
-            "[룰2-가] 항목별 금액 비교", "SKIP", "",
-            "사용내역서 또는 항목별 사용내역 미첨부"
+            "항목별 사용내역", "SKIP", "", "항목별 사용내역 미첨부"
         ))
 
-    # ── 룰 3-가: 사진대지 공사명·품목 매칭 ────────────────────────
-    if 사진대지 and (사용내역서 or 항목별):
+    # ── 카드 3: 사진대지 (룰 3-가) ───────────────────────────────
+    if 사진대지:
         ph_name = (사진대지.get("공사명_표기") or "").strip()
         ref_name = (사용내역서.get("공사명") if 사용내역서 else "") or ""
         ref_name = ref_name.strip()
         name_match = bool(ph_name and ref_name) and (
             ph_name == ref_name or ph_name in ref_name or ref_name in ph_name
         )
-        # 품목 매칭 — 사진에 적힌 품목이 항목별의 보호구 품목 중 하나와 매핑되는지
         ph_items = [s.strip() for s in (사진대지.get("품목_표기") or []) if s and s.strip()]
         보호구_품명들 = [
             (item.get("품명") or "").strip()
@@ -415,125 +431,127 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
             any((ph in pn) or (pn in ph) for pn in 보호구_품명들 if pn)
             for ph in ph_items
         )
+        ph_items_str = ", ".join(ph_items) if ph_items else "(없음)"
+        ext_summary = f"공사명 '{ph_name}' / 품목 {ph_items_str}"
+
         if name_match and item_match:
             results.append(make_result(
-                "[룰3-가] 사진대지 공사명·품목", "OK",
-                "공사명·품목 일치", ""
+                "사진대지", "OK", ext_summary, "공사명·품목 일치"
             ))
         else:
             reasons = []
             if not name_match:
-                reasons.append(f"공사명 불일치 (사진 '{ph_name}' vs 서류 '{ref_name}')")
+                reasons.append(f"공사명 불일치 (사진 '{ph_name}' vs 사용내역서 '{ref_name}')")
             if not item_match:
                 reasons.append(f"품목 매칭 실패 (사진 {ph_items} / 보호구 {보호구_품명들})")
             results.append(make_result(
-                "[룰3-가] 사진대지 공사명·품목", "NG", "",
-                " / ".join(reasons)
+                "사진대지", "NG", ext_summary, " · ".join(reasons)
             ))
     else:
         results.append(make_result(
-            "[룰3-가] 사진대지 공사명·품목", "SKIP", "",
-            "사진대지 또는 사용내역서/항목별 미첨부"
+            "사진대지", "SKIP", "", "사진대지 미첨부"
         ))
 
-    # ── 룰 4-가: 세금계산서 ↔ 항목별 사용내역 ─────────────────────
-    if 세금계산서들 and 항목별:
-        보호구 = 항목별.get("보호구_품목") or []
-        보호구_set = {(item.get("품명") or "").strip() for item in 보호구}
-        mismatches = []
-        for tx in 세금계산서들:
-            tx_품목 = (tx.get("품목") or "").strip()
-            # 품목이 보호구 품명과 매칭되거나 카테고리 포함이면 OK
-            matched = any(
-                tx_품목 == pn or tx_품목 in pn or pn in tx_품목
-                for pn in 보호구_set if pn
-            )
-            if not matched:
-                mismatches.append(
-                    f"품목 '{tx_품목}' (일자 {tx.get('일자', '?')}, "
-                    f"{_won(tx.get('공급가액'))}) — 항목별 보호구에 매핑 안 됨"
+    # ── 카드 4: 세금계산서 (룰 4-가, 보호구 품목 매핑) ──────────
+    if 세금계산서들:
+        if 항목별:
+            보호구 = 항목별.get("보호구_품목") or []
+            보호구_set = {(item.get("품명") or "").strip() for item in 보호구}
+            mismatches = []
+            for tx in 세금계산서들:
+                tx_품목 = (tx.get("품목") or "").strip()
+                matched = any(
+                    tx_품목 == pn or tx_품목 in pn or pn in tx_품목
+                    for pn in 보호구_set if pn
                 )
-        if not mismatches:
-            results.append(make_result(
-                "[룰4-가] 세금계산서 ↔ 사용내역", "OK",
-                f"{len(세금계산서들)}건 모두 매핑", ""
-            ))
+                if not matched:
+                    mismatches.append(
+                        f"'{tx_품목}' (일자 {tx.get('일자', '?')}, {_won(tx.get('공급가액'))})"
+                    )
+            if not mismatches:
+                results.append(make_result(
+                    "세금계산서", "OK",
+                    f"{len(세금계산서들)}건 — 항목별 보호구와 모두 매핑 OK",
+                    "전 건 매핑 완료"
+                ))
+            else:
+                results.append(make_result(
+                    "세금계산서", "NG",
+                    f"{len(세금계산서들)}건 중 {len(mismatches)}건 매핑 실패",
+                    " · ".join(mismatches)
+                ))
         else:
             results.append(make_result(
-                "[룰4-가] 세금계산서 ↔ 사용내역", "NG",
-                f"{len(mismatches)}건 매핑 실패",
-                " / ".join(mismatches)
+                "세금계산서", "SKIP", f"{len(세금계산서들)}건 첨부",
+                "항목별 사용내역 미첨부 (매핑 대상 부족)"
             ))
     else:
         results.append(make_result(
-            "[룰4-가] 세금계산서 ↔ 사용내역", "SKIP", "",
-            "세금계산서 또는 항목별 사용내역 미첨부"
+            "세금계산서", "SKIP", "", "세금계산서 미첨부"
         ))
 
-    # ── 룰 5-가: 거래명세서 ↔ 세금계산서 ──────────────────────────
-    if 거래명세서들 and 세금계산서들:
-        mismatches = []
-        # 각 거래명세서가 동일 (일자+금액+품목) 세금계산서와 매칭되는지
-        # 매칭 규칙:
-        #   - 금액: 정확 일치 (숫자)
-        #   - 일자: MM/DD / YYYY-MM-DD / YYYYMMDD 등 다양한 형식 → MMDD 4자리 정규화
-        #   - 품목: 대괄호([6인치])/괄호 안 규격 제거 + 공백 제거 후 포함 관계 매칭
-        #          (예: "안전화 [6인치]" ↔ "안전화" 매칭 OK)
-        for tm in 거래명세서들:
-            tm_일자 = _normalize_date_for_match(tm.get("일자"))
-            tm_금액 = tm.get("공급가액")
-            tm_품목 = tm.get("품목") or ""
-            found_pair = any(
-                _normalize_date_for_match(sx.get("일자")) == tm_일자
-                and sx.get("공급가액") == tm_금액
-                and _items_match(tm_품목, sx.get("품목") or "")
-                for sx in 세금계산서들
-            )
-            if not found_pair:
-                mismatches.append(
-                    f"거래명세서 '{tm_품목.strip()}' "
-                    f"(일자 {(tm.get('일자') or '').strip()}, {_won(tm_금액)}) — 세금계산서와 매칭 X"
+    # ── 카드 5: 거래명세서 (룰 5-가, 세금계산서와 매칭) ─────────
+    # 매칭 규칙: 금액 정확 일치 + 일자 형식 정규화 + 품목 정규화/포함 매칭
+    if 거래명세서들:
+        if 세금계산서들:
+            mismatches = []
+            for tm in 거래명세서들:
+                tm_일자 = _normalize_date_for_match(tm.get("일자"))
+                tm_금액 = tm.get("공급가액")
+                tm_품목 = tm.get("품목") or ""
+                found_pair = any(
+                    _normalize_date_for_match(sx.get("일자")) == tm_일자
+                    and sx.get("공급가액") == tm_금액
+                    and _items_match(tm_품목, sx.get("품목") or "")
+                    for sx in 세금계산서들
                 )
-        if not mismatches:
-            results.append(make_result(
-                "[룰5-가] 거래명세서 ↔ 세금계산서", "OK",
-                f"{len(거래명세서들)}건 모두 일치", ""
-            ))
+                if not found_pair:
+                    mismatches.append(
+                        f"'{tm_품목.strip()}' (일자 {(tm.get('일자') or '').strip()}, "
+                        f"{_won(tm_금액)}) — 세금계산서와 매칭 X"
+                    )
+            if not mismatches:
+                results.append(make_result(
+                    "거래명세서", "OK",
+                    f"{len(거래명세서들)}건 — 세금계산서와 모두 일치",
+                    "전 건 매칭 완료"
+                ))
+            else:
+                results.append(make_result(
+                    "거래명세서", "NG",
+                    f"{len(거래명세서들)}건 중 {len(mismatches)}건 매칭 실패",
+                    " · ".join(mismatches)
+                ))
         else:
             results.append(make_result(
-                "[룰5-가] 거래명세서 ↔ 세금계산서", "NG",
-                f"{len(mismatches)}건 불일치",
-                " / ".join(mismatches)
+                "거래명세서", "SKIP", f"{len(거래명세서들)}건 첨부",
+                "세금계산서 미첨부 (매칭 대상 부족)"
             ))
     else:
         results.append(make_result(
-            "[룰5-가] 거래명세서 ↔ 세금계산서", "SKIP", "",
-            "거래명세서 또는 세금계산서 미첨부"
+            "거래명세서", "SKIP", "", "거래명세서 미첨부"
         ))
 
-    # ── 룰 6-가: 지급대장 수량 매칭 ────────────────────────────────
+    # ── 카드 6: 지급대장 (룰 6-가, 수량 매칭) ───────────────────
     if 항목별:
         보호구 = 항목별.get("보호구_품목") or []
         if not 보호구:
-            # 항목 3 개인보호구 구입비 데이터 없음 → 적용 안 함
             results.append(make_result(
-                "[룰6-가] 지급대장 수량 매칭", "SKIP", "",
+                "지급대장", "SKIP", "",
                 "항목별 사용내역에 개인보호구 구입비 없음 (지급대장 검증 불필요)"
             ))
         elif not 지급대장:
             results.append(make_result(
-                "[룰6-가] 지급대장 수량 매칭", "NG", "",
+                "지급대장", "NG", "",
                 "개인보호구 구입비 있는데 지급대장 미첨부"
             ))
         else:
-            # 품명별로 (사용내역 수량 vs 지급대장 수량) 비교
             ledger_by_name = {(item.get("품명") or "").strip(): item.get("수량") for item in 지급대장}
             mismatches = []
             ok_pairs = []
             for item in 보호구:
                 품명 = (item.get("품명") or "").strip()
                 use_qty = item.get("수량")
-                # 지급대장에서 매칭되는 품명 찾기 (정확 또는 포함)
                 pay_qty = None
                 for pn, pq in ledger_by_name.items():
                     if pn == 품명 or pn in 품명 or 품명 in pn:
@@ -547,19 +565,18 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
                     mismatches.append(f"{품명} 사용내역 {use_qty}개 vs 지급대장 {pay_qty}개")
             if not mismatches:
                 results.append(make_result(
-                    "[룰6-가] 지급대장 수량 매칭", "OK",
-                    ", ".join(ok_pairs), ""
+                    "지급대장", "OK",
+                    ", ".join(ok_pairs), "전 품목 수량 일치"
                 ))
             else:
                 results.append(make_result(
-                    "[룰6-가] 지급대장 수량 매칭", "NG",
+                    "지급대장", "NG",
                     f"{len(mismatches)}개 품목 불일치",
-                    " / ".join(mismatches)
+                    " · ".join(mismatches)
                 ))
     else:
         results.append(make_result(
-            "[룰6-가] 지급대장 수량 매칭", "SKIP", "",
-            "항목별 사용내역 미첨부"
+            "지급대장", "SKIP", "", "항목별 사용내역 미첨부 (수량 매칭 대상 부족)"
         ))
 
     return results
