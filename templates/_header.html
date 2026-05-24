@@ -3,6 +3,13 @@
     <span class="portal-logo">준공서류 검토 프로그램<sup class="portal-logo-sub">(63A &amp; 10m이하 수요가배관 전용)</sup></span>
   </div>
   <div class="portal-header-right">
+    <button type="button" class="project-load-btn" id="project-load-btn" title="저장된 공사 불러오기">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>공사 불러오기</span>
+    </button>
     {% if available_years %}
       <span class="year-label">단가 적용 연도</span>
       <select class="year-select" id="header-year" title="단가 적용 연도 선택">
@@ -17,6 +24,26 @@
     </form>
   </div>
 </header>
+
+<!-- 공사 불러오기 모달 -->
+<div class="project-modal" id="project-modal" hidden>
+  <div class="project-modal-backdrop" id="project-modal-backdrop"></div>
+  <div class="project-modal-panel">
+    <div class="project-modal-header">
+      <span class="project-modal-title">저장된 공사 불러오기</span>
+      <button type="button" class="project-modal-close" id="project-modal-close">×</button>
+    </div>
+    <div class="project-modal-search">
+      <input type="text" id="project-modal-search-input" placeholder="공사명 검색…" autocomplete="off">
+    </div>
+    <div class="project-modal-body" id="project-modal-body">
+      <div class="project-modal-empty">불러오는 중…</div>
+    </div>
+    <div class="project-modal-foot">
+      <span class="project-modal-hint">* 마지막 저장일로부터 60일 후 자동 삭제됩니다</span>
+    </div>
+  </div>
+</div>
 
 <nav class="tabs">
   <a class="tab {% if active_tab == 'upload' %}active{% endif %}" href="{{ url_for('index') }}">
@@ -75,6 +102,134 @@
     fd.append('field', 'year');
     fd.append('value', sel.value);
     fetch('/project-info', { method: 'POST', body: fd }).catch(function(){});
+  });
+})();
+
+// 공사 불러오기 모달 ─────────────────────────────────────────
+(function(){
+  var btn = document.getElementById('project-load-btn');
+  var modal = document.getElementById('project-modal');
+  var backdrop = document.getElementById('project-modal-backdrop');
+  var closeBtn = document.getElementById('project-modal-close');
+  var body = document.getElementById('project-modal-body');
+  var searchInput = document.getElementById('project-modal-search-input');
+  if (!btn || !modal) return;
+
+  var cached = null;     // 전체 목록 캐시
+  var isAdmin = false;
+
+  function escapeHtml(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function open(){
+    modal.removeAttribute('hidden');
+    fetchList();
+    setTimeout(function(){ searchInput && searchInput.focus(); }, 50);
+  }
+  function close(){
+    modal.setAttribute('hidden', '');
+  }
+
+  btn.addEventListener('click', open);
+  closeBtn && closeBtn.addEventListener('click', close);
+  backdrop && backdrop.addEventListener('click', close);
+
+  // ESC 키
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && !modal.hasAttribute('hidden')) close();
+  });
+
+  function fetchList(){
+    body.innerHTML = '<div class="project-modal-empty">불러오는 중…</div>';
+    fetch('/project/list')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data.ok) {
+          body.innerHTML = '<div class="project-modal-empty">' + escapeHtml(data.error || '불러오기 실패') + '</div>';
+          return;
+        }
+        cached = data.items || [];
+        isAdmin = !!data.is_admin;
+        render(cached);
+      })
+      .catch(function(e){
+        body.innerHTML = '<div class="project-modal-empty">네트워크 오류: ' + escapeHtml(e) + '</div>';
+      });
+  }
+
+  function render(items){
+    if (!items || items.length === 0) {
+      body.innerHTML = '<div class="project-modal-empty">저장된 공사가 없습니다.</div>';
+      return;
+    }
+    // 관리자: 회사별 그룹핑
+    var html = '';
+    if (isAdmin) {
+      var grouped = {};
+      items.forEach(function(it){
+        var c = it.company || '(미상)';
+        if (!grouped[c]) grouped[c] = [];
+        grouped[c].push(it);
+      });
+      var companies = Object.keys(grouped).sort();
+      companies.forEach(function(c){
+        html += '<div class="project-group-label">' + escapeHtml(c) + '</div>';
+        grouped[c].forEach(function(it){ html += renderRow(it); });
+      });
+    } else {
+      items.forEach(function(it){ html += renderRow(it); });
+    }
+    body.innerHTML = html;
+
+    // 행 클릭 이벤트
+    body.querySelectorAll('.project-row').forEach(function(row){
+      row.addEventListener('click', function(){
+        var pid = row.dataset.pid;
+        if (!pid) return;
+        loadProject(pid);
+      });
+    });
+  }
+
+  function renderRow(it){
+    var savedShort = (it.saved_at || '').slice(0, 16).replace('T', ' ');
+    var fileCnt = it.file_count || 0;
+    return '' +
+      '<div class="project-row" data-pid="' + escapeHtml(it.project_id) + '">' +
+        '<div class="project-row-name">' + escapeHtml(it.project_name) + '</div>' +
+        '<div class="project-row-meta">' +
+          '저장 ' + escapeHtml(savedShort) + ' · 파일 ' + fileCnt + '개' +
+        '</div>' +
+      '</div>';
+  }
+
+  function loadProject(pid){
+    body.innerHTML = '<div class="project-modal-empty">복원 중…</div>';
+    fetch('/project/load/' + encodeURIComponent(pid), { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (data.ok && data.redirect) {
+          window.location.href = data.redirect;
+        } else {
+          body.innerHTML = '<div class="project-modal-empty">' + escapeHtml(data.error || '복원 실패') + '</div>';
+        }
+      })
+      .catch(function(e){
+        body.innerHTML = '<div class="project-modal-empty">네트워크 오류: ' + escapeHtml(e) + '</div>';
+      });
+  }
+
+  // 검색 — 공사명 부분 매칭 (실시간)
+  searchInput && searchInput.addEventListener('input', function(){
+    if (!cached) return;
+    var q = (searchInput.value || '').trim().toLowerCase();
+    if (!q) { render(cached); return; }
+    var filtered = cached.filter(function(it){
+      return (it.project_name || '').toLowerCase().indexOf(q) !== -1;
+    });
+    render(filtered);
   });
 })();
 </script>

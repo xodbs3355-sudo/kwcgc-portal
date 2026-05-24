@@ -23,6 +23,7 @@ import unit_prices_store
 import usage_store
 import chat
 import share_store
+import project_store
 from documents import DOCUMENTS
 
 
@@ -339,6 +340,20 @@ def review():
         # 채팅 컨텍스트 빌드 실패가 검토 자체를 막으면 안 됨
         session.pop("chat_id", None)
 
+    # 공사 저장소 — 같은 (회사+공사명) 이면 덮어쓰기, 60일 보관
+    try:
+        project_id = project_store.save(
+            company=company,
+            project_info=project_info,
+            files=uploaded,
+            all_results=all_results,
+        )
+        if project_id:
+            session["project_id"] = project_id
+    except Exception:
+        # 저장 실패가 검토를 막으면 안 됨
+        pass
+
     return redirect(url_for("result"))
 
 
@@ -520,6 +535,66 @@ def download_pdf():
         download_name="준공서류_첨부통합.pdf",
         mimetype="application/pdf",
     )
+
+
+# ── 공사 저장소 (자동 저장된 공사 목록/복원) ─────────────────────
+@app.route("/project/list", methods=["GET"])
+def project_list():
+    """저장된 공사 목록 — 시공사는 자기 회사, 관리자는 전체.
+    반환: {ok, items, is_admin}
+    """
+    if "company" not in session:
+        return jsonify({"ok": False, "error": "로그인이 필요합니다."}), 401
+    company = session.get("company", "")
+    is_admin = _is_admin()
+    items = project_store.list_for(
+        company=company,
+        include_all=is_admin,
+    )
+    return jsonify({"ok": True, "items": items, "is_admin": is_admin})
+
+
+@app.route("/project/load/<project_id>", methods=["POST"])
+def project_load(project_id: str):
+    """저장된 공사를 세션에 복원."""
+    if "company" not in session:
+        return jsonify({"ok": False, "error": "로그인이 필요합니다."}), 401
+    data = project_store.load(project_id)
+    if not data:
+        return jsonify({"ok": False, "error": "공사를 찾을 수 없거나 만료됨"}), 404
+    # 권한 — 시공사는 자기 회사 공사만 (관리자는 전체)
+    if not _is_admin() and data.get("company") != session.get("company"):
+        return jsonify({"ok": False, "error": "권한 없음"}), 403
+
+    # 세션 + 임시 디스크에 복원
+    session["project_info"] = data.get("project_info") or {}
+    session["review_results"] = data.get("all_results") or {}
+    save_uploaded(data.get("files") or {})
+    session["project_id"] = project_id
+    # skips 는 새로 default 로 — 사용자가 다시 체크할 수 있게
+    session["skips"] = {d["id"]: True for d in DOCUMENTS if d.get("default_skip")}
+
+    # 채팅 컨텍스트 재구축
+    try:
+        old_chat_id = session.get("chat_id")
+        if old_chat_id:
+            chat.clear(old_chat_id)
+        if data.get("all_results"):
+            new_id = chat.new_chat_id()
+            context = chat.build_context(
+                data.get("all_results") or {},
+                data.get("files") or {},
+                data.get("project_info") or {},
+                DOCUMENTS,
+            )
+            chat.save(new_id, context)
+            session["chat_id"] = new_id
+    except Exception:
+        pass
+
+    # 검토 결과 있으면 result, 없으면 upload 페이지로
+    target = "result" if data.get("all_results") else "index"
+    return jsonify({"ok": True, "redirect": url_for(target)})
 
 
 # ── 검토 결과 공유 (QR 스캔용, 인증 X) ──────────────────────────

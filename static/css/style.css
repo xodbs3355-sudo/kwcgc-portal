@@ -130,6 +130,152 @@ button { font-family: inherit; cursor: pointer; }
     border-color: #4a4d54;
 }
 
+/* ── 공사 불러오기 버튼 + 모달 ─────────────────────────────── */
+.project-load-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    background: #fff;
+    color: #4a4d54;
+    border: 1px solid #6b6f7a;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    margin-right: 8px;
+}
+.project-load-btn:hover {
+    background: #f7f7f9;
+    border-color: #4a4d54;
+}
+.project-load-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.project-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.project-modal[hidden] { display: none; }
+.project-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(2px);
+}
+.project-modal-panel {
+    position: relative;
+    width: 520px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.project-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #5e6ad2 0%, #7b85d8 100%);
+    color: #fff;
+}
+.project-modal-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+.project-modal-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 6px;
+    opacity: 0.9;
+}
+.project-modal-close:hover { opacity: 1; }
+.project-modal-search {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e5e8;
+    background: #fafafb;
+}
+.project-modal-search input {
+    width: 100%;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid #e5e5e8;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+}
+.project-modal-search input:focus {
+    border-color: #5e6ad2;
+    box-shadow: 0 0 0 2px rgba(94,106,210,0.15);
+}
+.project-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 6px;
+}
+.project-modal-empty {
+    text-align: center;
+    color: #6b6f7a;
+    font-size: 13px;
+    padding: 32px 16px;
+}
+.project-group-label {
+    padding: 8px 14px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b6f7a;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.project-row {
+    padding: 10px 14px;
+    margin: 2px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.project-row:hover {
+    background: #eef0fb;
+}
+.project-row-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 3px;
+}
+.project-row-meta {
+    font-size: 11px;
+    color: #6b6f7a;
+}
+.project-modal-foot {
+    padding: 8px 16px 10px;
+    border-top: 1px solid #f0f0f3;
+    background: #fafafb;
+}
+.project-modal-hint {
+    font-size: 11px;
+    color: #9a9ea9;
+}
+
 /* ── Tabs ──────────────────────────────────────────────────── */
 .tabs {
     display: flex;
