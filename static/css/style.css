@@ -1045,14 +1045,14 @@ button { font-family: inherit; cursor: pointer; }
     justify-content: center;
 }
 
-/* 양호 / 보완 / 해당없음 / 검토결과(PASS/DROP) 카드 — 보라 테두리 + 연보라 바탕 통일.
+/* 양호 / 보완 / 해당없음 / 검토결과(PASS/DROP) 카드 — 흰 바탕 + 보라 테두리 통일.
    바탕·테두리는 동일, 텍스트(라벨·숫자·verdict-text)만 카드별 status 색상 유지. */
 .card-ok,
 .card-ng,
 .card-skip,
 .card-verdict-pass,
 .card-verdict-fail {
-    background: #eef0fb;
+    background: #fff;
     border-color: #5e6ad2;
 }
 /* 텍스트 색상 — 각 카드별 status 톤 유지 */

@@ -199,7 +199,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
               {{ adjustment_label }}
             </span>
           </div>
-          <div class="info-hint">&nbsp;&nbsp;&nbsp;*발주연장 대비 1m이상 증감 시 정산(평면연장 기준)</div>
+          <div class="info-hint">&nbsp;&nbsp;&nbsp;* 발주 대비 1m이상 증감 시 정산(평면연장 기준)</div>
         </div>
         <div class="info-col">
           <div class="info-pair">
@@ -208,13 +208,6 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
               <span class="info-value-box info-value-cost">{{ '{:,}'.format(final_cost) }}원</span>
             {% else %}
               <span class="info-value-box">-</span>
-            {% endif %}
-          </div>
-          <div class="info-hint">
-            {% if final_cost_meta %}
-              &nbsp;&nbsp;&nbsp;* {{ final_cost_meta }}
-            {% else %}
-              &nbsp;&nbsp;&nbsp;* 공사비(연단가) + 일시점용료
             {% endif %}
           </div>
         </div>
