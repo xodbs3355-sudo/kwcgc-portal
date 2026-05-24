@@ -30,6 +30,21 @@ def _is_admin() -> bool:
     return auth.is_admin(session.get("company", ""))
 
 
+def _compute_adjustment_required(project_info: dict) -> bool | None:
+    """발주연장 대비 준공연장이 1.0m 이상 차이나면 정산 대상.
+    값이 부족하거나 변환 실패 시 None.
+    """
+    try:
+        ext_raw = (project_info.get("extension", "") or "").strip()
+        order_raw = (project_info.get("order_extension", "") or "").strip()
+        if ext_raw and order_raw:
+            diff = abs(float(ext_raw) - float(order_raw))
+            return diff >= 1.0
+    except (ValueError, TypeError):
+        pass
+    return None
+
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.token_hex(32))
 app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024 * 16  # 행당 200MB × 16 여유
@@ -272,6 +287,12 @@ def review():
     project_info = session.get("project_info", {})
     company = session.get("company", "")
 
+    # doc01 준공금액 검증용 — 단가표 기반 최종 공사비 미리 계산
+    adjustment_required = _compute_adjustment_required(project_info)
+    final_cost, final_cost_meta = unit_prices_store.compute_final_cost(
+        project_info, adjustment_required
+    )
+
     all_results = {}
     jobs = []
     for doc in DOCUMENTS:
@@ -293,7 +314,11 @@ def review():
     if jobs:
         with ThreadPoolExecutor(max_workers=len(jobs)) as executor:
             futures = {
-                executor.submit(reviewer.review_document, did, name, files, project_info, company): name
+                executor.submit(
+                    reviewer.review_document, did, name, files, project_info, company,
+                    final_cost if did == "doc01" else None,
+                    final_cost_meta if did == "doc01" else None,
+                ): name
                 for did, name, files in jobs
             }
             for future, name in futures.items():
@@ -347,74 +372,18 @@ def result():
     uploaded = load_uploaded()
     file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
 
-    # 정산 여부 계산 — 발주 연장 대비 준공 연장이 1.0m 이상 차이나면 정산 대상
+    # 정산 여부 + 최종 공사비 계산 — 헬퍼로 통합 (reviewer 와 공통 사용)
     project_info = session.get("project_info", {})
-    try:
-        ext_raw = (project_info.get("extension", "") or "").strip()
-        order_raw = (project_info.get("order_extension", "") or "").strip()
-        if ext_raw and order_raw:
-            diff = abs(float(ext_raw) - float(order_raw))
-            adjustment_label = "정산 대상" if diff >= 1.0 else "정산 비대상"
-            adjustment_required = diff >= 1.0
-        else:
-            adjustment_label = "-"
-            adjustment_required = None
-    except (ValueError, TypeError):
+    adjustment_required = _compute_adjustment_required(project_info)
+    if adjustment_required is True:
+        adjustment_label = "정산 대상"
+    elif adjustment_required is False:
+        adjustment_label = "정산 비대상"
+    else:
         adjustment_label = "-"
-        adjustment_required = None
-
-    # 최종 공사비 계산 — 연간단가표 lookup + 일시점용료 가산
-    # 공식: 단가표[연도][도로재질][N m] + (PLP 옵션 가산) + 일시점용료
-    # 단가 적용 연장 룰:
-    #   - 정산 대상(1m 이상 증감)   → 준공연장 ceiling (올림)
-    #   - 정산 비대상 / 정보 부족    → 발주연장 그대로
-    import math as _math
-    final_cost = None
-    final_cost_meta = None      # 사용자에게 보여줄 산식 메타
-    try:
-        year = (project_info.get("year") or "").strip()
-        road_material = (project_info.get("road_material") or "").strip()
-        plp = bool(project_info.get("plp"))
-        land_fee_raw = (project_info.get("land_fee") or "").strip()
-
-        # 단가에 적용할 연장 결정
-        ext_m = None
-        ext_basis = ""   # 메타에 보여줄 표기 ("준공 4m 올림" / "발주 3m")
-        if adjustment_required is True:
-            # 정산 대상: 준공연장 ceiling
-            try:
-                done_ext = float((project_info.get("extension") or "").strip())
-                ext_m = _math.ceil(done_ext)
-                ext_basis = f"준공 {ext_m}m(올림)"
-            except (ValueError, TypeError):
-                ext_m = None
-        else:
-            # 정산 비대상 또는 정보 부족 → 발주연장 그대로
-            try:
-                order_ext = float((project_info.get("order_extension") or "").strip())
-                ext_m = int(round(order_ext))
-                ext_basis = f"발주 {ext_m}m"
-            except (ValueError, TypeError):
-                ext_m = None
-
-        if year and road_material and ext_m and 1 <= ext_m <= 10:
-            base = unit_prices_store.lookup_price(year, road_material, ext_m, plp)
-            if base is not None and base > 0:
-                land_fee = 0
-                if land_fee_raw:
-                    try:
-                        land_fee = int(round(float(land_fee_raw.replace(",", ""))))
-                    except (ValueError, TypeError):
-                        land_fee = 0
-                final_cost = base + land_fee
-                parts = [f"{ext_basis} 단가"] if ext_basis else [f"{ext_m}m 단가"]
-                if plp:
-                    parts.append("PLP")
-                if land_fee > 0:
-                    parts.append("일시점용료")
-                final_cost_meta = " + ".join(parts)
-    except Exception:
-        final_cost = None
+    final_cost, final_cost_meta = unit_prices_store.compute_final_cost(
+        project_info, adjustment_required
+    )
 
     return render_template(
         "result.html",

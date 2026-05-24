@@ -134,6 +134,176 @@ MOCK_RESULT = [
 ]
 
 
+# ── doc01 하이브리드 — 공사명·일자·금액·서명 검증 헬퍼 ───────────
+import unit_prices_store as _unit_prices_store
+
+
+def _project_name_match(input_name: str, doc_name: str) -> tuple[str, str]:
+    """공사명 매칭 룰.
+
+    OK 케이스:
+      · 완전 일치
+      · 띄어쓰기 차이만 있음 (공백 제거 후 동일)
+      · 선두 시·군 단위 누락만 있음 (예: 입력 "효자동 ..." vs 서류 "춘천시 효자동 ...")
+
+    NG: 그 외 모든 차이 (한 글자 오타 포함)
+    SKIP: 입력 또는 서류 공사명 없음
+    """
+    raw_a = (input_name or "").strip()
+    raw_b = (doc_name or "").strip()
+
+    if not raw_a or not raw_b:
+        return ("SKIP", "입력 또는 서류 공사명 없음")
+
+    # 1. 공백 제거 후 일치
+    no_space_a = "".join(raw_a.split())
+    no_space_b = "".join(raw_b.split())
+    if no_space_a == no_space_b:
+        if raw_a == raw_b:
+            return ("OK", "입력값과 동일")
+        return ("OK", f"띄어쓰기 차이만 있음 (입력 '{raw_a}' / 서류 '{raw_b}')")
+
+    # 2. 선두 시/군 단위 제거 후 비교 (예: "춘천시효자동..." → "효자동...")
+    strip_region = lambda s: re.sub(r"^[가-힣]+(시|군)", "", s)
+    norm_a = strip_region(no_space_a)
+    norm_b = strip_region(no_space_b)
+    if norm_a == norm_b:
+        return ("OK", f"시·군 단위 누락 차이만 있음 (입력 '{raw_a}' / 서류 '{raw_b}')")
+
+    # 3. 그 외 모두 NG
+    return ("NG", f"불일치: 입력 '{raw_a}' / 서류 '{raw_b}'")
+
+
+def _date_match(input_date: str, doc_date: str) -> tuple[str, str]:
+    """일자 매칭 룰 — YYYYMMDD 정규화 후 정확 비교."""
+    raw_a = (input_date or "").strip()
+    raw_b = (doc_date or "").strip()
+
+    if not raw_b:
+        return ("SKIP", "서류에서 일자 추출 실패")
+    if not raw_a:
+        return ("SKIP", f"입력 준공일자 없음 (서류값: {raw_b})")
+
+    def _to_yyyymmdd(s: str) -> str:
+        nums = re.findall(r"\d+", s)
+        if len(nums) >= 3:
+            y = nums[0]
+            if len(y) == 2:        # "26-04-17" → "2026-04-17"
+                y = "20" + y
+            return f"{y}{nums[1].zfill(2)}{nums[2].zfill(2)}"
+        return s
+
+    norm_a = _to_yyyymmdd(raw_a)
+    norm_b = _to_yyyymmdd(raw_b)
+    if norm_a == norm_b:
+        return ("OK", f"입력값 {raw_a} 과 서류값 {raw_b} 일치")
+    return ("NG", f"불일치: 입력 {raw_a} / 서류 {raw_b}")
+
+
+def _amount_match(final_cost: int | None,
+                  doc_amount,
+                  final_cost_meta: str | None) -> tuple[str, str, str]:
+    """준공금액 매칭 — 계산값(단가표+일시점용료) vs 서류 추출값.
+    반환: (status, extracted, note)
+    """
+    if doc_amount is None:
+        return ("SKIP", "-", "서류에서 준공금액 추출 실패")
+    try:
+        doc_amount_int = int(doc_amount)
+    except (ValueError, TypeError):
+        return ("SKIP", "-", f"서류 금액 변환 실패 ({doc_amount!r})")
+
+    extracted = f"{doc_amount_int:,}"
+
+    if final_cost is None:
+        return ("SKIP", extracted,
+                "단가표 또는 입력 정보 부족으로 계산값 산출 불가 — 비교 생략")
+
+    if int(final_cost) == doc_amount_int:
+        return ("OK", extracted,
+                f"계산값 {_won(final_cost)} ({final_cost_meta or '계산'}) 과 서류값 {_won(doc_amount_int)} 일치")
+    return ("NG", extracted,
+            f"불일치: 계산값 {_won(final_cost)} ({final_cost_meta or '계산'}) "
+            f"vs 서류값 {_won(doc_amount_int)}")
+
+
+def _signature_check(data: dict) -> tuple[str, str, str]:
+    """서명/날인 체크."""
+    sig = data.get("서명_날인")
+    if sig is True:
+        return ("OK", "있음", "서명 또는 날인 확인됨")
+    if sig is False:
+        return ("NG", "없음", "서명 또는 날인 누락")
+    return ("SKIP", "-", "서명/날인 여부 추출 실패")
+
+
+def _doc01_apply_rules(data: dict, project_info: dict | None,
+                       final_cost: int | None,
+                       final_cost_meta: str | None) -> list[dict]:
+    """doc01 추출 데이터에 Python 룰 적용 → 4개 카드 반환."""
+    pi = project_info or {}
+    results: list[dict] = []
+
+    # 공사명 확인
+    status, note = _project_name_match(
+        pi.get("name") or "",
+        data.get("공사명") or "",
+    )
+    extracted = (data.get("공사명") or "").strip() or "-"
+    results.append(make_result("공사명 확인", status, extracted, note))
+
+    # 준공일자 확인
+    status, note = _date_match(
+        pi.get("date") or "",
+        data.get("준공일자") or "",
+    )
+    extracted = (data.get("준공일자") or "").strip() or "-"
+    results.append(make_result("준공일자 확인", status, extracted, note))
+
+    # 준공금액 확인 — 계산값 vs 서류값
+    status, extracted, note = _amount_match(
+        final_cost, data.get("준공금액"), final_cost_meta
+    )
+    results.append(make_result("준공금액 확인", status, extracted, note))
+
+    # 서명/날인 여부
+    status, extracted, note = _signature_check(data)
+    results.append(make_result("서명/날인 여부", status, extracted, note))
+
+    return results
+
+
+def _review_doc01_combined(files: list,
+                            project_info: dict | None,
+                            final_cost: int | None,
+                            final_cost_meta: str | None,
+                            company: str | None = None) -> list[dict]:
+    """준공계 — 하이브리드 방식 (AI 추출 + Python 룰)."""
+    if config.USE_MOCK:
+        return MOCK_RESULT
+    if not files:
+        return [make_result("서류 첨부 여부", "NG", "미첨부", "파일이 업로드되지 않음")]
+
+    # Step 1: AI 추출 (멀티파일 호출 — 1파일이어도 호환)
+    prompt = _build_prompt("doc01", "준공계", project_info)
+    file_parts = []
+    for filename, file_bytes in files:
+        mime = _get_mime(filename)
+        file_parts.append({"mime_type": mime, "data": file_bytes})
+
+    try:
+        raw = _call_gemini_multifile(prompt, file_parts,
+                                     company=company, doc_id="doc01")
+        data = _parse_json_object(raw)
+    except Exception as e:
+        return [make_result(
+            "AI 데이터 추출 오류", "WARN", "-", str(e)[:300]
+        )]
+
+    # Step 2: Python 룰 적용
+    return _doc01_apply_rules(data, project_info, final_cost, final_cost_meta)
+
+
 # ── 단일 파일 검토 ────────────────────────────────────────────────
 def review_file(doc_id: str, doc_name: str, file_bytes: bytes, filename: str,
                 project_info: dict | None = None,
@@ -610,10 +780,13 @@ def _call_gemini_multifile(prompt: str, file_parts: list[dict],
 # ── 서류 전체 검토 (여러 파일) ────────────────────────────────────
 def review_document(doc_id: str, doc_name: str, files: list,
                     project_info: dict | None = None,
-                    company: str | None = None) -> list[dict]:
+                    company: str | None = None,
+                    final_cost: int | None = None,
+                    final_cost_meta: str | None = None) -> list[dict]:
     """
     files: list of (filename, bytes) tuples
     project_info: {"name": ..., "date": ..., "amount": ...}
+    final_cost / final_cost_meta: doc01 준공금액 검증용 (단가표 기반 계산값)
     """
     if not files:
         return [make_result("서류 첨부 여부", "NG", "미첨부", "파일이 업로드되지 않음")]
@@ -624,6 +797,12 @@ def review_document(doc_id: str, doc_name: str, files: list,
             "서류 첨부 여부", "OK", f"{len(files)}개 파일 첨부",
             "첨부 확인 (AI 검토 생략 — 첨부만 확인하는 서류)"
         )]
+
+    # doc01 — 하이브리드 (AI 추출 + Python 룰)
+    if doc_id == "doc01":
+        return _review_doc01_combined(
+            files, project_info, final_cost, final_cost_meta, company=company
+        )
 
     # doc06 — 6개 파일 멀티파일 통합 호출 (특수 처리)
     if doc_id == "doc06":

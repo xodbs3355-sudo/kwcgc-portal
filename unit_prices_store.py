@@ -163,3 +163,63 @@ def lookup_price(year: str, road_material: str, extension_m: int, plp: bool) -> 
     if plp:
         base += year_data[PLP_KEY]
     return base
+
+
+def compute_final_cost(project_info: dict,
+                       adjustment_required: bool | None) -> tuple[int | None, str | None]:
+    """최종 공사비 계산 — app.py / reviewer.py 공통 사용.
+
+    단가 적용 연장 룰:
+      · 정산 대상(True)  → 준공연장(extension) ceiling
+      · 정산 비대상/미정 → 발주연장(order_extension) 그대로
+
+    반환: (final_cost, meta_text) — 계산 가능하면 금액과 산식 메타,
+          계산 불가하면 (None, None).
+    """
+    import math
+    try:
+        year = (project_info.get("year") or "").strip()
+        road_material = (project_info.get("road_material") or "").strip()
+        plp = bool(project_info.get("plp"))
+        land_fee_raw = (project_info.get("land_fee") or "").strip()
+
+        ext_m: int | None = None
+        ext_basis = ""
+        if adjustment_required is True:
+            try:
+                done_ext = float((project_info.get("extension") or "").strip())
+                ext_m = math.ceil(done_ext)
+                ext_basis = f"준공 {ext_m}m(올림)"
+            except (ValueError, TypeError):
+                ext_m = None
+        else:
+            try:
+                order_ext = float((project_info.get("order_extension") or "").strip())
+                ext_m = int(round(order_ext))
+                ext_basis = f"발주 {ext_m}m"
+            except (ValueError, TypeError):
+                ext_m = None
+
+        if not (year and road_material and ext_m and 1 <= ext_m <= 10):
+            return (None, None)
+
+        base = lookup_price(year, road_material, ext_m, plp)
+        if base is None or base <= 0:
+            return (None, None)
+
+        land_fee = 0
+        if land_fee_raw:
+            try:
+                land_fee = int(round(float(land_fee_raw.replace(",", ""))))
+            except (ValueError, TypeError):
+                land_fee = 0
+
+        final_cost = base + land_fee
+        parts = [f"{ext_basis} 단가"] if ext_basis else [f"{ext_m}m 단가"]
+        if plp:
+            parts.append("PLP")
+        if land_fee > 0:
+            parts.append("일시점용료")
+        return (final_cost, " + ".join(parts))
+    except Exception:
+        return (None, None)
