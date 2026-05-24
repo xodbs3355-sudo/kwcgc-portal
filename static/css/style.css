@@ -944,7 +944,7 @@ button { font-family: inherit; cursor: pointer; }
     line-height: 1.2;
     margin: 0 0 0 0;
     text-align: left;
-    background: linear-gradient(180deg, #a8a8a8 0%, #b8b8b8 30%, #d4d4d4 100%);
+    background: linear-gradient(180deg, #a8a8a8 0%, #b8b8b8 30%, #e8e8e8 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
