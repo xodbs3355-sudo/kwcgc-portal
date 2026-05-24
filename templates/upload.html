@@ -33,8 +33,13 @@
     </div>
     <div class="project-info-field project-info-field-order-extension">
       <label for="pi-order-extension">발주 연장(m)</label>
-      <input type="number" step="0.1" id="pi-order-extension" class="project-info-input"
-             data-field="order_extension" value="{{ project_info.get('order_extension', '') }}" placeholder="">
+      <select id="pi-order-extension" class="project-info-input project-info-select"
+              data-field="order_extension">
+        <option value=""></option>
+        {% for n in range(1, 11) %}
+          <option value="{{ n }}" {% if project_info.get('order_extension') in (n|string, n) %}selected{% endif %}>{{ n }}</option>
+        {% endfor %}
+      </select>
     </div>
     <div class="project-info-field project-info-field-extension">
       <label for="pi-extension">

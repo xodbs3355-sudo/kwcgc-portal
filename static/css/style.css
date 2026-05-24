@@ -247,16 +247,19 @@ button { font-family: inherit; cursor: pointer; }
     flex: 1;
     min-width: 0;
 }
-/* 준공 연장 / 발주 연장 — 170px (일시점용료 + 영구신청수수료 라벨 줄바꿈 회피 차원에서 10px 양보) */
-.project-info-field-extension,
+/* 준공 연장 — 180px */
+.project-info-field-extension {
+    flex: 0 0 180px;
+}
+/* 발주 연장 — 160px (콤보박스 1~10) */
 .project-info-field-order-extension {
-    flex: 0 0 170px;
+    flex: 0 0 160px;
 }
 /* 준공일자 — 140px */
 .project-info-field-date {
     flex: 0 0 140px;
 }
-/* 일시점용료 + 영구신청수수료 — 160px (140 + 양보분 20) */
+/* 일시점용료 + 영구신청수수료 — 160px */
 .project-info-field-fee {
     flex: 0 0 160px;
 }
@@ -265,13 +268,13 @@ button { font-family: inherit; cursor: pointer; }
     font-weight: 600;
     color: #6b6f7a;
 }
-/* PLP 체크박스 필드 — 150px 고정, 라벨은 좌측 정렬 (다른 필드와 동일) */
+/* PLP 체크박스 필드 — 140px */
 .project-info-field-check {
-    flex: 0 0 150px;
+    flex: 0 0 140px;
 }
-/* 도로재질 — 110px 고정 (드롭다운) */
+/* 도로재질 — 120px (드롭다운 옵션 'ASP(절삭포장)' 표시용 확장) */
 .project-info-field-road {
-    flex: 0 0 110px;
+    flex: 0 0 120px;
 }
 .project-info-checkbox-wrap {
     display: flex;
