@@ -43,7 +43,7 @@ UNIT_PRICES_FILE = _resolve_file()
 LENGTH_KEYS = ["1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m", "10m"]
 MATERIAL_KEYS = ["ASP", "CONC_BLOCK"]
 MATERIAL_DISPLAY = {
-    "ASP": "ASP",
+    "ASP": "ASP(절삭포장)",
     "CONC_BLOCK": "CON`C 및 보도블럭(ASP 外)",
 }
 # 우측 컬럼의 추가 단가 항목 — 연도 최상위 단일 값들
@@ -67,8 +67,10 @@ def default_applicable_year() -> int:
 # 사용자 콤보박스 값 → 단가표 카테고리 키 매핑
 # "ASP 쪽포장" 은 별도 단가 항목 (ASP_POCKET_KEY) 으로 처리 — 연장 무관 단일 가산값.
 # 임시로 ASP 카테고리에 매핑하지만, 비즈니스 룰 확정되면 lookup_price 분기 필요.
+# "ASP" (구) / "ASP(절삭포장)" (현) 둘 다 매핑 — 기존 세션값 호환.
 ROAD_MATERIAL_MAP = {
     "ASP": "ASP",
+    "ASP(절삭포장)": "ASP",
     "ASP 쪽포장": "ASP",
     "CON`C": "CONC_BLOCK",
     "보도블럭": "CONC_BLOCK",

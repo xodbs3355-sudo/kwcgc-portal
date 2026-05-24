@@ -1039,30 +1039,28 @@ button { font-family: inherit; cursor: pointer; }
     justify-content: center;
 }
 
-/* 양호 / 보완 / 해당없음 카드 — 바탕은 공사명 출력필드와 동일한 회색,
-   카드 고유 색상은 텍스트(라벨·숫자)에 적용 */
+/* 양호 / 보완 / 해당없음 / 검토결과 카드 — 흰 바탕 + 회색 테두리 (밝은 톤 통일).
+   카드 고유 색상은 텍스트(라벨·숫자)에만 적용 — 검토 결과 status-ok / status-ng 톤과 동일. */
 .card-ok,
 .card-ng,
-.card-skip {
-    background: #f7f7f9;
+.card-skip,
+.card-verdict-pass,
+.card-verdict-fail {
+    background: #fff;
     border-color: #e5e5e8;
 }
-.card-ok    .result-label { color: #2d7d52; }
-.num-ok                   { color: #2d7d52; }
-.card-ng    .result-label { color: #c67c00; }
-.num-ng                   { color: #c67c00; }
-.card-skip  .result-label { color: #6b6f7a; }
-.num-skip                 { color: #6b6f7a; }
+.card-ok            .result-label { color: #2d7d52; }
+.num-ok                           { color: #2d7d52; }
+.card-ng            .result-label { color: #c67c00; }
+.num-ng                           { color: #c67c00; }
+.card-skip          .result-label { color: #6b6f7a; }
+.num-skip                         { color: #6b6f7a; }
+.card-verdict-pass  .result-label { color: #2d7d52; }
+.card-verdict-pass  .verdict-text { color: #2d7d52; }
+.card-verdict-fail  .result-label { color: #c67c00; }
+.card-verdict-fail  .verdict-text { color: #c67c00; }
 
-/* 최종 판정 카드 */
-.card-verdict-pass {
-    background: linear-gradient(180deg, #ffffff 0%, #e8f7ee 100%);
-}
-.card-verdict-pass .verdict-text { color: #2d7d52; }
-.card-verdict-fail {
-    background: linear-gradient(180deg, #ffffff 0%, #fff0f0 100%);
-}
-.card-verdict-fail .verdict-text { color: #c0392b; }
+/* 검토 결과 카드 텍스트 — 색상은 위 통합 블록에서 처리 */
 .verdict-text {
     font-size: 22px;
     font-weight: 700;
