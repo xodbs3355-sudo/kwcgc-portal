@@ -1489,6 +1489,9 @@ button { font-family: inherit; cursor: pointer; }
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    min-width: 96px;          /* "저장" / "저장 중…" / "저장됨 ✓" 모두 수용 */
+    text-align: center;
+    box-sizing: border-box;
 }
 .btn-primary-sm:hover { filter: brightness(1.08); }
 .btn-primary-sm:disabled { opacity: 0.5; cursor: wait; }
