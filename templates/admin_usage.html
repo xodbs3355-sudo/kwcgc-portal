@@ -65,7 +65,7 @@
           <tbody>
             {% for r in by_doc %}
               <tr>
-                <td>{{ r.doc }}</td>
+                <td>{{ r.display }}</td>
                 <td class="num">{{ r.count }}</td>
                 <td class="num">{{ '{:,.2f}'.format(r.cost_krw) }}</td>
               </tr>

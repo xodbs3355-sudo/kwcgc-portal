@@ -703,12 +703,21 @@ def admin_usage():
         return redirect(url_for("login"))
     if not _is_admin():
         return redirect(url_for("index"))
+
+    # doc_id → 한글 서류명 매핑 (chat 같은 비-document id 는 별도 표기)
+    doc_name_map = {d["id"]: d["name"] for d in DOCUMENTS}
+    doc_name_map["chat"] = "AI 챗봇"
+
+    by_doc = usage_store.by_doc("month")
+    for row in by_doc:
+        row["display"] = doc_name_map.get(row["doc"], row["doc"])
+
     return render_template(
         "admin_usage.html",
         company=session["company"],
         summary=usage_store.summary(),
         daily=usage_store.daily(30),
-        by_doc=usage_store.by_doc("month"),
+        by_doc=by_doc,
         by_company=usage_store.by_company("month"),
     )
 
