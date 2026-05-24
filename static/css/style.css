@@ -1030,7 +1030,7 @@ button { font-family: inherit; cursor: pointer; }
     height: 26px;
 }
 .result-label {
-    font-size: 13px;
+    font-size: 18px;
     font-weight: 600;
     line-height: 1;
     color: #6b6f7a;  /* 기본값 — 카드별로 오버라이드 */
