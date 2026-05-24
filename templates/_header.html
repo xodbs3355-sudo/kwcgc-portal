@@ -49,8 +49,10 @@
   <a class="tab {% if active_tab == 'upload' %}active{% endif %}" href="{{ url_for('index') }}">
     <span class="tab-num">1</span>준공 정보 입력
   </a>
-  <a class="tab {% if active_tab == 'result' %}active{% endif %} {% if not has_result %}disabled{% endif %}"
-     href="{% if has_result %}{{ url_for('result') }}{% else %}#{% endif %}">
+  {# 검토 결과 탭 — 관리자는 항상 활성화 (테스트/검수용), 시공사는 검토 후에만 #}
+  {% set result_enabled = has_result or is_admin %}
+  <a class="tab {% if active_tab == 'result' %}active{% endif %} {% if not result_enabled %}disabled{% endif %}"
+     href="{% if result_enabled %}{{ url_for('result') }}{% else %}#{% endif %}">
     <span class="tab-num">2</span>준공서류 검토 결과
   </a>
   {% if is_admin %}
