@@ -247,15 +247,18 @@ button { font-family: inherit; cursor: pointer; }
     flex: 1;
     min-width: 0;
 }
-/* 준공 연장 / 발주 연장 — 180px 고정 */
+/* 준공 연장 / 발주 연장 — 170px (일시점용료 + 영구신청수수료 라벨 줄바꿈 회피 차원에서 10px 양보) */
 .project-info-field-extension,
 .project-info-field-order-extension {
-    flex: 0 0 180px;
+    flex: 0 0 170px;
 }
-/* 준공일자 / 일시점용료 — 140px 고정 (도로재질 신설에 따른 폭 양보) */
-.project-info-field-date,
-.project-info-field-fee {
+/* 준공일자 — 140px */
+.project-info-field-date {
     flex: 0 0 140px;
+}
+/* 일시점용료 + 영구신청수수료 — 160px (140 + 양보분 20) */
+.project-info-field-fee {
+    flex: 0 0 160px;
 }
 .project-info-field label {
     font-size: 12px;
@@ -1039,26 +1042,35 @@ button { font-family: inherit; cursor: pointer; }
     justify-content: center;
 }
 
-/* 양호 / 보완 / 해당없음 / 검토결과 카드 — 흰 바탕 + 회색 테두리 (밝은 톤 통일).
-   카드 고유 색상은 텍스트(라벨·숫자)에만 적용 — 검토 결과 status-ok / status-ng 톤과 동일. */
+/* 양호 / 보완 / 해당없음 / 검토결과(PASS/DROP) 카드 — UPLOAD 버튼 패턴 통일.
+   연한 배경 + 같은 톤 진한 테두리 + 진한 텍스트 (status-ok / status-ng 와 동일 색상).
+   각 카드는 status badge 색상 셋(배경/색상)을 그대로 가져옴. */
 .card-ok,
-.card-ng,
-.card-skip,
-.card-verdict-pass,
-.card-verdict-fail {
-    background: #fff;
-    border-color: #e5e5e8;
+.card-verdict-pass {
+    background: #e8f7ee;
+    border-color: #2d7d52;
 }
-.card-ok            .result-label { color: #2d7d52; }
-.num-ok                           { color: #2d7d52; }
-.card-ng            .result-label { color: #c67c00; }
-.num-ng                           { color: #c67c00; }
-.card-skip          .result-label { color: #6b6f7a; }
-.num-skip                         { color: #6b6f7a; }
-.card-verdict-pass  .result-label { color: #2d7d52; }
+.card-ok            .result-label,
+.num-ok,
+.card-verdict-pass  .result-label,
 .card-verdict-pass  .verdict-text { color: #2d7d52; }
-.card-verdict-fail  .result-label { color: #c67c00; }
+
+.card-ng,
+.card-verdict-fail {
+    background: #fff4e0;
+    border-color: #c67c00;
+}
+.card-ng            .result-label,
+.num-ng,
+.card-verdict-fail  .result-label,
 .card-verdict-fail  .verdict-text { color: #c67c00; }
+
+.card-skip {
+    background: #f2f3f4;
+    border-color: #6b6f7a;
+}
+.card-skip          .result-label,
+.num-skip                         { color: #6b6f7a; }
 
 /* 검토 결과 카드 텍스트 — 색상은 위 통합 블록에서 처리 */
 .verdict-text {
