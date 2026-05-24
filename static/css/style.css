@@ -1756,7 +1756,10 @@ button { font-family: inherit; cursor: pointer; }
     text-align: right;
     font-size: 11px;
     color: #9a9ea9;
-    margin: -4px 2px 6px 0;
+    margin: -4px 2px 0 0;
+}
+.usage-fx-note + .usage-summary {
+    margin-top: -14px;   /* .usage-page gap 20px 보정 → 시각적 약 6px 여백 */
 }
 .usage-summary {
     display: grid;
