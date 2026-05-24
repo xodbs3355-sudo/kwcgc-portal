@@ -1045,33 +1045,27 @@ button { font-family: inherit; cursor: pointer; }
     justify-content: center;
 }
 
-/* 양호 / 보완 / 해당없음 / 검토결과(PASS/DROP) 카드 — UPLOAD 버튼 패턴 통일.
-   연한 배경 + 같은 톤 진한 테두리 + 진한 텍스트 (status-ok / status-ng 와 동일 색상).
-   각 카드는 status badge 색상 셋(배경/색상)을 그대로 가져옴. */
+/* 양호 / 보완 / 해당없음 / 검토결과(PASS/DROP) 카드 — 보라 테두리 + 연보라 바탕 통일.
+   바탕·테두리는 동일, 텍스트(라벨·숫자·verdict-text)만 카드별 status 색상 유지. */
 .card-ok,
-.card-verdict-pass {
-    background: #e8f7ee;
-    border-color: #2d7d52;
+.card-ng,
+.card-skip,
+.card-verdict-pass,
+.card-verdict-fail {
+    background: #eef0fb;
+    border-color: #5e6ad2;
 }
+/* 텍스트 색상 — 각 카드별 status 톤 유지 */
 .card-ok            .result-label,
 .num-ok,
 .card-verdict-pass  .result-label,
 .card-verdict-pass  .verdict-text { color: #2d7d52; }
 
-.card-ng,
-.card-verdict-fail {
-    background: #fff4e0;
-    border-color: #c67c00;
-}
 .card-ng            .result-label,
 .num-ng,
 .card-verdict-fail  .result-label,
 .card-verdict-fail  .verdict-text { color: #c67c00; }
 
-.card-skip {
-    background: #f2f3f4;
-    border-color: #6b6f7a;
-}
 .card-skip          .result-label,
 .num-skip                         { color: #6b6f7a; }
 
