@@ -1752,9 +1752,15 @@ button { font-family: inherit; cursor: pointer; }
     flex-direction: column;
     gap: 20px;
 }
+.usage-fx-note {
+    text-align: right;
+    font-size: 11px;
+    color: #9a9ea9;
+    margin: -4px 2px 6px 0;
+}
 .usage-summary {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
 }
 .usage-card {
@@ -1762,10 +1768,6 @@ button { font-family: inherit; cursor: pointer; }
     border: 1px solid #e5e5e8;
     border-radius: 8px;
     padding: 16px 18px;
-}
-.usage-card-cost {
-    background: linear-gradient(135deg, #f7f7fb 0%, #eef0fb 100%);
-    border-color: #c8cbf0;
 }
 .usage-card-label {
     font-size: 12px;
@@ -1779,7 +1781,6 @@ button { font-family: inherit; cursor: pointer; }
     color: #1a1a1a;
     line-height: 1;
 }
-.usage-card-cost .usage-card-value { color: #5e6ad2; }
 .usage-card-unit {
     font-size: 14px;
     font-weight: 500;

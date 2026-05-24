@@ -7,7 +7,10 @@
   {% include "_header.html" %}
 
   <div class="usage-page">
-    <!-- 요약 카드 4개 -->
+    <!-- 환율 메모 (요약 카드 그리드 우측 상단) -->
+    <div class="usage-fx-note">약 1,500원/USD 기준 · Gemini Flash Lite</div>
+
+    <!-- 요약 카드 3개 -->
     <div class="usage-summary">
       <div class="usage-card">
         <div class="usage-card-label">오늘 호출</div>
@@ -23,11 +26,6 @@
         <div class="usage-card-label">전체 호출</div>
         <div class="usage-card-value">{{ '{:,}'.format(summary.total_count) }}<span class="usage-card-unit">회</span></div>
         <div class="usage-card-sub">누적 {{ '{:,.0f}'.format(summary.total_cost) }}원</div>
-      </div>
-      <div class="usage-card usage-card-cost">
-        <div class="usage-card-label">이번 달 비용</div>
-        <div class="usage-card-value">{{ '{:,.0f}'.format(summary.month_cost) }}<span class="usage-card-unit">원</span></div>
-        <div class="usage-card-sub">Flash Lite · 약 1,500원/USD 기준</div>
       </div>
     </div>
 
