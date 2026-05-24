@@ -1524,10 +1524,11 @@ button { font-family: inherit; cursor: pointer; }
 .status-err    { color: #c0392b; }
 
 /* 관리자 탭 스타일 */
-/* 관리자 탭들 — 우측 정렬 (첫 번째 관리자 탭만 margin-left auto) */
-.tab-prices { margin-left: auto; }
-.tab-admin { /* 이전: 단독으로 margin-left auto. 이제는 tab-prices 다음에 붙음 */ }
-.tabs:not(:has(.tab-prices)) .tab-admin { margin-left: auto; }
+/* 관리자 탭들 — 우측 정렬 (HTML 순서상 첫 번째에 margin-left: auto)
+   현재 순서: API 사용량 → 연간단가표 → 서류항목별 검토 로직 */
+.tab-usage { margin-left: auto; }
+.tabs:not(:has(.tab-usage)) .tab-prices { margin-left: auto; }
+.tabs:not(:has(.tab-usage)):not(:has(.tab-prices)) .tab-admin { margin-left: auto; }
 
 /* 기존 .result-details 호환 (사용 안 함, 그대로 둠) */
 .result-details {

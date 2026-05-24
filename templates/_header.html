@@ -27,6 +27,14 @@
     <span class="tab-num">2</span>준공서류 검토 결과
   </a>
   {% if is_admin %}
+    <a class="tab tab-usage {% if active_tab == 'usage' %}active{% endif %}"
+       href="{{ url_for('admin_usage') }}">
+      <svg class="tab-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <!-- 막대 차트 아이콘 -->
+        <path d="M4 20 V10 M10 20 V4 M16 20 V14 M22 20 H2"/>
+      </svg>API 사용량
+    </a>
     <a class="tab tab-prices {% if active_tab == 'unit_prices' %}active{% endif %}"
        href="{{ url_for('admin_unit_prices') }}">
       <svg class="tab-gear" viewBox="0 0 24 24" fill="currentColor"
@@ -39,14 +47,6 @@
                  M7 15.2 H13.5 V16.8 H7 Z
                  M7 18.4 H17 V20 H7 Z"/>
       </svg>연간단가표
-    </a>
-    <a class="tab tab-usage {% if active_tab == 'usage' %}active{% endif %}"
-       href="{{ url_for('admin_usage') }}">
-      <svg class="tab-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <!-- 막대 차트 아이콘 -->
-        <path d="M4 20 V10 M10 20 V4 M16 20 V14 M22 20 H2"/>
-      </svg>API 사용량
     </a>
     <a class="tab tab-admin {% if active_tab == 'admin' %}active{% endif %}"
        href="{{ url_for('admin_prompts') }}">
