@@ -384,14 +384,15 @@ button { font-family: inherit; cursor: pointer; }
     color: #92650a;
 }
 .hint-card-mini {
-    padding: 2px 7px;
-    font-size: 10px;
+    padding: 1px 7px;
+    font-size: 12px;
+    line-height: 1.2;           /* 라벨 텍스트 줄 높이(~18px) 안에 들어가도록 */
     margin-left: 6px;
     gap: 4px;
 }
 .hint-card-mini .hint-icon {
-    width: 11px;
-    height: 11px;
+    width: 12px;
+    height: 12px;
 }
 .hint-sub {
     color: #9b9fa8;
