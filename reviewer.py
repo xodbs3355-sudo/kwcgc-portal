@@ -249,6 +249,37 @@ def _review_doc06_combined(files: list, project_info: dict | None,
     return _doc06_apply_rules(data)
 
 
+def _normalize_date_for_match(s) -> str:
+    """일자 정규화 — MM/DD, YYYY-MM-DD, YYYY.MM.DD 등 → MMDD 4자리.
+    매칭 비교용. 형식 차이 흡수.
+    """
+    s = (s or "").strip()
+    nums = re.findall(r"\d+", s)
+    if len(nums) >= 2:
+        return nums[-2].zfill(2) + nums[-1].zfill(2)
+    return s
+
+
+def _normalize_item_for_match(s) -> str:
+    """품목명 정규화 — 대괄호/괄호 안 규격 제거 + 공백 제거.
+    예: "안전화 [6인치]" → "안전화"
+    """
+    s = (s or "").strip()
+    s = re.sub(r"\s*\[.*?\]\s*", "", s)   # [규격] 제거
+    s = re.sub(r"\s*\(.*?\)\s*", "", s)   # (규격) 제거
+    return "".join(s.split())
+
+
+def _items_match(a: str, b: str) -> bool:
+    """품목 매칭 — 정규화 후 정확 일치 또는 포함 관계.
+    "안전화 [6인치]" ↔ "안전화" 매칭 OK.
+    """
+    na, nb = _normalize_item_for_match(a), _normalize_item_for_match(b)
+    if not na or not nb:
+        return False
+    return na == nb or na in nb or nb in na
+
+
 def _won(n) -> str:
     """숫자를 원 단위 문자열로 (예: 95000 → '95,000원')."""
     try:
@@ -443,24 +474,25 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
     if 거래명세서들 and 세금계산서들:
         mismatches = []
         # 각 거래명세서가 동일 (일자+금액+품목) 세금계산서와 매칭되는지
+        # 매칭 규칙:
+        #   - 금액: 정확 일치 (숫자)
+        #   - 일자: MM/DD / YYYY-MM-DD / YYYYMMDD 등 다양한 형식 → MMDD 4자리 정규화
+        #   - 품목: 대괄호([6인치])/괄호 안 규격 제거 + 공백 제거 후 포함 관계 매칭
+        #          (예: "안전화 [6인치]" ↔ "안전화" 매칭 OK)
         for tm in 거래명세서들:
-            tm_key = (
-                (tm.get("일자") or "").strip(),
-                tm.get("공급가액"),
-                (tm.get("품목") or "").strip(),
-            )
+            tm_일자 = _normalize_date_for_match(tm.get("일자"))
+            tm_금액 = tm.get("공급가액")
+            tm_품목 = tm.get("품목") or ""
             found_pair = any(
-                tm_key == (
-                    (sx.get("일자") or "").strip(),
-                    sx.get("공급가액"),
-                    (sx.get("품목") or "").strip(),
-                )
+                _normalize_date_for_match(sx.get("일자")) == tm_일자
+                and sx.get("공급가액") == tm_금액
+                and _items_match(tm_품목, sx.get("품목") or "")
                 for sx in 세금계산서들
             )
             if not found_pair:
                 mismatches.append(
-                    f"거래명세서 '{tm_key[2]}' "
-                    f"(일자 {tm_key[0]}, {_won(tm_key[1])}) — 세금계산서와 매칭 X"
+                    f"거래명세서 '{tm_품목.strip()}' "
+                    f"(일자 {(tm.get('일자') or '').strip()}, {_won(tm_금액)}) — 세금계산서와 매칭 X"
                 )
         if not mismatches:
             results.append(make_result(
