@@ -26,6 +26,7 @@
               data-field="road_material">
         <option value=""></option>
         <option value="ASP" {% if project_info.get('road_material') == 'ASP' %}selected{% endif %}>ASP</option>
+        <option value="ASP 쪽포장" {% if project_info.get('road_material') == 'ASP 쪽포장' %}selected{% endif %}>ASP 쪽포장</option>
         <option value="CON`C" {% if project_info.get('road_material') == 'CON`C' %}selected{% endif %}>CON`C</option>
         <option value="보도블럭" {% if project_info.get('road_material') == '보도블럭' %}selected{% endif %}>보도블럭</option>
       </select>
@@ -57,7 +58,7 @@
              data-field="date" value="{{ project_info.get('date', '') }}">
     </div>
     <div class="project-info-field project-info-field-fee">
-      <label for="pi-land-fee">일시점용료</label>
+      <label for="pi-land-fee">일시점용료 + 영구신청수수료</label>
       <input type="text" id="pi-land-fee" class="project-info-input"
              data-field="land_fee" value="{{ project_info.get('land_fee', '') }}" placeholder="">
     </div>

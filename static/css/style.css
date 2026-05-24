@@ -975,9 +975,9 @@ button { font-family: inherit; cursor: pointer; }
     color: #2d8a4f;
 }
 .info-value-cost {
-    background: #eef0fb;
-    border-color: #c8cbf0;
-    color: #5e6ad2;
+    background: #f7f7f9;
+    border-color: #e5e5e8;
+    color: #1a1a1a;
     font-variant-numeric: tabular-nums;
 }
 .info-hint {
@@ -1025,9 +1025,9 @@ button { font-family: inherit; cursor: pointer; }
 }
 .result-label {
     font-size: 13px;
-    color: #6b6f7a;
     font-weight: 600;
     line-height: 1;
+    color: #6b6f7a;  /* 기본값 — 카드별로 오버라이드 */
 }
 .result-num {
     font-size: 26px;
@@ -1039,23 +1039,20 @@ button { font-family: inherit; cursor: pointer; }
     justify-content: center;
 }
 
-/* 양호 — 초록 그라데이션 */
-.card-ok {
-    background: linear-gradient(180deg, #ffffff 0%, #e8f7ee 100%);
-}
-.num-ok { color: #2d7d52; }
-
-/* 보완 또는 확인 — 주황 그라데이션 */
-.card-ng {
-    background: linear-gradient(180deg, #ffffff 0%, #fff4e0 100%);
-}
-.num-ng { color: #c67c00; }
-
-/* 해당 없음 — 회색 그라데이션 */
+/* 양호 / 보완 / 해당없음 카드 — 바탕은 공사명 출력필드와 동일한 회색,
+   카드 고유 색상은 텍스트(라벨·숫자)에 적용 */
+.card-ok,
+.card-ng,
 .card-skip {
-    background: linear-gradient(180deg, #ffffff 0%, #f0f1f3 100%);
+    background: #f7f7f9;
+    border-color: #e5e5e8;
 }
-.num-skip { color: #6b6f7a; }
+.card-ok    .result-label { color: #2d7d52; }
+.num-ok                   { color: #2d7d52; }
+.card-ng    .result-label { color: #c67c00; }
+.num-ng                   { color: #c67c00; }
+.card-skip  .result-label { color: #6b6f7a; }
+.num-skip                 { color: #6b6f7a; }
 
 /* 최종 판정 카드 */
 .card-verdict-pass {
@@ -1672,6 +1669,10 @@ button { font-family: inherit; cursor: pointer; }
     border-bottom: 1px solid #e5e5e8;
     white-space: nowrap;
 }
+/* 두 번째/세 번째 항목 헤더 — 위쪽 간격 */
+.price-column-title-sub {
+    margin-top: 18px;
+}
 .price-column-body {
     display: flex;
     flex-direction: column;
@@ -1938,7 +1939,8 @@ button { font-family: inherit; cursor: pointer; }
     align-items: center;
     gap: 8px;
     padding: 12px 18px;
-    background: #5e6ad2;
+    /* 헤더(.chat-header) 와 동일 그라데이션 — 통일감 */
+    background: linear-gradient(135deg, #5e6ad2 0%, #7b85d8 100%);
     color: #fff;
     border: none;
     border-radius: 999px;
@@ -1946,10 +1948,10 @@ button { font-family: inherit; cursor: pointer; }
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(94, 106, 210, 0.35);
     cursor: pointer;
-    transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+    transition: filter 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .chat-toggle:hover {
-    background: #4d58c2;
+    filter: brightness(0.94);
     box-shadow: 0 6px 16px rgba(94, 106, 210, 0.45);
 }
 .chat-toggle svg {
@@ -1957,7 +1959,7 @@ button { font-family: inherit; cursor: pointer; }
     height: 18px;
     flex-shrink: 0;
 }
-.chat-toggle-open { background: #4d58c2; }
+.chat-toggle-open { filter: brightness(0.92); }
 .chat-panel {
     position: absolute;
     right: 0;

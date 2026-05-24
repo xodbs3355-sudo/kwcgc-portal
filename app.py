@@ -627,7 +627,7 @@ def admin_unit_prices():
         length_keys=unit_prices_store.LENGTH_KEYS,
         material_keys=unit_prices_store.MATERIAL_KEYS,
         material_display=unit_prices_store.MATERIAL_DISPLAY,
-        plp_key=unit_prices_store.PLP_KEY,
+        right_column_items=unit_prices_store.RIGHT_COLUMN_ITEMS,
     )
 
 
@@ -648,12 +648,13 @@ def admin_unit_prices_save():
                 prices[mat][lk] = int(raw) if raw else 0
             except ValueError:
                 prices[mat][lk] = 0
-    # PLP 옵션은 연도 최상위 단일 필드 (도로재질/연장 무관)
-    plp_raw = (request.form.get(unit_prices_store.PLP_KEY) or "0").replace(",", "").strip()
-    try:
-        prices[unit_prices_store.PLP_KEY] = int(plp_raw) if plp_raw else 0
-    except ValueError:
-        prices[unit_prices_store.PLP_KEY] = 0
+    # 우측 컬럼 단일 항목들 (PLP / ASP 쪽포장 / 영구도로점용허가신청수수료) — 도로재질·연장 무관
+    for item in unit_prices_store.RIGHT_COLUMN_ITEMS:
+        raw = (request.form.get(item["key"]) or "0").replace(",", "").strip()
+        try:
+            prices[item["key"]] = int(raw) if raw else 0
+        except ValueError:
+            prices[item["key"]] = 0
 
     unit_prices_store.set_year(year, prices)
     return jsonify({"ok": True})

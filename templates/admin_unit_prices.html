@@ -55,18 +55,20 @@
           </div>
         </div>
 
-        <!-- 컬럼 3: PLP 옵션 (단일 필드) -->
-        <div class="price-column price-column-plp">
-          <h3 class="price-column-title">PLP 옵션</h3>
-          <div class="price-column-body">
-            <div class="price-row-v price-row-plp-single">
-              <span class="price-length-note">연장/도로재질 규격 무관</span>
-              <input type="text" name="{{ plp_key }}"
-                     value="{% if prices[plp_key] %}{{ '{:,}'.format(prices[plp_key]) }}{% endif %}"
-                     class="price-input" inputmode="numeric" placeholder="0">
-              <span class="price-unit">원</span>
+        <!-- 컬럼 3: 추가 단가 항목 (PLP 옵션 / ASP 쪽포장 / 영구도로점용허가신청수수료) -->
+        <div class="price-column">
+          {% for item in right_column_items %}
+            <h3 class="price-column-title {% if not loop.first %}price-column-title-sub{% endif %}">{{ item.label }}</h3>
+            <div class="price-column-body">
+              <div class="price-row-v price-row-plp-single">
+                <span class="price-length-note">{{ item.note }}</span>
+                <input type="text" name="{{ item.key }}"
+                       value="{% if prices[item.key] %}{{ '{:,}'.format(prices[item.key]) }}{% endif %}"
+                       class="price-input" inputmode="numeric" placeholder="0">
+                <span class="price-unit">원</span>
+              </div>
             </div>
-          </div>
+          {% endfor %}
         </div>
       </div>
 

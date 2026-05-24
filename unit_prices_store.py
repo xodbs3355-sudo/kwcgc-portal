@@ -46,7 +46,17 @@ MATERIAL_DISPLAY = {
     "ASP": "ASP",
     "CONC_BLOCK": "CON`C 및 보도블럭(ASP 外)",
 }
+# 우측 컬럼의 추가 단가 항목 — 연도 최상위 단일 값들
 PLP_KEY = "PLP옵션"
+ASP_POCKET_KEY = "ASP쪽포장"                # 신규 (2026-05-24)
+PERMIT_FEE_KEY = "영구도로점용허가신청수수료"  # 신규 (2026-05-24)
+
+# 우측 컬럼에 표시할 모든 항목 (라벨 + 키) — admin_unit_prices.html 에서 렌더링용
+RIGHT_COLUMN_ITEMS = [
+    {"key": PLP_KEY,        "label": "PLP 옵션",                     "note": "연장/도로재질 규격 무관"},
+    {"key": ASP_POCKET_KEY, "label": "ASP 쪽포장(인입분기포장)",      "note": "연장/도로재질 규격 무관"},
+    {"key": PERMIT_FEE_KEY, "label": "영구도로점용허가신청수수료",     "note": "연장/도로재질 규격 무관"},
+]
 
 
 def default_applicable_year() -> int:
@@ -55,8 +65,11 @@ def default_applicable_year() -> int:
     return today.year if today.month >= 5 else today.year - 1
 
 # 사용자 콤보박스 값 → 단가표 카테고리 키 매핑
+# "ASP 쪽포장" 은 별도 단가 항목 (ASP_POCKET_KEY) 으로 처리 — 연장 무관 단일 가산값.
+# 임시로 ASP 카테고리에 매핑하지만, 비즈니스 룰 확정되면 lookup_price 분기 필요.
 ROAD_MATERIAL_MAP = {
     "ASP": "ASP",
+    "ASP 쪽포장": "ASP",
     "CON`C": "CONC_BLOCK",
     "보도블럭": "CONC_BLOCK",
 }
@@ -65,7 +78,8 @@ ROAD_MATERIAL_MAP = {
 def _empty_year() -> dict:
     """빈 연도 데이터 골격."""
     data = {mat: {lk: 0 for lk in LENGTH_KEYS} for mat in MATERIAL_KEYS}
-    data[PLP_KEY] = 0
+    for item in RIGHT_COLUMN_ITEMS:
+        data[item["key"]] = 0
     return data
 
 
@@ -107,10 +121,11 @@ def _ensure_shape(year_data: dict | None) -> dict:
                 out[mat][lk] = int(src.get(lk) or 0)
             except (TypeError, ValueError):
                 out[mat][lk] = 0
-    try:
-        out[PLP_KEY] = int(year_data.get(PLP_KEY) or 0)
-    except (TypeError, ValueError):
-        out[PLP_KEY] = 0
+    for item in RIGHT_COLUMN_ITEMS:
+        try:
+            out[item["key"]] = int(year_data.get(item["key"]) or 0)
+        except (TypeError, ValueError):
+            out[item["key"]] = 0
     return out
 
 
