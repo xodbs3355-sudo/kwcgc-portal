@@ -1973,6 +1973,7 @@ button { font-family: inherit; cursor: pointer; }
     flex-direction: column;
     overflow: hidden;
 }
+.chat-panel[hidden] { display: none; }   /* .chat-panel display:flex 가 hidden 속성 무시하는 문제 해결 */
 .chat-header {
     display: flex;
     align-items: center;
