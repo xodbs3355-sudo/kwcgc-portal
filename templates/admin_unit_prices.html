@@ -71,7 +71,10 @@
       </div>
 
       <div class="unit-prices-actions">
-        <button type="button" id="delete-year-btn" class="btn-danger-sm">이 연도 삭제</button>
+        <div class="unit-prices-actions-left">
+          <button type="button" id="delete-year-btn" class="btn-danger-sm">연도(시트) 삭제</button>
+          <button type="button" id="reset-year-btn" class="btn-warn-sm">초기화</button>
+        </div>
         <button type="submit" class="btn-primary-sm">저장</button>
       </div>
     </form>
@@ -106,7 +109,7 @@ document.getElementById('add-year-btn')?.addEventListener('click', async () => {
   }
 });
 
-// 이 연도 삭제
+// 연도(시트) 삭제 — 해당 연도 전체 제거
 document.getElementById('delete-year-btn')?.addEventListener('click', async () => {
   const year = document.querySelector('input[name="year"]')?.value;
   if (!year) return;
@@ -120,6 +123,26 @@ document.getElementById('delete-year-btn')?.addEventListener('click', async () =
       window.location.href = '/admin/unit-prices';
     } else {
       alert(data.error || '삭제 실패');
+    }
+  } catch (e) {
+    alert('네트워크 오류: ' + e);
+  }
+});
+
+// 초기화 — 해당 연도 단가만 0으로 리셋 (연도는 유지)
+document.getElementById('reset-year-btn')?.addEventListener('click', async () => {
+  const year = document.querySelector('input[name="year"]')?.value;
+  if (!year) return;
+  if (!confirm(`${year}년 단가표의 모든 값을 0으로 초기화하시겠습니까? (복원 불가)`)) return;
+  const fd = new FormData();
+  fd.append('year', year);
+  try {
+    const res = await fetch('/admin/unit-prices/reset', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = '/admin/unit-prices?year=' + encodeURIComponent(year);
+    } else {
+      alert(data.error || '초기화 실패');
     }
   } catch (e) {
     alert('네트워크 오류: ' + e);

@@ -1726,8 +1726,13 @@ button { font-family: inherit; cursor: pointer; }
 .unit-prices-actions {
     display: flex;
     gap: 8px;
-    justify-content: flex-end;
+    justify-content: space-between;   /* 좌측 그룹 + 우측 저장 */
+    align-items: center;
     margin-top: 14px;
+}
+.unit-prices-actions-left {
+    display: flex;
+    gap: 8px;
 }
 .btn-danger-sm {
     height: 34px;
@@ -1744,6 +1749,22 @@ button { font-family: inherit; cursor: pointer; }
 .btn-danger-sm:hover {
     background: #fff0f0;
     border-color: #e89090;
+}
+.btn-warn-sm {
+    height: 34px;
+    padding: 0 16px;
+    background: #fff;
+    color: #b8740a;
+    border: 1px solid #f0d6a8;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-warn-sm:hover {
+    background: #fdf5e6;
+    border-color: #e0b86c;
 }
 
 /* ── API 사용량 페이지 ─────────────────────────────────────── */

@@ -712,6 +712,20 @@ def admin_unit_prices_delete():
     return jsonify({"ok": True})
 
 
+@app.route("/admin/unit-prices/reset", methods=["POST"])
+def admin_unit_prices_reset():
+    """해당 연도의 단가만 0으로 초기화. 연도 자체는 유지."""
+    if not _is_admin():
+        return jsonify({"ok": False}), 403
+    year = (request.form.get("year") or "").strip()
+    if not year:
+        return jsonify({"ok": False, "error": "연도 필수"}), 400
+    ok = unit_prices_store.reset_year(year)
+    if not ok:
+        return jsonify({"ok": False, "error": "존재하지 않는 연도"}), 404
+    return jsonify({"ok": True})
+
+
 # ── API 사용량 관리자 라우트 ────────────────────────────────────
 @app.route("/admin/usage", methods=["GET"])
 def admin_usage():

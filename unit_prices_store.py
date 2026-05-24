@@ -136,6 +136,18 @@ def delete_year(year: str) -> None:
     save_all(data)
 
 
+def reset_year(year: str) -> bool:
+    """해당 연도의 모든 단가를 0으로 리셋 (연도 자체는 유지).
+    존재하지 않는 연도면 False.
+    """
+    data = load_all()
+    if year not in data:
+        return False
+    data[year] = _empty_year()
+    save_all(data)
+    return True
+
+
 def lookup_price(year: str, road_material: str, extension_m: int, plp: bool) -> int | None:
     """검토 단계 최종 공사비 산출용 — 단가 + (PLP 옵션) 조회.
 
