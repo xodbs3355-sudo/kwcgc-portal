@@ -283,6 +283,22 @@ def review():
     if "company" not in session:
         return redirect(url_for("login"))
 
+    # ── 입력값 동기 보장 (race 해결) ──
+    # 검토 시작 폼이 모든 project_info 값을 hidden 으로 같이 보냄 →
+    # blur fetch 의 도달 여부와 무관하게 검토 시작 시점의 최신 값을 보장.
+    _PROJECT_INFO_FIELDS = (
+        "name", "date", "amount", "extension", "order_extension",
+        "land_fee", "road_material", "year",
+    )
+    if any(f in request.form for f in _PROJECT_INFO_FIELDS) or "plp" in request.form:
+        _info = session.get("project_info", {})
+        for _field in _PROJECT_INFO_FIELDS:
+            if _field in request.form:
+                _info[_field] = request.form.get(_field, "")
+        if "plp" in request.form:
+            _info["plp"] = (request.form.get("plp") == "true")
+        session["project_info"] = _info
+
     uploaded = load_uploaded()
     skips = session.get("skips", {})
     project_info = session.get("project_info", {})
@@ -341,12 +357,15 @@ def review():
         session.pop("chat_id", None)
 
     # 공사 저장소 — 같은 (회사+공사명) 이면 덮어쓰기, 60일 보관
+    # 공사 불러온 상태 (session 에 project_id 존재) 면 공사명 바뀌어도
+    # 같은 ID 로 업데이트 (오타 보완 케이스 등)
     try:
         project_id = project_store.save(
             company=company,
             project_info=project_info,
             files=uploaded,
             all_results=all_results,
+            project_id=session.get("project_id"),
         )
         if project_id:
             session["project_id"] = project_id

@@ -40,6 +40,36 @@ function buildReviewSteps() {
 
 if (reviewForm && reviewOverlay) {
   reviewForm.addEventListener('submit', () => {
+    // ── 입력값 동기 보장 (race 해결) ──
+    // blur 시 fetch /project-info 가 페이지 unload 로 취소될 수 있어,
+    // 검토 시작 시점에 모든 project_info 입력값을 hidden 으로 함께 전송.
+    // 백엔드 review() 가 form 에서 받은 값으로 session 을 먼저 갱신 후 검토.
+    document.querySelectorAll('.project-info-input').forEach(input => {
+      const field = input.dataset.field;
+      if (!field) return;
+      // 금액 계열은 콤마 표기로 들어가 있어 그대로 전송 (백엔드가 콤마 제거 처리)
+      let hidden = reviewForm.querySelector(`input[type="hidden"][name="${field}"]`);
+      if (!hidden) {
+        hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = field;
+        reviewForm.appendChild(hidden);
+      }
+      hidden.value = input.value;
+    });
+    // PLP 체크박스
+    const plpCheck = document.getElementById('pi-plp');
+    if (plpCheck) {
+      let plpHidden = reviewForm.querySelector('input[type="hidden"][name="plp"]');
+      if (!plpHidden) {
+        plpHidden = document.createElement('input');
+        plpHidden.type = 'hidden';
+        plpHidden.name = 'plp';
+        reviewForm.appendChild(plpHidden);
+      }
+      plpHidden.value = plpCheck.checked ? 'true' : 'false';
+    }
+
     reviewOverlay.hidden = false;
     // 진행 막대 — 12초에 걸쳐 95%까지 ease-out으로 채움
     if (reviewProgressBar) {

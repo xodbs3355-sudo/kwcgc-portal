@@ -78,9 +78,13 @@ def _read_meta(project_id: str) -> dict | None:
 def save(company: str,
          project_info: dict,
          files: dict,
-         all_results: dict) -> str | None:
+         all_results: dict,
+         project_id: str | None = None) -> str | None:
     """저장 — 같은 (회사+공사명) 이면 덮어쓰기, 아니면 신규 ID 발급.
 
+    project_id: 공사 불러온 상태에서 검토 시작 시 그 ID 전달.
+                공사명이 바뀌어도 같은 ID 로 덮어쓰기 (오타 보완 케이스 등).
+                유효한 기존 항목일 때만 인정, 그 외엔 (회사+공사명) hash 신규.
     files: {doc_id: [(filename, bytes), ...]}
     반환: project_id (실패 시 None)
     """
@@ -88,8 +92,15 @@ def save(company: str,
     if not company or not name:
         return None   # 회사명/공사명 없으면 저장 X
 
-    project_id = _hash_key(_key(company, name))
-    project_dir = _project_path(project_id)
+    # 명시적 project_id 가 유효한 기존 항목이면 그 ID 로 덮어쓰기 (공사명 변경 허용)
+    # 그 외엔 (회사+공사명) hash 로 신규 발급
+    use_id = None
+    if project_id and _read_meta(project_id):
+        use_id = project_id
+    if not use_id:
+        use_id = _hash_key(_key(company, name))
+
+    project_dir = _project_path(use_id)
     if not project_dir:
         return None
 
@@ -105,7 +116,7 @@ def save(company: str,
         now = datetime.datetime.now()
         expires = now + datetime.timedelta(days=PROJECT_TTL_DAYS)
         meta = {
-            "project_id": project_id,
+            "project_id": use_id,
             "company": company,
             "project_name": name,
             "project_info": project_info or {},
@@ -121,7 +132,7 @@ def save(company: str,
         with open(os.path.join(project_dir, "files.pkl"), "wb") as f:
             pickle.dump(files or {}, f)
 
-        return project_id
+        return use_id
     except Exception:
         return None
 
