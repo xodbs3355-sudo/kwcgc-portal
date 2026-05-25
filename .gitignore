@@ -23,3 +23,6 @@ Thumbs.db
 
 # Claude
 .claude/settings.local.json
+
+# 로컬 테스트용 샘플 (저장소에 올리지 않음)
+♠ 준공서류 샘플/
