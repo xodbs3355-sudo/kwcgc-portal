@@ -158,6 +158,8 @@
   <!-- 검토 진행 오버레이 -->
   <div class="review-overlay" id="review-overlay" hidden>
     <div class="review-overlay-box">
+      <button type="button" class="review-overlay-close" id="review-overlay-close"
+              title="검토 강제 종료" aria-label="검토 강제 종료">×</button>
       <div class="spinner-large"></div>
       <div class="review-overlay-title">AI 검토 중</div>
       <div class="review-overlay-sub">첨부 파일을 분석하고 있습니다. 잠시만 기다려주세요…</div>
@@ -165,6 +167,17 @@
         <div class="review-progress-bar" id="review-progress-bar"></div>
       </div>
       <div class="review-status-text" id="review-status-text">&nbsp;</div>
+
+      <div class="review-timeout-alert" id="review-timeout-alert" hidden>
+        <div class="review-timeout-alert-msg">
+          검토가 평소보다 오래 걸리고 있습니다.<br>
+          재시도하시겠어요?
+        </div>
+        <div class="review-timeout-alert-actions">
+          <button type="button" class="btn-keep-waiting" id="review-keep-waiting-btn">계속 기다리기</button>
+          <button type="button" class="btn-retry" id="review-retry-btn">재시도</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -4,6 +4,31 @@ const reviewOverlay = document.getElementById('review-overlay');
 const reviewProgressBar = document.getElementById('review-progress-bar');
 const reviewStatusText = document.getElementById('review-status-text');
 
+// 검토 강제 종료 + 30초 경과 시 재시도 알림
+const REVIEW_TIMEOUT_ALERT_MS = 30000;
+let reviewTimeoutAlertTimer = null;
+
+function showReviewTimeoutAlert() {
+  const a = document.getElementById('review-timeout-alert');
+  if (a) a.hidden = false;
+}
+function hideReviewTimeoutAlert() {
+  const a = document.getElementById('review-timeout-alert');
+  if (a) a.hidden = true;
+}
+function abortReview() {
+  if (reviewTimeoutAlertTimer) clearTimeout(reviewTimeoutAlertTimer);
+  window.location.reload();
+}
+(function bindReviewOverlayButtons() {
+  const closeBtn = document.getElementById('review-overlay-close');
+  if (closeBtn) closeBtn.addEventListener('click', abortReview);
+  const retryBtn = document.getElementById('review-retry-btn');
+  if (retryBtn) retryBtn.addEventListener('click', abortReview);
+  const keepBtn = document.getElementById('review-keep-waiting-btn');
+  if (keepBtn) keepBtn.addEventListener('click', hideReviewTimeoutAlert);
+})();
+
 // 서류별 검토 항목 — 회색 안내 텍스트 순환용 (시각 효과)
 // 실제 검토는 백엔드에서 병렬 처리되며, 이 목록은 사용자 체감용 progress.
 const REVIEW_FLOW = {
@@ -71,6 +96,10 @@ if (reviewForm && reviewOverlay) {
     }
 
     reviewOverlay.hidden = false;
+    // 30초 경과 후 재시도 알림 표시
+    if (reviewTimeoutAlertTimer) clearTimeout(reviewTimeoutAlertTimer);
+    hideReviewTimeoutAlert();
+    reviewTimeoutAlertTimer = setTimeout(showReviewTimeoutAlert, REVIEW_TIMEOUT_ALERT_MS);
     // 진행 막대 — 12초에 걸쳐 95%까지 ease-out으로 채움
     if (reviewProgressBar) {
       reviewProgressBar.style.transition = 'none';

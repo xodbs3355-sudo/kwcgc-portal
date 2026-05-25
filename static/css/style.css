@@ -828,6 +828,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .review-overlay[hidden] { display: none; }
 .review-overlay-box {
+    position: relative;
     background: #fff;
     border-radius: 12px;
     padding: 36px 48px;
@@ -837,6 +838,66 @@ button { font-family: inherit; cursor: pointer; }
     max-width: calc(100vw - 40px);
     box-sizing: border-box;
 }
+/* 우상단 강제 종료 버튼 — 항상 표시 */
+.review-overlay-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #9b9fa8;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+.review-overlay-close:hover {
+    background: #f3f4f7;
+    color: #1a1a1a;
+}
+/* 30초 경과 시 표시되는 재시도 알림 */
+.review-timeout-alert {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: #fff7e8;
+    border: 1px solid #f5d6a3;
+    border-radius: 8px;
+    text-align: center;
+}
+.review-timeout-alert[hidden] { display: none; }
+.review-timeout-alert-msg {
+    font-size: 13px;
+    color: #8a5a00;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+.review-timeout-alert-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+.review-timeout-alert-actions button {
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+.btn-keep-waiting {
+    background: #fff;
+    color: #6b6f7a;
+    border-color: #d8dade !important;
+}
+.btn-keep-waiting:hover { background: #f3f4f7; }
+.btn-retry {
+    background: #5e6ad2;
+    color: #fff;
+    border-color: #5e6ad2 !important;
+}
+.btn-retry:hover { background: #4b58c5; }
 .spinner-large {
     width: 48px;
     height: 48px;
