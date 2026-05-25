@@ -2507,3 +2507,60 @@ button { font-family: inherit; cursor: pointer; }
     .share-info-label { flex: 0 0 70px; }
     .share-logo { font-size: 17px; }
 }
+
+/* ── 검토 결과 빈 진입 안내 (관리자 전용) ───────────────────────── */
+.result-empty-notice {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid #e6e8ee;
+    border-left: 4px solid #6b5dd3;
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin: 24px 0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+.result-empty-icon {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    color: #6b5dd3;
+}
+.result-empty-icon svg {
+    width: 100%;
+    height: 100%;
+}
+.result-empty-text {
+    flex: 1;
+}
+.result-empty-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1f2330;
+    margin-bottom: 8px;
+}
+.result-empty-sub {
+    color: #6b6f7a;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+.result-empty-sub strong {
+    color: #1f2330;
+    font-weight: 600;
+}
+.result-empty-btn {
+    display: inline-block;
+    background: #6b5dd3;
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.result-empty-btn:hover {
+    background: #5849c4;
+}

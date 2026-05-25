@@ -181,6 +181,27 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
 <div class="page">
   {% include "_header.html" %}
 
+  {% if not all_results %}
+  <!-- 관리자 빈 진입 — 검토 미진행 상태 안내 -->
+  <div class="result-empty-notice">
+    <div class="result-empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <div class="result-empty-text">
+      <div class="result-empty-title">아직 검토를 진행하지 않았습니다</div>
+      <div class="result-empty-sub">
+        관리자 계정은 검수용으로 이 탭에 진입할 수 있습니다.<br>
+        실제 검토 결과를 보려면 <strong>1번 「준공 정보 입력」 탭</strong>에서 서류를 업로드하고 검토를 실행해 주세요.
+      </div>
+      <a class="result-empty-btn" href="{{ url_for('index') }}">1번 탭으로 이동</a>
+    </div>
+  </div>
+  {% else %}
   <div class="result-summary">
     <!-- 좌측 40% — 공사 요약 카드 -->
     <div class="result-info-card">
@@ -362,5 +383,6 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
       {% endfor %}
     </section>
   </div>
+  {% endif %}
 </div>
 {% endblock %}

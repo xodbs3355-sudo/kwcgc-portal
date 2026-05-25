@@ -363,7 +363,11 @@ def result():
         return redirect(url_for("login"))
     all_results = session.get("review_results")
     if not all_results:
-        return redirect(url_for("index"))
+        # 시공사: 검토 결과 없으면 1번 탭으로 보냄
+        # 관리자: 테스트/검수용으로 빈 상태 진입 허용
+        if not _is_admin():
+            return redirect(url_for("index"))
+        all_results = {}
 
     # 서류 단위 집계 (각 슬롯은 서류 개수, 합 ≤ DOCUMENTS 총 개수)
     counts = {"OK": 0, "NG": 0, "WARN": 0, "SKIP": 0}
