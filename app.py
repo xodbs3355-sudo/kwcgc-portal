@@ -437,14 +437,31 @@ def preview_file(doc_id: str, idx: int):
         "jpeg": "image/jpeg",
         "png":  "image/png",
     }.get(ext, "application/octet-stream")
+    # conditional=True → Range 요청 지원
+    # (PDF.js 가 스캔본 큰 PDF 의 첫 페이지에 필요한 부분만 먼저 받아서 빠르게 렌더링)
     response = send_file(
         io.BytesIO(file_bytes),
         mimetype=mime,
         download_name=filename,
         as_attachment=False,
+        conditional=True,
     )
+    # ETag — 같은 파일 재요청 시 304 응답으로 절약
+    response.set_etag(f"preview-{doc_id}-{idx}-{len(file_bytes)}")
     # 1시간 브라우저 캐시 (같은 파일 재요청 시 즉시 표시)
     response.headers["Cache-Control"] = "private, max-age=3600"
+    return response
+
+
+@app.after_request
+def _pdfjs_static_cache(response):
+    """PDF.js 정적 자산 강력 캐시 — 버전 고정이라 1년 immutable.
+    첫 진입 후엔 viewer.mjs / wasm / 폰트 등 다시 다운로드 안 함."""
+    try:
+        if request.path.startswith("/static/pdfjs/"):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    except Exception:
+        pass
     return response
 
 
