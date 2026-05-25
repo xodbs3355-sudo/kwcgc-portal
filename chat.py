@@ -17,6 +17,7 @@ import uuid
 from pypdf import PdfReader
 
 import config
+import unit_prices_store
 import usage_store
 
 
@@ -83,9 +84,16 @@ def build_context(all_results: dict, uploaded_files: dict, project_info: dict,
             "files": file_texts,
         })
 
+    # 단가표 스냅샷 — 검토 시점의 단가표 캡쳐 (관리자가 추후 단가표 수정해도 채팅 응답 일관성 유지)
+    unit_prices_snapshot = {
+        year: unit_prices_store.get_year(year)
+        for year in unit_prices_store.list_years()
+    }
+
     return {
         "project_info": project_info or {},
         "documents": docs_ctx,
+        "unit_prices": unit_prices_snapshot,
     }
 
 
@@ -100,6 +108,44 @@ def clear(chat_id: str) -> None:
 def get_history(chat_id: str) -> list:
     entry = CHAT_STORE.get(chat_id)
     return entry["history"] if entry else []
+
+
+def _format_unit_prices(unit_prices: dict) -> str:
+    """연간단가표 + 최종 공사비 산정 룰을 채팅 컨텍스트용 텍스트로 포맷팅."""
+    if not unit_prices:
+        return "[연간단가표]\n(단가표 미등록)\n"
+
+    parts = ["[연간단가표]"]
+    parts.append("※ 단가 적용 기간: 당해년도 5/1 ~ 익년도 4/30")
+    parts.append("※ 도로재질 분류: ASP(절삭포장) / CON`C 및 보도블럭(=ASP 外)")
+    parts.append("")
+
+    for year in sorted(unit_prices.keys(), reverse=True):
+        data = unit_prices[year] or {}
+        parts.append(f"━━━ {year}년 ━━━")
+        parts.append("• 연장별 단가 (단위: 원)")
+        parts.append("    연장  | ASP(절삭포장) | CON`C·보도블럭")
+        for lk in unit_prices_store.LENGTH_KEYS:
+            asp = (data.get("ASP") or {}).get(lk, 0)
+            conc = (data.get("CONC_BLOCK") or {}).get(lk, 0)
+            parts.append(f"    {lk:>4}  | {asp:>12,} | {conc:>12,}")
+        parts.append("• 가산 항목 (연장/도로재질 규격 무관)")
+        for item in unit_prices_store.RIGHT_COLUMN_ITEMS:
+            v = data.get(item["key"], 0)
+            parts.append(f"    - {item['label']}: {v:,}원")
+        parts.append("")
+
+    parts.append("[최종 공사비 산정 룰]")
+    parts.append("1) 사용할 연장 결정")
+    parts.append("   · 정산 대상  : 준공연장 ceiling(올림) 기준")
+    parts.append("   · 정산 비대상/미정: 발주연장 반올림 기준")
+    parts.append("2) 정산 여부 판정: |준공연장 - 발주연장| ≥ 1m → 정산 대상 (평면연장 기준)")
+    parts.append("3) 최종 공사비")
+    parts.append("   = (해당 연장 m 단가)")
+    parts.append("   + (PLP 옵션 선택 시 해당 연도 PLP 단가)")
+    parts.append("   + (일시점용료 + 영구신청수수료, 사용자 입력값)")
+    parts.append("")
+    return "\n".join(parts)
 
 
 def _format_context_for_prompt(context: dict) -> str:
@@ -148,12 +194,17 @@ def _format_context_for_prompt(context: dict) -> str:
         else:
             parts.append("- 첨부 파일: (없음)")
         parts.append("")
+
+    # 연간단가표 + 산정 룰 (단가/산식/정산 관련 질문 응답용)
+    parts.append(_format_unit_prices(context.get("unit_prices") or {}))
+
     return "\n".join(parts)
 
 
 SYSTEM_PROMPT = """너는 도시가스 공사 준공서류 검토 결과를 설명하고 사용자 질문에 답하는 전문 보조원이야.
 규칙:
-- 검토 결과와 첨부 파일 텍스트 추출본을 근거로만 답할 것. 추측 금지.
+- 검토 결과, 연간단가표, 첨부 파일 텍스트 추출본을 근거로 답할 것. 추측 금지.
+- 단가·산식·정산 룰 관련 질문은 [연간단가표] 와 [최종 공사비 산정 룰] 섹션을 적극 활용해 답할 것.
 - 텍스트에 명시되지 않은 내용을 묻거나, 이미지·도면·사진에 대한 시각적 질문은
   "원본 파일을 직접 확인해주세요"라고 안내할 것.
 - 한국어로 간결하게 답할 것. 표나 목록이 도움 되면 사용.
