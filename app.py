@@ -525,11 +525,20 @@ def preview_file(doc_id: str, idx: int):
 
 
 @app.after_request
-def _pdfjs_static_cache(response):
-    """PDF.js 정적 자산 강력 캐시 — 버전 고정이라 1년 immutable.
-    첫 진입 후엔 viewer.mjs / wasm / 폰트 등 다시 다운로드 안 함."""
+def _static_long_cache(response):
+    """정적 자산 강력 캐시 (1년 immutable) — 첫 진입 후엔 304 검증 요청조차 안 함.
+
+    - /static/pdfjs/ : 버전 고정 디렉토리. 변경 없음 → 안전.
+    - /static/css/, /static/js/ : style.css?v=<mtime>, app.js?v=<mtime>
+      형태로 이미 asset_version 쿼리 무효화 사용 중. 파일 수정 시 mtime
+      이 바뀌어 ?v= 값이 변경 → 브라우저가 새 URL 로 인식 → 새로 받음.
+      따라서 1년 immutable 캐시 적용해도 수정 즉시 반영됨.
+    """
     try:
-        if request.path.startswith("/static/pdfjs/"):
+        path = request.path
+        if (path.startswith("/static/pdfjs/")
+                or path.startswith("/static/css/")
+                or path.startswith("/static/js/")):
             response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     except Exception:
         pass
