@@ -37,6 +37,24 @@ document.querySelectorAll('.doc-list-head').forEach((head) => {
   });
 });
 
+// PDF.js viewer 초기 설정 — 단일 페이지 스크롤 + 페이지 높이 맞춤
+// (기본은 세로 연속 스크롤이라 다중 페이지 PDF가 작게 나열됨)
+function initPdfViewer(iframe) {
+  try {
+    const app = iframe.contentWindow && iframe.contentWindow.PDFViewerApplication;
+    if (!app || !app.initializedPromise) return;
+    app.initializedPromise.then(() => {
+      try {
+        // ScrollMode.PAGE = 3 (한 페이지씩 표시)
+        if (app.pdfViewer) {
+          app.pdfViewer.scrollMode = 3;
+          app.pdfViewer.currentScaleValue = 'page-fit';
+        }
+      } catch (e) { /* noop */ }
+    }).catch(() => { /* noop */ });
+  } catch (e) { /* noop */ }
+}
+
 // 첨부 미리보기 탭 클릭 → viewer 교체
 document.querySelectorAll('.preview-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
@@ -54,8 +72,14 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
     if (['jpg', 'jpeg', 'png'].includes(ext)) {
       viewer.innerHTML = `<img class="preview-image" src="${url}" alt="">`;
     } else {
-      // #view=Fit — PDF 자체 OpenAction(확대 줌) 무시하고 전체 페이지 맞춤
-      viewer.innerHTML = `<iframe class="preview-iframe" src="${url}#view=Fit"></iframe>`;
+      // PDF.js viewer 로 iframe 표시 — 브라우저 내장 PDF 뷰어의 스캔본 확대 이슈 회피
+      const viewerSrc = `/static/pdfjs/web/viewer.html?file=${encodeURIComponent(url)}#zoom=page-fit&pagemode=none`;
+      viewer.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.className = 'preview-iframe';
+      iframe.src = viewerSrc;
+      iframe.addEventListener('load', () => initPdfViewer(iframe));
+      viewer.appendChild(iframe);
     }
   });
 });
@@ -371,7 +395,10 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
                   {% if first_ext in ('jpg', 'jpeg', 'png') %}
                     <img class="preview-image" src="{{ url_for('preview_file', doc_id=doc.id, idx=0) }}" alt="{{ first_name }}">
                   {% else %}
-                    <iframe class="preview-iframe" src="{{ url_for('preview_file', doc_id=doc.id, idx=0) }}#view=Fit"></iframe>
+                    {# PDF.js viewer 로 iframe 표시 — 브라우저 내장 뷰어의 스캔본 확대 이슈 회피 #}
+                    <iframe class="preview-iframe"
+                            src="{{ '/static/pdfjs/web/viewer.html?file=' ~ (url_for('preview_file', doc_id=doc.id, idx=0)|urlencode) ~ '#zoom=page-fit&pagemode=none' }}"
+                            onload="initPdfViewer(this)"></iframe>
                   {% endif %}
                 </div>
               {% else %}
