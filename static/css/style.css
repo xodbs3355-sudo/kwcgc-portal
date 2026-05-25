@@ -46,10 +46,10 @@ button { font-family: inherit; cursor: pointer; }
     align-items: flex-start;
     gap: 0;
 }
-/* 헤더용 배지 — 프로그램명 아래, 좌측 정렬 + 좌측 여백 150px */
+/* 헤더용 배지 — 프로그램명 아래, 좌측 정렬 + 좌측 여백 170px */
 .portal-header-left .gemini-badge {
     margin-right: 0;
-    margin-left: 150px;
+    margin-left: 170px;
 }
 .portal-header-right { display: flex; align-items: center; gap: 8px; }
 .portal-logo {
