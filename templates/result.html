@@ -56,6 +56,90 @@ function initPdfViewer(iframe) {
   } catch (e) { /* noop */ }
 }
 
+// 이미지 미리보기 확대/축소 — Ctrl+휠 줌, 드래그 panning, 더블클릭 리셋
+// (PDF 는 PDF.js viewer 가 자체 처리하므로 여기선 처리하지 않음)
+function setupImageZoom(container) {
+  if (!container || container.dataset.zoomInit === '1') return;
+  container.dataset.zoomInit = '1';
+  container.style.overflow = 'hidden';
+
+  let scale = 1, tx = 0, ty = 0;
+  let dragging = false, sx = 0, sy = 0, stx = 0, sty = 0;
+  let dragPointerId = null;
+
+  function getImg() { return container.querySelector('img.preview-image'); }
+  function applyTransform() {
+    const img = getImg();
+    if (!img) return;
+    img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    img.style.transformOrigin = '0 0';
+    img.style.cursor = scale > 1 ? (dragging ? 'grabbing' : 'grab') : '';
+    img.draggable = false;
+  }
+  function reset() { scale = 1; tx = 0; ty = 0; applyTransform(); }
+
+  // 이미지가 교체되면 (탭 클릭으로 innerHTML 변경) 줌 리셋
+  new MutationObserver(() => reset()).observe(container, { childList: true });
+
+  // Ctrl + 휠 → 마우스 위치 기준 확대/축소 (1x ~ 5x)
+  container.addEventListener('wheel', (e) => {
+    if (!getImg()) return;
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    const rect = container.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const delta = -Math.sign(e.deltaY) * 0.15;
+    const newScale = Math.max(1, Math.min(5, scale + delta));
+    if (newScale === scale) return;
+    // 마우스 좌표의 이미지 내 지점이 줌 후에도 같은 화면 좌표에 있도록 보정
+    tx = mx - ((mx - tx) / scale) * newScale;
+    ty = my - ((my - ty) / scale) * newScale;
+    scale = newScale;
+    if (scale === 1) { tx = 0; ty = 0; }
+    applyTransform();
+  }, { passive: false });
+
+  // 드래그 panning (확대 상태에서만)
+  container.addEventListener('pointerdown', (e) => {
+    if (!getImg() || scale <= 1 || e.button !== 0) return;
+    dragging = true;
+    dragPointerId = e.pointerId;
+    sx = e.clientX; sy = e.clientY;
+    stx = tx; sty = ty;
+    try { container.setPointerCapture(e.pointerId); } catch (_) {}
+    applyTransform();
+    e.preventDefault();
+  });
+  container.addEventListener('pointermove', (e) => {
+    if (!dragging || e.pointerId !== dragPointerId) return;
+    tx = stx + (e.clientX - sx);
+    ty = sty + (e.clientY - sy);
+    applyTransform();
+  });
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (dragPointerId !== null) {
+      try { container.releasePointerCapture(dragPointerId); } catch (_) {}
+      dragPointerId = null;
+    }
+    applyTransform();
+  }
+  container.addEventListener('pointerup', endDrag);
+  container.addEventListener('pointercancel', endDrag);
+
+  // 더블클릭 → 원래 크기/위치 리셋
+  container.addEventListener('dblclick', (e) => {
+    if (!getImg() || scale === 1) return;
+    e.preventDefault();
+    reset();
+  });
+}
+
+// 페이지 로드 시 모든 미리보기 컨테이너에 줌 핸들러 등록 (초기 이미지에도 적용)
+document.querySelectorAll('.preview-viewer').forEach(setupImageZoom);
+
 // 첨부 미리보기 탭 클릭 → viewer 교체
 document.querySelectorAll('.preview-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
