@@ -483,6 +483,37 @@ def _won(n) -> str:
         return str(n) if n is not None else "-"
 
 
+def _addr_token(name: str) -> str | None:
+    """공사명에서 지번 토큰 추출 — 예: '172-159번지' → '172-159'."""
+    if not name:
+        return None
+    m = re.search(r"\d+-\d+(?=\s*번지)", name)
+    if m:
+        return m.group(0)
+    m = re.search(r"\d+-\d+", name)
+    return m.group(0) if m else None
+
+
+def _name_loose_match(name_a: str, name_b: str) -> tuple[bool, str]:
+    """공사명 관대 매칭 — 완전 일치 > 부분 포함 > 지번 일치 순으로 검사.
+    번지·지번이 같으면 뒤에 붙는 '인입공급관'/'일원' 등 표기 차이는 허용.
+    반환: (일치 여부, 매칭 사유)
+    """
+    a = (name_a or "").strip()
+    b = (name_b or "").strip()
+    if not a or not b:
+        return (False, "")
+    if a == b:
+        return (True, "완전 일치")
+    if a in b or b in a:
+        return (True, "부분 포함")
+    addr_a = _addr_token(a)
+    addr_b = _addr_token(b)
+    if addr_a and addr_b and addr_a == addr_b:
+        return (True, f"지번 {addr_a} 일치")
+    return (False, "")
+
+
 def _doc06_apply_rules(data: dict) -> list[dict]:
     """추출된 구조화 데이터에 검증 룰 적용 → 서류별 통합 결과 카드 반환.
 
@@ -614,9 +645,7 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
         ph_name = (사진대지.get("공사명_표기") or "").strip()
         ref_name = (사용내역서.get("공사명") if 사용내역서 else "") or ""
         ref_name = ref_name.strip()
-        name_match = bool(ph_name and ref_name) and (
-            ph_name == ref_name or ph_name in ref_name or ref_name in ph_name
-        )
+        name_match, name_match_reason = _name_loose_match(ph_name, ref_name)
         ph_items = [s.strip() for s in (사진대지.get("품목_표기") or []) if s and s.strip()]
         보호구_품명들 = [
             (item.get("품명") or "").strip()
@@ -630,8 +659,16 @@ def _doc06_apply_rules(data: dict) -> list[dict]:
         ext_summary = f"공사명 '{ph_name}' / 품목 {ph_items_str}"
 
         if name_match and item_match:
+            note_parts = []
+            if name_match_reason and name_match_reason != "완전 일치":
+                note_parts.append(
+                    f"공사명 {name_match_reason} (사진 '{ph_name}' vs 사용내역서 '{ref_name}')"
+                )
+            else:
+                note_parts.append("공사명 일치")
+            note_parts.append("품목 일치")
             results.append(make_result(
-                "사진대지", "OK", ext_summary, "공사명·품목 일치"
+                "사진대지", "OK", ext_summary, " · ".join(note_parts)
             ))
         else:
             reasons = []
