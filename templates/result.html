@@ -37,17 +37,18 @@ document.querySelectorAll('.doc-list-head').forEach((head) => {
   });
 });
 
-// PDF.js viewer 초기 설정 — 단일 페이지 스크롤 + 페이지 높이 맞춤
-// (기본은 세로 연속 스크롤이라 다중 페이지 PDF가 작게 나열됨)
+// PDF.js viewer 초기 설정 — 세로 스크롤 + 페이지 높이 맞춤
+// scrollMode=VERTICAL(0) + zoom=page-fit 조합:
+//   · 각 페이지가 화면 높이를 꽉 채움 (한 페이지씩 표시되는 효과)
+//   · 페이지들이 세로로 이어져 있어 마우스 휠 스크롤로 다음 페이지 이동
 function initPdfViewer(iframe) {
   try {
     const app = iframe.contentWindow && iframe.contentWindow.PDFViewerApplication;
     if (!app || !app.initializedPromise) return;
     app.initializedPromise.then(() => {
       try {
-        // ScrollMode.PAGE = 3 (한 페이지씩 표시)
         if (app.pdfViewer) {
-          app.pdfViewer.scrollMode = 3;
+          app.pdfViewer.scrollMode = 0;            // VERTICAL
           app.pdfViewer.currentScaleValue = 'page-fit';
         }
       } catch (e) { /* noop */ }
