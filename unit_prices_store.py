@@ -236,7 +236,7 @@ def compute_final_cost(project_info: dict,
         if plp:
             parts.append("PLP")
         if land_fee > 0:
-            parts.append("일시점용료")
+            parts.append("일시점용료 + 영구신청수수료")
         return (final_cost, " + ".join(parts))
     except Exception:
         return (None, None)

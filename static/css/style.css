@@ -1169,7 +1169,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 /* 5개 우측 카드 — 폭 좁아진 만큼 폰트도 살짝 축소 */
 .result-summary-right .result-label {
-    font-size: 11px;
+    font-size: 15px;
 }
 .result-summary-right .result-num {
     font-size: 22px;
@@ -1191,29 +1191,49 @@ button { font-family: inherit; cursor: pointer; }
     justify-content: center;
 }
 
-/* 양호 / 보완 / 해당없음 / 검토결과(PASS/DROP) 카드 — 흰 바탕 + 보라 테두리 통일.
-   바탕·테두리는 동일, 텍스트(라벨·숫자·verdict-text)만 카드별 status 색상 유지. */
+/* 양호 / 보완 / 해당없음 / 검토결과 카드 — 좌측 6px 컬러 보더 + 우측으로 옅은 그라데이션.
+   텍스트(라벨·숫자·verdict-text)는 카드별 status 색상 유지. */
 .card-ok,
 .card-ng,
 .card-skip,
 .card-verdict-pass,
 .card-verdict-fail {
-    background: #fff;
-    border-color: #5e6ad2;
+    border-left-width: 6px;
+    border-left-style: solid;
 }
+.card-ok {
+    border-left-color: #2d7d52;
+    background: linear-gradient(90deg, rgba(45,125,82,0.14) 0%, #fff 55%);
+}
+.card-ng {
+    border-left-color: #c67c00;
+    background: linear-gradient(90deg, rgba(198,124,0,0.14) 0%, #fff 55%);
+}
+.card-skip {
+    border-left-color: #6b6f7a;
+    background: linear-gradient(90deg, rgba(107,111,122,0.12) 0%, #fff 55%);
+}
+.card-verdict-pass,
+.card-verdict-fail {
+    border-left-color: #5e6ad2;
+    background: linear-gradient(90deg, rgba(94,106,210,0.14) 0%, #fff 55%);
+}
+
 /* 텍스트 색상 — 각 카드별 status 톤 유지 */
 .card-ok            .result-label,
 .num-ok,
-.card-verdict-pass  .result-label,
 .card-verdict-pass  .verdict-text { color: #2d7d52; }
 
 .card-ng            .result-label,
 .num-ng,
-.card-verdict-fail  .result-label,
 .card-verdict-fail  .verdict-text { color: #c67c00; }
 
 .card-skip          .result-label,
 .num-skip                         { color: #6b6f7a; }
+
+/* 검토 결과 카드 라벨 — 카드 자체가 보라 톤이므로 라벨도 보라로 통일 */
+.card-verdict-pass  .result-label,
+.card-verdict-fail  .result-label { color: #5e6ad2; }
 
 /* 검토 결과 카드 텍스트 — 색상은 위 통합 블록에서 처리 */
 .verdict-text {

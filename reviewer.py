@@ -192,30 +192,64 @@ def _date_match(input_date: str, doc_date: str) -> tuple[str, str]:
 
 
 def _amount_match(final_cost: int | None,
-                  doc_amount,
+                  doc_amounts,
                   final_cost_meta: str | None) -> tuple[str, str, str]:
-    """준공금액 매칭 — 계산값(단가표+일시점용료) vs 서류 추출값.
+    """준공금액 매칭 — 2단계 검증.
+    1차: 서류 내 모든 금액 표기가 동일한지
+    2차: 그 값이 계산값(단가표+일시점용료+영구신청수수료)과 일치하는지
+
+    doc_amounts: [{"라벨": str, "원본": str, "값": int|null}, ...]  또는 None
     반환: (status, extracted, note)
     """
-    if doc_amount is None:
+    if not doc_amounts or not isinstance(doc_amounts, list):
         return ("SKIP", "-", "서류에서 준공금액 추출 실패")
-    try:
-        doc_amount_int = int(doc_amount)
-    except (ValueError, TypeError):
-        return ("SKIP", "-", f"서류 금액 변환 실패 ({doc_amount!r})")
 
-    extracted = f"{doc_amount_int:,}"
+    items: list[tuple[str, str, int]] = []  # (라벨, 원본, 값)
+    for it in doc_amounts:
+        if not isinstance(it, dict):
+            continue
+        v = it.get("값")
+        if v is None:
+            continue
+        try:
+            v_int = int(v)
+        except (ValueError, TypeError):
+            continue
+        items.append((
+            str(it.get("라벨") or "?"),
+            str(it.get("원본") or ""),
+            v_int,
+        ))
+
+    if not items:
+        return ("SKIP", "-", "서류에서 유효한 금액 추출 실패")
+
+    values = [v for (_, _, v) in items]
+
+    # 1차: 서류 내부 일치 확인
+    if len(set(values)) > 1:
+        breakdown = " / ".join(f"{lab} {v:,}원" for (lab, _, v) in items)
+        return ("NG", f"{values[0]:,}",
+                f"서류 내 금액 불일치 — {breakdown} (계산값 비교 생략)")
+
+    # 내부 일치 → 그 값이 곧 서류값
+    doc_value = values[0]
+    extracted = f"{doc_value:,}"
+    count = len(items)
 
     if final_cost is None:
         return ("SKIP", extracted,
-                "단가표 또는 입력 정보 부족으로 계산값 산출 불가 — 비교 생략")
+                f"서류 내 금액 {count}건 모두 {_won(doc_value)} 일치 — "
+                f"단가표 또는 입력 정보 부족으로 계산값 산출 불가, 비교 생략")
 
-    if int(final_cost) == doc_amount_int:
+    if int(final_cost) == doc_value:
         return ("OK", extracted,
-                f"계산값 {_won(final_cost)} ({final_cost_meta or '계산'}) 과 서류값 {_won(doc_amount_int)} 일치")
+                f"서류 내 금액 {count}건 모두 {_won(doc_value)} 일치 + "
+                f"계산값과 일치 ({final_cost_meta or '계산'})")
+
     return ("NG", extracted,
-            f"불일치: 계산값 {_won(final_cost)} ({final_cost_meta or '계산'}) "
-            f"vs 서류값 {_won(doc_amount_int)}")
+            f"서류 내 금액 {count}건 모두 {_won(doc_value)} 일치, "
+            f"그러나 계산값 {_won(final_cost)}({final_cost_meta or '계산'})과 불일치")
 
 
 def _signature_check(data: dict) -> tuple[str, str, str]:
@@ -251,9 +285,9 @@ def _doc01_apply_rules(data: dict, project_info: dict | None,
     extracted = (data.get("준공일자") or "").strip() or "-"
     results.append(make_result("준공일자 확인", status, extracted, note))
 
-    # 준공금액 확인 — 계산값 vs 서류값
+    # 준공금액 확인 — 1차: 서류 내부 일치, 2차: 계산값과 일치
     status, extracted, note = _amount_match(
-        final_cost, data.get("준공금액"), final_cost_meta
+        final_cost, data.get("준공금액_목록"), final_cost_meta
     )
     results.append(make_result("준공금액 확인", status, extracted, note))
 
