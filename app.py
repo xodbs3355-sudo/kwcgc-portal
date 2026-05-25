@@ -889,6 +889,14 @@ def admin_usage():
     for row in metrics["by_doc"]:
         row["display"] = doc_name_map.get(row["doc"], row["doc"])
 
+    # Gemini 모델 ID → 화면 표시명
+    model_display_map = {
+        "gemini-2.5-flash-lite": "Gemini 2.5 Flash Lite",
+        "gemini-2.5-flash": "Gemini 2.5 Flash",
+        "gemini-2.5-pro": "Gemini 2.5 Pro",
+    }
+    model_display = model_display_map.get(config.GEMINI_MODEL, config.GEMINI_MODEL)
+
     return render_template(
         "admin_usage.html",
         company=session["company"],
@@ -896,6 +904,7 @@ def admin_usage():
         daily=metrics["daily"],
         by_doc=metrics["by_doc"],
         by_company=metrics["by_company"],
+        model_display=model_display,
     )
 
 
