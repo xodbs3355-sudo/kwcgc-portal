@@ -2,6 +2,7 @@
 검토 결과 첨부 파일 PDF 병합 출력.
 """
 import io
+import os
 
 from PIL import Image, ImageDraw, ImageFont
 from pypdf import PdfWriter, PdfReader
@@ -16,10 +17,16 @@ MM_TO_PX = 300 / 25.4  # 1mm ≈ 11.81px @ 300DPI
 PX_TO_PT = 72.0 / 300.0  # PIL 픽셀(300DPI) → PDF user space(pt)
 A4_H_PT = A4_H_PX * PX_TO_PT  # ≈ 841.92pt
 
+# 저장소에 번들된 한글 폰트 (OFL 라이선스) — 운영 서버에 한글 폰트가
+# 없어도 깨지지 않도록 보장
+_BUNDLED_FONT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "static", "fonts", "NanumGothic.ttf")
+
 
 def _load_korean_font(size: int) -> ImageFont.ImageFont:
-    """한글 지원 폰트를 환경별 후보 순으로 로드. 실패 시 기본 폰트."""
+    """한글 지원 폰트 로드. 번들 폰트 우선, 실패 시 시스템 폰트, 최후 기본."""
     candidates = [
+        _BUNDLED_FONT,                                             # 저장소 번들 (1순위)
         "malgun.ttf",                                              # Windows 맑은 고딕
         "MalgunGothic.ttf",
         "NanumGothic.ttf",
