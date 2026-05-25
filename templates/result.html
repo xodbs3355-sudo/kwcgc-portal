@@ -340,6 +340,7 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
               <span class="info-value-box">-</span>
             {% endif %}
           </div>
+          <div class="info-hint">&nbsp;&nbsp;&nbsp;* m당 연장 단가 + 일시점용료 + 영구신청수수료</div>
         </div>
       </div>
     </div>
@@ -360,21 +361,23 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
       </div>
       <div class="result-card {% if verdict_pass %}card-verdict-pass{% else %}card-verdict-fail{% endif %}">
         <div class="result-label">검토 결과</div>
-        <div class="result-num verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</div>
-        <div class="verdict-icon" aria-hidden="true">
-          {% if verdict_pass %}
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <circle cx="12" cy="12" r="11" fill="#7fb795"/>
-              <path d="M7 12.5l3.5 3.5L17 9" stroke="#fff" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            </svg>
-          {% else %}
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <circle cx="12" cy="12" r="11" fill="#e0a85a"/>
-              <path d="M8 8l8 8M16 8l-8 8" stroke="#fff" stroke-width="2.5"
-                    stroke-linecap="round"/>
-            </svg>
-          {% endif %}
+        <div class="result-num verdict-row">
+          <span class="verdict-icon" aria-hidden="true">
+            {% if verdict_pass %}
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <circle cx="12" cy="12" r="11" fill="#7fb795"/>
+                <path d="M7 12.5l3.5 3.5L17 9" stroke="#fff" stroke-width="2.5"
+                      stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <circle cx="12" cy="12" r="11" fill="#e0a85a"/>
+                <path d="M12 7v7" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="12" cy="17.5" r="1.3" fill="#fff"/>
+              </svg>
+            {% endif %}
+          </span>
+          <span class="verdict-text">{% if verdict_pass %}PASS{% else %}DROP{% endif %}</span>
         </div>
       </div>
       <a class="result-card card-pdf" href="{{ url_for('download_pdf') }}">

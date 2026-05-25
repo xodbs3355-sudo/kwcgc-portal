@@ -1235,15 +1235,35 @@ button { font-family: inherit; cursor: pointer; }
 .card-verdict-pass  .verdict-text,
 .card-verdict-fail  .verdict-text { color: #5e6ad2; }
 
-/* PASS/DROP 아이콘 — 원형 배경 + 흰 심볼 */
+/* PASS/DROP 아이콘 + 텍스트 — 가로 한 줄 정렬 (아이콘 좌측, 텍스트 우측) */
+.verdict-row { gap: 6px; }
 .verdict-icon {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
-    margin-top: 2px;
 }
 .verdict-icon svg { display: block; }
+
+/* 입력 필드 우측 suffix (예: 금액 입력 끝에 "원" 라벨) */
+.input-with-suffix {
+    position: relative;
+    display: block;
+}
+.input-with-suffix .project-info-input {
+    text-align: right;
+    padding-right: 24px;
+}
+.input-with-suffix .input-suffix {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b6f7a;
+    font-size: 13px;
+    pointer-events: none;
+    user-select: none;
+}
 
 /* 검토 결과 카드 텍스트 — 색상은 위 통합 블록에서 처리 */
 .verdict-text {
