@@ -1,14 +1,12 @@
 """
 준공서류 검토 로직 — Gemini AI 기반 (PDF/이미지 파일 직접 검토)
 """
-import base64
 import io
 import json
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from PIL import Image
 import config
 import prompts_store
 import usage_store
@@ -122,10 +120,6 @@ def _build_prompt(doc_id: str, doc_name: str, project_info: dict | None) -> str:
     return template
 
 
-# 기존 호환용 (사용 안 함)
-PROMPTS = {}
-GENERIC_PROMPT = ""
-
 MOCK_RESULT = [
     make_result("공사명 확인",    "WARN", "-", "AI 키 없음 — 수동 확인 필요"),
     make_result("준공일자 확인",  "WARN", "-", "AI 키 없음 — 수동 확인 필요"),
@@ -135,9 +129,6 @@ MOCK_RESULT = [
 
 
 # ── doc01 하이브리드 — 공사명·일자·금액·서명 검증 헬퍼 ───────────
-import unit_prices_store as _unit_prices_store
-
-
 def _project_name_match(input_name: str, doc_name: str) -> tuple[str, str]:
     """공사명 매칭 룰.
 

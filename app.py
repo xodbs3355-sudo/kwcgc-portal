@@ -78,8 +78,9 @@ _ASSET_VERSION_CACHE = {"value": _compute_asset_version()}
 
 @app.context_processor
 def inject_asset_version():
-    # 매 요청마다 재계산 (실시간 반영). production에서는 한번만 계산해도 무방.
-    return {"asset_version": _compute_asset_version()}
+    # 부팅 시 1회 계산 캐시 반환 — CSS/JS 수정 시 Flask 재시작 필요.
+    # (Railway 배포 = git push → 자동 재시작이라 운영에선 자동 반영됨)
+    return {"asset_version": _ASSET_VERSION_CACHE["value"]}
 
 
 @app.context_processor
@@ -874,17 +875,18 @@ def admin_usage():
     doc_name_map = {d["id"]: d["name"] for d in DOCUMENTS}
     doc_name_map["chat"] = "AI 챗봇"
 
-    by_doc = usage_store.by_doc("month")
-    for row in by_doc:
+    # 1회 파일 read 로 4종 집계 동시 계산 (기존: _load_all() 4번)
+    metrics = usage_store.compute_admin_metrics(daily_days=30, period="month")
+    for row in metrics["by_doc"]:
         row["display"] = doc_name_map.get(row["doc"], row["doc"])
 
     return render_template(
         "admin_usage.html",
         company=session["company"],
-        summary=usage_store.summary(),
-        daily=usage_store.daily(30),
-        by_doc=by_doc,
-        by_company=usage_store.by_company("month"),
+        summary=metrics["summary"],
+        daily=metrics["daily"],
+        by_doc=metrics["by_doc"],
+        by_company=metrics["by_company"],
     )
 
 
@@ -899,20 +901,6 @@ def status():
         "api_key_length": len(key),
         "api_key_preview": (key[:6] + "..." + key[-4:]) if len(key) > 10 else "",
     })
-
-
-@app.route("/api-key", methods=["POST"])
-def set_api_key():
-    """Gemini API 키 입력 (선택)."""
-    if "company" not in session:
-        return jsonify({"ok": False}), 401
-    key = request.form.get("key", "").strip()
-    if key:
-        config.GEMINI_API_KEY = key
-        config.USE_MOCK = False
-    else:
-        config.USE_MOCK = True
-    return jsonify({"ok": True, "mock": config.USE_MOCK})
 
 
 if __name__ == "__main__":
