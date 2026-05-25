@@ -974,6 +974,47 @@ button { font-family: inherit; cursor: pointer; }
     color: #6b6f7a;
     font-size: 13px;
 }
+/* Gemini 배지 — 프로그램명 아래 우측 정렬 */
+.login-badge-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin: -4px 0 10px 0;
+}
+.gemini-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 0.5px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.gemini-badge .powered-by {
+    font-size: 12px;
+    color: #9e9e9e;
+    font-weight: 400;
+}
+.gemini-badge .gemini-wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.gemini-badge .gemini-text {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+    background: linear-gradient(135deg, #4285F4 0%, #34A853 40%, #FBBC05 70%, #EA4335 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+.gemini-badge .model-name {
+    font-size: 11px;
+    color: #616161;
+    font-weight: 500;
+}
 .login-row {
     display: flex;
     align-items: flex-start;
