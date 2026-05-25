@@ -2,6 +2,7 @@
 도시가스 공사 준공서류 검토 포털 — Flask 버전
 """
 import io
+import json
 import os
 import pickle
 import secrets
@@ -119,7 +120,13 @@ def _session_file_path(sess_id: str) -> str:
     return os.path.join(SESSION_DIR, f"{sess_id}.pkl")
 
 
+def _session_meta_path(sess_id: str) -> str:
+    """파일 이름만 보관하는 경량 메타 (file_names 만 필요한 페이지용)."""
+    return os.path.join(SESSION_DIR, f"{sess_id}.names.json")
+
+
 def load_uploaded() -> dict:
+    """전체 업로드 데이터 (bytes 포함) — Gemini 검토/미리보기/PDF 출력용."""
     sess_id = session.get("sess_id")
     if not sess_id:
         return {}
@@ -130,6 +137,46 @@ def load_uploaded() -> dict:
         return pickle.load(f)
 
 
+def load_file_names() -> dict:
+    """파일 이름만 빠르게 로드 — bytes 가 필요 없는 페이지 (입력/결과) 에서 사용.
+
+    수십MB 짜리 pickle 전체를 deserialize 하지 않고 작은 JSON 만 읽음.
+    옛 세션 (meta.json 없음) 은 pkl 에서 추출하여 자동 마이그레이션.
+    반환: {doc_id: [filename, ...]}
+    """
+    sess_id = session.get("sess_id")
+    if not sess_id:
+        return {}
+    meta_path = _session_meta_path(sess_id)
+    if os.path.isfile(meta_path):
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                return json.load(f) or {}
+        except (json.JSONDecodeError, OSError):
+            pass
+    # 마이그레이션: 옛 세션은 pkl 에서 이름 추출 후 meta 생성
+    pkl_path = _session_file_path(sess_id)
+    if not os.path.exists(pkl_path):
+        return {}
+    try:
+        with open(pkl_path, "rb") as f:
+            uploaded = pickle.load(f)
+        names = {did: [name for name, _b in flist] for did, flist in uploaded.items()}
+        _write_file_names(sess_id, names)
+        return names
+    except Exception:
+        return {}
+
+
+def _write_file_names(sess_id: str, names: dict) -> None:
+    """meta.json 만 단독 쓰기 (save_uploaded 와 분리해서 사용 가능)."""
+    try:
+        with open(_session_meta_path(sess_id), "w", encoding="utf-8") as f:
+            json.dump(names, f, ensure_ascii=False)
+    except OSError:
+        pass
+
+
 def save_uploaded(data: dict):
     sess_id = session.get("sess_id")
     if not sess_id:
@@ -137,14 +184,20 @@ def save_uploaded(data: dict):
         session["sess_id"] = sess_id
     with open(_session_file_path(sess_id), "wb") as f:
         pickle.dump(data, f)
+    # 파일 이름만 별도 저장 (다음 페이지 진입을 빠르게)
+    names = {did: [name for name, _b in flist] for did, flist in data.items()}
+    _write_file_names(sess_id, names)
 
 
 def clear_uploaded():
     sess_id = session.pop("sess_id", None)
     if sess_id:
-        path = _session_file_path(sess_id)
-        if os.path.exists(path):
-            os.remove(path)
+        for path in (_session_file_path(sess_id), _session_meta_path(sess_id)):
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
 
 
 # ── 라우트 ────────────────────────────────────────────────────────
@@ -155,12 +208,11 @@ def index():
     # 최초 진입 시 default_skip 적용
     if "skips" not in session:
         session["skips"] = {d["id"]: True for d in DOCUMENTS if d.get("default_skip")}
-    uploaded = load_uploaded()
+    # 파일 bytes 불필요 — 이름만 빠른 경로로 로드 (큰 pickle deserialize 회피)
+    file_names = load_file_names()
     notes = session.get("notes", {})
     skips = session.get("skips", {})
     project_info = session.get("project_info", {})
-    # 파일 이름만 템플릿에 전달 (bytes 는 X)
-    file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
     return render_template(
         "upload.html",
         company=session["company"],
@@ -406,9 +458,8 @@ def result():
             counts["OK"] += 1     # 양호
     verdict_pass = (counts["NG"] + counts["WARN"]) == 0
 
-    # 첨부 파일명 (미리보기용)
-    uploaded = load_uploaded()
-    file_names = {did: [name for name, _b in files] for did, files in uploaded.items()}
+    # 첨부 파일명 (미리보기용) — bytes 불필요, 빠른 경로 로드
+    file_names = load_file_names()
 
     # 정산 여부 + 최종 공사비 계산 — 헬퍼로 통합 (reviewer 와 공통 사용)
     project_info = session.get("project_info", {})
