@@ -1202,38 +1202,48 @@ button { font-family: inherit; cursor: pointer; }
     border-left-style: solid;
 }
 .card-ok {
-    border-left-color: #2d7d52;
-    background: linear-gradient(90deg, rgba(45,125,82,0.14) 0%, #fff 55%);
+    border-left-color: #7fb795;
+    background: linear-gradient(90deg, rgba(127,183,149,0.18) 0%, #fff 55%);
 }
 .card-ng {
-    border-left-color: #c67c00;
-    background: linear-gradient(90deg, rgba(198,124,0,0.14) 0%, #fff 55%);
+    border-left-color: #e0a85a;
+    background: linear-gradient(90deg, rgba(224,168,90,0.18) 0%, #fff 55%);
 }
 .card-skip {
-    border-left-color: #6b6f7a;
-    background: linear-gradient(90deg, rgba(107,111,122,0.12) 0%, #fff 55%);
+    border-left-color: #a8acb5;
+    background: linear-gradient(90deg, rgba(168,172,181,0.15) 0%, #fff 55%);
 }
 .card-verdict-pass,
 .card-verdict-fail {
-    border-left-color: #5e6ad2;
-    background: linear-gradient(90deg, rgba(94,106,210,0.14) 0%, #fff 55%);
+    border-left-color: #9ba6e8;
+    background: linear-gradient(90deg, rgba(155,166,232,0.18) 0%, #fff 55%);
 }
 
-/* 텍스트 색상 — 각 카드별 status 톤 유지 */
+/* 텍스트 색상 — 각 카드별 status 톤 유지 (가독성 위해 보더보다 진한 톤) */
 .card-ok            .result-label,
-.num-ok,
-.card-verdict-pass  .verdict-text { color: #2d7d52; }
+.num-ok                           { color: #2d7d52; }
 
 .card-ng            .result-label,
-.num-ng,
-.card-verdict-fail  .verdict-text { color: #c67c00; }
+.num-ng                           { color: #c67c00; }
 
 .card-skip          .result-label,
 .num-skip                         { color: #6b6f7a; }
 
-/* 검토 결과 카드 라벨 — 카드 자체가 보라 톤이므로 라벨도 보라로 통일 */
+/* 검토 결과 카드 — 라벨·PASS/DROP 텍스트 모두 보라로 통일 */
 .card-verdict-pass  .result-label,
-.card-verdict-fail  .result-label { color: #5e6ad2; }
+.card-verdict-fail  .result-label,
+.card-verdict-pass  .verdict-text,
+.card-verdict-fail  .verdict-text { color: #5e6ad2; }
+
+/* PASS/DROP 아이콘 — 원형 배경 + 흰 심볼 */
+.verdict-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin-top: 2px;
+}
+.verdict-icon svg { display: block; }
 
 /* 검토 결과 카드 텍스트 — 색상은 위 통합 블록에서 처리 */
 .verdict-text {
