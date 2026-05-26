@@ -1674,6 +1674,52 @@ button { font-family: inherit; cursor: pointer; }
 .status-card-ng   { background: #fff7e8; border-color: #f5d6a3; }   /* 주황 톤 */
 .status-card-warn { background: #fff7e8; border-color: #f5d6a3; }   /* 동일 톤 */
 .status-card-skip { background: #f5f6f8; border-color: #e5e5e8; }
+/* 검토자가 수동 OK 처리한 카드 — 좌측에 보라 강조선 */
+.status-card-overridden {
+    box-shadow: inset 4px 0 0 0 #5e6ad2;
+}
+/* 검토자 확인 라벨 */
+.reviewer-confirmed-label {
+    margin-left: auto;
+    font-size: 10px;
+    color: #5e6ad2;
+    background: #eef0fb;
+    border: 1px solid #c5cdf5;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+/* 수동 OK 처리 토글 버튼 */
+.override-action {
+    margin-top: 6px !important;
+}
+.btn-override-toggle {
+    background: transparent;
+    border: 1px dashed #c5cdf5;
+    color: #5e6ad2;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s, border-style 0.15s;
+}
+.btn-override-toggle:hover {
+    background: #eef0fb;
+    border-style: solid;
+}
+.btn-override-toggle:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+.btn-override-cancel {
+    color: #9b9fa8;
+    border-color: #d8dade;
+}
+.btn-override-cancel:hover {
+    background: #f3f4f7;
+}
 .checklist-head {
     display: flex;
     align-items: center;

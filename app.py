@@ -32,6 +32,33 @@ def _is_admin() -> bool:
     return auth.is_admin(session.get("company", ""))
 
 
+def _apply_overrides(all_results: dict, overrides: dict | None) -> dict:
+    """all_results 에 검토자 수동 OK 처리(manual_overrides) 적용.
+    overrides = {doc_name: [item_idx, ...]}
+    토글된 항목의 '결과'를 OK로 변경하고 '검토자_확인' = True, '원본_결과'를 보존.
+    """
+    if not overrides:
+        return all_results
+    out = {}
+    for doc_name, rows in all_results.items():
+        override_set = set(overrides.get(doc_name) or [])
+        if not override_set:
+            out[doc_name] = rows
+            continue
+        new_rows = []
+        for i, row in enumerate(rows):
+            if i in override_set and row.get("결과") != "OK":
+                new_row = dict(row)
+                new_row["원본_결과"] = row.get("결과")
+                new_row["결과"] = "OK"
+                new_row["검토자_확인"] = True
+                new_rows.append(new_row)
+            else:
+                new_rows.append(row)
+        out[doc_name] = new_rows
+    return out
+
+
 def _compute_adjustment_required(project_info: dict) -> bool | None:
     """발주연장 대비 준공연장이 1.0m 이상 차이나면 정산 대상.
     값이 부족하거나 변환 실패 시 None.
@@ -429,6 +456,37 @@ def review():
     return redirect(url_for("result"))
 
 
+@app.route("/review/override", methods=["POST"])
+def review_override():
+    """검토자가 카드별로 'OK 처리' 토글 — session 에 manual_overrides 누적."""
+    if "company" not in session:
+        return jsonify({"ok": False, "error": "로그인이 필요합니다."}), 401
+    data = request.get_json(silent=True) or {}
+    doc_name = (data.get("doc_name") or "").strip()
+    item_idx = data.get("item_idx")
+    override = bool(data.get("override"))
+    if not doc_name or item_idx is None:
+        return jsonify({"ok": False, "error": "doc_name / item_idx 필요"}), 400
+    try:
+        item_idx = int(item_idx)
+    except (ValueError, TypeError):
+        return jsonify({"ok": False, "error": "item_idx 정수 아님"}), 400
+
+    overrides = session.get("manual_overrides", {}) or {}
+    doc_overrides = list(overrides.get(doc_name, []))
+    if override:
+        if item_idx not in doc_overrides:
+            doc_overrides.append(item_idx)
+    else:
+        doc_overrides = [i for i in doc_overrides if i != item_idx]
+    if doc_overrides:
+        overrides[doc_name] = doc_overrides
+    else:
+        overrides.pop(doc_name, None)
+    session["manual_overrides"] = overrides
+    return jsonify({"ok": True, "override": override})
+
+
 @app.route("/result")
 def result():
     if "company" not in session:
@@ -440,6 +498,10 @@ def result():
         if not _is_admin():
             return redirect(url_for("index"))
         all_results = {}
+
+    # 검토자 수동 OK 처리(manual_overrides) 적용
+    overrides = session.get("manual_overrides") or {}
+    all_results = _apply_overrides(all_results, overrides)
 
     # 서류 단위 집계 (각 슬롯은 서류 개수, 합 ≤ DOCUMENTS 총 개수)
     counts = {"OK": 0, "NG": 0, "WARN": 0, "SKIP": 0}
@@ -605,6 +667,8 @@ def download_pdf():
     # 동일 세션 내 첫 다운로드 시에만 새 review_id 생성, 재다운로드 시 재사용
     share_url = None
     all_results = session.get("review_results") or {}
+    overrides = session.get("manual_overrides") or {}
+    all_results = _apply_overrides(all_results, overrides)  # 검토자 OK 처리 반영
     project_info = session.get("project_info", {})
     company = session.get("company", "")
     if all_results:

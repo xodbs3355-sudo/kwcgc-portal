@@ -169,6 +169,37 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
   });
 });
 
+// ── 검토자 수동 OK 처리 토글 ─────────────────────────────────────
+document.querySelectorAll('.btn-override-toggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const docName = btn.dataset.docName;
+    const itemIdx = parseInt(btn.dataset.itemIdx, 10);
+    const override = (btn.dataset.action === 'confirm');
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = '처리 중…';
+    try {
+      const res = await fetch('/review/override', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({doc_name: docName, item_idx: itemIdx, override: override}),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        window.location.reload();
+      } else {
+        alert(data.error || '처리 실패');
+        btn.textContent = orig;
+        btn.disabled = false;
+      }
+    } catch (e) {
+      alert('네트워크 오류: ' + e);
+      btn.textContent = orig;
+      btn.disabled = false;
+    }
+  });
+});
+
 // ── 검토 결과 채팅 위젯 ─────────────────────────────────────────
 (function(){
   const toggle = document.getElementById('chat-toggle');
@@ -419,16 +450,34 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
             </button>
             <div class="doc-list-body">
               {% for item in rows %}
-                <div class="checklist-card status-card-{{ item['결과']|lower }}">
+                <div class="checklist-card status-card-{{ item['결과']|lower }}{% if item.get('검토자_확인') %} status-card-overridden{% endif %}">
                   <div class="checklist-head">
                     <span class="status-badge status-{{ item['결과']|lower }}">{{ item['결과'] }}</span>
                     <span class="checklist-title">{{ item['항목'] }}</span>
+                    {% if item.get('검토자_확인') %}
+                      <span class="reviewer-confirmed-label">검토자 확인 (원본 {{ item['원본_결과'] }})</span>
+                    {% endif %}
                   </div>
                   {% if item.get('추출값') and item['추출값'] not in ('-', '') %}
                     <div class="checklist-meta"><strong>추출값:</strong> {{ item['추출값'] }}</div>
                   {% endif %}
                   {% if item.get('비고') %}
                     <div class="checklist-meta"><strong>검토 의견:</strong> {{ item['비고'] }}</div>
+                  {% endif %}
+                  {% if item.get('검토자_확인') %}
+                    <div class="checklist-meta override-action">
+                      <button type="button" class="btn-override-toggle btn-override-cancel"
+                              data-doc-name="{{ doc.name }}" data-item-idx="{{ loop.index0 }}" data-action="cancel">
+                        검토자 확인 취소
+                      </button>
+                    </div>
+                  {% elif item['결과'] != 'OK' %}
+                    <div class="checklist-meta override-action">
+                      <button type="button" class="btn-override-toggle btn-override-confirm"
+                              data-doc-name="{{ doc.name }}" data-item-idx="{{ loop.index0 }}" data-action="confirm">
+                        ✓ 검토자 확인: OK 처리
+                      </button>
+                    </div>
                   {% endif %}
                 </div>
               {% endfor %}
