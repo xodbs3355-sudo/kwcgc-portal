@@ -14,6 +14,7 @@ from typing import Optional
 
 from documents import DOCUMENTS
 from prompt_defaults import PROMPTS as PER_DOC_DEFAULTS
+from prompt_defaults import default_version
 
 
 def _resolve_prompts_file() -> str:
@@ -79,7 +80,12 @@ def _default_prompt(doc_id: str, doc_name: str) -> str:
 
 
 def load_all() -> dict:
-    """저장된 모든 프롬프트 dict 반환 ({doc_id: prompt_text})."""
+    """저장된 원본 dict 반환.
+
+    저장 형식 두 가지를 모두 허용:
+      · 신형: {doc_id: {"text": "...", "base_version": N}}
+      · 구형(하위호환): {doc_id: "프롬프트 문자열"}  → base_version 0 으로 간주
+    """
     if not os.path.exists(PROMPTS_FILE):
         return {}
     try:
@@ -96,19 +102,60 @@ def save_all(prompts: dict) -> None:
         json.dump(prompts, f, ensure_ascii=False, indent=2)
 
 
+def _parse_entry(entry) -> tuple[str, int]:
+    """저장 엔트리 → (text, base_version). 구형 문자열은 버전 0."""
+    if isinstance(entry, str):
+        return entry.strip(), 0
+    if isinstance(entry, dict):
+        return (entry.get("text") or "").strip(), int(entry.get("base_version", 0))
+    return "", 0
+
+
+def _effective_saved_text(doc_id: str) -> str:
+    """버전을 반영한 '유효한' 저장 프롬프트.
+
+    저장본이 있어도 base_version 이 현재 기본값 버전보다 낮으면 (낡은 저장본)
+    빈 문자열을 반환 → 호출부가 기본값을 쓰게 함.
+    """
+    text, base_v = _parse_entry(load_all().get(doc_id))
+    if text and base_v >= default_version(doc_id):
+        return text
+    return ""
+
+
 def get_effective_prompt(doc_id: str, doc_name: str) -> str:
-    """관리자가 저장한 프롬프트가 있으면 사용, 없으면 서류별 기본 프롬프트."""
-    saved = load_all().get(doc_id, "").strip()
+    """유효한 저장 프롬프트가 있으면 사용, 없으면(또는 낡았으면) 서류별 기본값."""
+    saved = _effective_saved_text(doc_id)
     return saved if saved else _default_prompt(doc_id, doc_name)
 
 
+def save_prompt(doc_id: str, text: str) -> None:
+    """관리자 저장 — 현재 기본값 버전을 함께 기록. 빈 값이면 저장본 제거(기본값 복원)."""
+    all_prompts = load_all()
+    if text and text.strip():
+        all_prompts[doc_id] = {
+            "text": text,
+            "base_version": default_version(doc_id),
+        }
+    else:
+        all_prompts.pop(doc_id, None)
+    save_all(all_prompts)
+
+
+def reset_prompt(doc_id: str) -> None:
+    """저장본 제거 → 기본값으로 복원."""
+    all_prompts = load_all()
+    all_prompts.pop(doc_id, None)
+    save_all(all_prompts)
+
+
 def list_for_admin() -> list[dict]:
-    """관리자 페이지용 — DOCUMENTS 순서대로 (id, name, prompt, is_custom) 리스트."""
-    saved = load_all()
+    """관리자 페이지용 — DOCUMENTS 순서대로 (id, name, prompt, is_custom) 리스트.
+    낡은(버전 미달) 저장본은 custom 으로 보지 않고 기본값을 노출한다."""
     out = []
     for d in DOCUMENTS:
         did = d["id"]
-        prompt = saved.get(did, "").strip()
+        prompt = _effective_saved_text(did)
         out.append({
             "id": did,
             "num": d["num"],

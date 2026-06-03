@@ -826,13 +826,8 @@ def admin_prompts_save():
     prompt = request.form.get("prompt", "")
     if not any(d["id"] == doc_id for d in DOCUMENTS):
         return jsonify({"ok": False, "error": "invalid doc_id"}), 400
-    all_prompts = prompts_store.load_all()
-    if prompt.strip():
-        all_prompts[doc_id] = prompt
-    else:
-        # 빈 값이면 기본값으로 되돌리기 (저장 dict 에서 제거)
-        all_prompts.pop(doc_id, None)
-    prompts_store.save_all(all_prompts)
+    # 현재 기본값 버전을 함께 기록 (빈 값이면 기본값 복원)
+    prompts_store.save_prompt(doc_id, prompt)
     return jsonify({"ok": True})
 
 
@@ -842,9 +837,7 @@ def admin_prompts_reset():
     if not _is_admin():
         return jsonify({"ok": False, "error": "forbidden"}), 403
     doc_id = request.form.get("doc_id", "")
-    all_prompts = prompts_store.load_all()
-    all_prompts.pop(doc_id, None)
-    prompts_store.save_all(all_prompts)
+    prompts_store.reset_prompt(doc_id)
     # 기본 프롬프트 반환
     doc = next((d for d in DOCUMENTS if d["id"] == doc_id), None)
     default_prompt = prompts_store.get_default(doc["name"], doc["id"]) if doc else ""
