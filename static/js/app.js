@@ -82,18 +82,23 @@ if (reviewForm && reviewOverlay) {
       }
       hidden.value = input.value;
     });
-    // PLP 체크박스
-    const plpCheck = document.getElementById('pi-plp');
-    if (plpCheck) {
-      let plpHidden = reviewForm.querySelector('input[type="hidden"][name="plp"]');
-      if (!plpHidden) {
-        plpHidden = document.createElement('input');
-        plpHidden.type = 'hidden';
-        plpHidden.name = 'plp';
-        reviewForm.appendChild(plpHidden);
+    // PLP / 영구신청수수료 체크박스
+    const checkboxFields = [
+      { id: 'pi-plp', name: 'plp' },
+      { id: 'pi-permit-fee', name: 'permit_fee' },
+    ];
+    checkboxFields.forEach(({ id, name }) => {
+      const cb = document.getElementById(id);
+      if (!cb) return;
+      let hidden = reviewForm.querySelector(`input[type="hidden"][name="${name}"]`);
+      if (!hidden) {
+        hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = name;
+        reviewForm.appendChild(hidden);
       }
-      plpHidden.value = plpCheck.checked ? 'true' : 'false';
-    }
+      hidden.value = cb.checked ? 'true' : 'false';
+    });
 
     reviewOverlay.hidden = false;
     // 30초 경과 후 재시도 알림 표시
@@ -206,7 +211,7 @@ function formatAmount(input) {
   }
 }
 
-const MONEY_FIELDS = new Set(['amount', 'land_fee']);
+const MONEY_FIELDS = new Set(['amount', 'land_fee', 'safety_fee']);
 
 document.querySelectorAll('.project-info-input').forEach((input) => {
   // select는 change에서 즉시 저장 (blur 기다리지 않음)
@@ -262,6 +267,17 @@ if (plpCheck) {
       fireRow.classList.toggle('is-skipped', fireSkip.checked);
       syncSkipServer('doc09', fireSkip.checked);
     }
+  });
+}
+
+// ── 영구신청수수료 체크박스 (해당 시 Check, 단순 ON/OFF 저장) ──────
+const permitFeeCheck = document.getElementById('pi-permit-fee');
+if (permitFeeCheck) {
+  permitFeeCheck.addEventListener('change', async () => {
+    const fd = new FormData();
+    fd.append('field', 'permit_fee');
+    fd.append('value', permitFeeCheck.checked ? 'true' : 'false');
+    try { await fetch('/project-info', { method: 'POST', body: fd }); } catch (_) {}
   });
 }
 

@@ -42,18 +42,7 @@
       </select>
     </div>
     <div class="project-info-field project-info-field-extension">
-      <label for="pi-extension">
-        준공 연장(m)
-        <span class="hint-card hint-card-mini">
-          <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          평면연장 기준
-        </span>
-      </label>
+      <label for="pi-extension">준공 연장(m)</label>
       <input type="number" step="0.1" id="pi-extension" class="project-info-input"
              data-field="extension" value="{{ project_info.get('extension', '') }}" placeholder="">
     </div>
@@ -62,13 +51,40 @@
       <input type="date" id="pi-date" class="project-info-input"
              data-field="date" value="{{ project_info.get('date', '') }}">
     </div>
+    <div class="project-info-field project-info-field-safety">
+      <label for="pi-safety-fee">산업안전보건관리비</label>
+      <div class="input-with-suffix">
+        <input type="text" id="pi-safety-fee" class="project-info-input"
+               data-field="safety_fee" value="{{ project_info.get('safety_fee', '') }}" placeholder="">
+        <span class="input-suffix" aria-hidden="true">원</span>
+      </div>
+    </div>
     <div class="project-info-field project-info-field-fee">
-      <label for="pi-land-fee">일시점용료 + 영구신청수수료</label>
+      <label for="pi-land-fee">일시점용료</label>
       <div class="input-with-suffix">
         <input type="text" id="pi-land-fee" class="project-info-input"
                data-field="land_fee" value="{{ project_info.get('land_fee', '') }}" placeholder="">
         <span class="input-suffix" aria-hidden="true">원</span>
       </div>
+    </div>
+    <div class="project-info-field project-info-field-permit">
+      <label for="pi-permit-fee">영구신청수수료</label>
+      <div class="project-info-checkbox-wrap">
+        <span class="project-plp-text">해당 시 Check</span>
+        <input type="checkbox" id="pi-permit-fee" class="project-plp-check"
+               {% if project_info.get('permit_fee') %}checked{% endif %}>
+      </div>
+    </div>
+    <div class="project-info-hint-row">
+      <span class="hint-card">
+        <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        준공연장 — 평면연장 기준
+      </span>
     </div>
     <div class="fee-hint-absolute">* 영구신청수수료는 910원(병행 신청 시 반영)</div>
   </div>

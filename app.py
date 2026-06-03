@@ -348,10 +348,10 @@ def save_project_info():
     info = session.get("project_info", {})
     field = request.form.get("field", "")
     if field in ("name", "date", "amount", "extension", "order_extension",
-                 "land_fee", "road_material", "year"):
+                 "land_fee", "safety_fee", "road_material", "year"):
         info[field] = request.form.get("value", "")
-    elif field == "plp":
-        info["plp"] = (request.form.get("value", "") == "true")
+    elif field in ("plp", "permit_fee"):
+        info[field] = (request.form.get("value", "") == "true")
     else:
         return jsonify({"ok": False, "error": "invalid field"}), 400
     session["project_info"] = info
@@ -368,15 +368,18 @@ def review():
     # blur fetch 의 도달 여부와 무관하게 검토 시작 시점의 최신 값을 보장.
     _PROJECT_INFO_FIELDS = (
         "name", "date", "amount", "extension", "order_extension",
-        "land_fee", "road_material", "year",
+        "land_fee", "safety_fee", "road_material", "year",
     )
-    if any(f in request.form for f in _PROJECT_INFO_FIELDS) or "plp" in request.form:
+    _PROJECT_INFO_BOOL_FIELDS = ("plp", "permit_fee")
+    if (any(f in request.form for f in _PROJECT_INFO_FIELDS)
+            or any(f in request.form for f in _PROJECT_INFO_BOOL_FIELDS)):
         _info = session.get("project_info", {})
         for _field in _PROJECT_INFO_FIELDS:
             if _field in request.form:
                 _info[_field] = request.form.get(_field, "")
-        if "plp" in request.form:
-            _info["plp"] = (request.form.get("plp") == "true")
+        for _bf in _PROJECT_INFO_BOOL_FIELDS:
+            if _bf in request.form:
+                _info[_bf] = (request.form.get(_bf) == "true")
         session["project_info"] = _info
 
     uploaded = load_uploaded()
