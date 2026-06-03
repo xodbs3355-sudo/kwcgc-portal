@@ -902,19 +902,39 @@ def review_document(doc_id: str, doc_name: str, files: list,
             per_file_results, _required_types_for(doc_id)
         )
 
-    # 라벨 처리
+    # 라벨 처리 + 결과 통합
     if is_type_id_doc:
-        # 유형 식별 행: 식별된 유형 이름을 항목으로 사용, 추출값은 비움
-        for idx, file_results in enumerate(per_file_results):
+        # 유형 식별 행 → 식별된 유형명을 카드 제목으로 사용, 추출값은 비움.
+        # 한 파일(병합 PDF)이 여러 유형을 반환할 수 있고, 낱개 파일들이 같은 유형일
+        # 수도 있으므로 같은 유형은 한 번만 표시 (중복 카드 제거).
+        norm_to_canonical = {
+            _normalize_text(t): t for t in _required_types_for(doc_id)
+        }
+        seen_types: set[str] = set()
+        for file_results in per_file_results:
             for r in file_results:
                 item = (r.get("항목") or "").strip()
-                if "유형 식별" in item:
-                    extracted = (r.get("추출값") or "").strip()
-                    if extracted:
-                        r["항목"] = extracted
-                        r["추출값"] = ""
-    elif len(files) > 1:
-        # 일반 다중 파일: [파일 N] prefix
+                if "유형 식별" not in item:
+                    results.append(r)
+                    continue
+                extracted = (r.get("추출값") or "").strip()
+                canonical = norm_to_canonical.get(_normalize_text(extracted))
+                if canonical is None:
+                    # 4유형 어디에도 해당 안 됨 (WARN 등) — 그대로 표시
+                    results.append(r)
+                    continue
+                if canonical in seen_types:
+                    continue  # 이미 표시된 유형 — 중복 카드 제거
+                seen_types.add(canonical)
+                r["항목"] = canonical
+                r["추출값"] = ""
+                results.append(r)
+        # 빠진 유형이 있으면 NG로 표시
+        results.extend(missing_rows)
+        return results
+
+    # 일반 다중 파일: [파일 N] prefix
+    if len(files) > 1:
         for i, file_results in enumerate(per_file_results):
             for r in file_results:
                 r["항목"] = f"[파일 {i+1}] {r['항목']}"
