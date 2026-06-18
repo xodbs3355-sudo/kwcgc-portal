@@ -411,6 +411,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 /* 입력 필드 바로 아래에 붙는 힌트 — absolute 배치로 입력 줄 정렬은 흩트리지 않음 */
 .project-info-field-extension,
+.project-info-field-safety,
 .project-info-field-permit {
     position: relative;
 }
@@ -439,13 +440,13 @@ button { font-family: inherit; cursor: pointer; }
     flex: 1;
     min-width: 0;
 }
-/* 준공 연장 — 126px (180px → 30% 감소) */
+/* 준공 연장 — 100px */
 .project-info-field-extension {
-    flex: 0 0 126px;
+    flex: 0 0 100px;
 }
-/* 발주 연장 — 112px (160px → 30% 감소, 콤보박스 1~10) */
+/* 발주 연장 — 100px (콤보박스 1~10) */
 .project-info-field-order-extension {
-    flex: 0 0 112px;
+    flex: 0 0 100px;
 }
 /* 준공일자 — 120px */
 .project-info-field-date {
