@@ -28,7 +28,7 @@
         <option value="ASP(절삭포장)" {% if project_info.get('road_material') in ('ASP(절삭포장)', 'ASP') %}selected{% endif %}>ASP(절삭포장)</option>
         <option value="CON`C" {% if project_info.get('road_material') == 'CON`C' %}selected{% endif %}>CON`C</option>
         <option value="보도블럭" {% if project_info.get('road_material') == '보도블럭' %}selected{% endif %}>보도블럭</option>
-        <option value="ASP 쪽포장" {% if project_info.get('road_material') == 'ASP 쪽포장' %}selected{% endif %}>ASP 쪽포장</option>
+        <option value="ASP 쪽포장" {% if project_info.get('road_material') == 'ASP 쪽포장' %}selected{% endif %}>ASP(쪽포장)</option>
       </select>
     </div>
     <div class="project-info-field project-info-field-order-extension">
@@ -74,7 +74,7 @@
           <line x1="12" y1="9" x2="12" y2="13"/>
           <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
-        최종 인정 금액
+        한도 내 사용금액
       </span>
     </div>
     <div class="project-info-field project-info-field-fee">
