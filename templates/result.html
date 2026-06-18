@@ -315,6 +315,28 @@ document.querySelectorAll('.btn-override-toggle').forEach(btn => {
   })();
 })();
 </script>
+
+<script>
+// 검토 직후 1회 — 현재 공사를 브라우저(IndexedDB)에 저장 (서버 저장 안 함)
+(function(){
+  if (!{{ just_reviewed|default(false)|tojson }}) return;
+  if (!window.ProjectDB) return;
+  fetch('/project/export')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok || !d.project_name) return;
+      return window.ProjectDB.save({
+        company: d.company,
+        project_name: d.project_name,
+        project_info: d.project_info,
+        all_results: d.all_results,
+        file_names: d.file_names,
+        files: d.files
+      }, Date.now());
+    })
+    .catch(function(){ /* 저장 실패는 검토 표시를 막지 않음 */ });
+})();
+</script>
 {% endblock %}
 
 {% block body %}

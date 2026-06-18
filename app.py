@@ -1,6 +1,7 @@
 """
 도시가스 공사 준공서류 검토 포털 — Flask 버전
 """
+import base64
 import io
 import json
 import os
@@ -24,7 +25,6 @@ import unit_prices_store
 import usage_store
 import chat
 import share_store
-import project_store
 from documents import DOCUMENTS
 
 
@@ -439,22 +439,9 @@ def review():
         # 채팅 컨텍스트 빌드 실패가 검토 자체를 막으면 안 됨
         session.pop("chat_id", None)
 
-    # 공사 저장소 — 같은 (회사+공사명) 이면 덮어쓰기, 60일 보관
-    # 공사 불러온 상태 (session 에 project_id 존재) 면 공사명 바뀌어도
-    # 같은 ID 로 업데이트 (오타 보완 케이스 등)
-    try:
-        project_id = project_store.save(
-            company=company,
-            project_info=project_info,
-            files=uploaded,
-            all_results=all_results,
-            project_id=session.get("project_id"),
-        )
-        if project_id:
-            session["project_id"] = project_id
-    except Exception:
-        # 저장 실패가 검토를 막으면 안 됨
-        pass
+    # 공사 저장은 브라우저(IndexedDB)에서 수행 — 검토 직후 1회만 export.
+    # 결과 페이지가 이 플래그를 보고 /project/export 를 호출해 로컬에 저장한다.
+    session["just_reviewed"] = True
 
     return redirect(url_for("result"))
 
@@ -501,6 +488,9 @@ def result():
         if not _is_admin():
             return redirect(url_for("index"))
         all_results = {}
+
+    # 검토 직후 진입이면 1회만 브라우저 저장 트리거 (플래그는 소비 후 제거)
+    just_reviewed = bool(session.pop("just_reviewed", False))
 
     # 검토자 수동 OK 처리(manual_overrides) 적용
     overrides = session.get("manual_overrides") or {}
@@ -553,6 +543,7 @@ def result():
         adjustment_required=adjustment_required,
         final_cost=final_cost,
         final_cost_meta=final_cost_meta,
+        just_reviewed=just_reviewed,
     )
 
 
@@ -705,63 +696,85 @@ def download_pdf():
     )
 
 
-# ── 공사 저장소 (자동 저장된 공사 목록/복원) ─────────────────────
-@app.route("/project/list", methods=["GET"])
-def project_list():
-    """저장된 공사 목록 — 시공사는 자기 회사, 관리자는 전체.
-    반환: {ok, items, is_admin}
+# ── 공사 저장소 (브라우저 IndexedDB 기반) ─────────────────────────
+@app.route("/project/export", methods=["GET"])
+def project_export():
+    """현재 세션의 공사를 브라우저(IndexedDB) 저장용으로 내보냄.
+    검토 결과가 있을 때만 유효. 파일 bytes 는 base64 로 직렬화.
+    반환: {ok, company, project_name, project_info, all_results, file_names, files}
     """
     if "company" not in session:
         return jsonify({"ok": False, "error": "로그인이 필요합니다."}), 401
-    company = session.get("company", "")
-    is_admin = _is_admin()
-    items = project_store.list_for(
-        company=company,
-        include_all=is_admin,
-    )
-    return jsonify({"ok": True, "items": items, "is_admin": is_admin})
+    all_results = session.get("review_results") or {}
+    project_info = session.get("project_info") or {}
+    name = (project_info.get("name") or "").strip()
+    if not all_results or not name:
+        return jsonify({"ok": False, "error": "저장할 검토 결과가 없습니다."})
+
+    uploaded = load_uploaded()   # {doc_id: [(filename, bytes), ...]}
+    files, file_names = {}, {}
+    for did, flist in (uploaded or {}).items():
+        files[did] = [
+            {"name": fn, "b64": base64.b64encode(b).decode("ascii")}
+            for fn, b in flist
+        ]
+        file_names[did] = [fn for fn, _b in flist]
+
+    return jsonify({
+        "ok": True,
+        "company": session.get("company", ""),
+        "project_name": name,
+        "project_info": project_info,
+        "all_results": all_results,
+        "file_names": file_names,
+        "files": files,
+    })
 
 
-@app.route("/project/load/<project_id>", methods=["POST"])
-def project_load(project_id: str):
-    """저장된 공사를 세션에 복원."""
+@app.route("/project/restore", methods=["POST"])
+def project_restore():
+    """브라우저(IndexedDB)에서 보낸 공사를 세션·임시파일·채팅으로 복원."""
     if "company" not in session:
         return jsonify({"ok": False, "error": "로그인이 필요합니다."}), 401
-    data = project_store.load(project_id)
-    if not data:
-        return jsonify({"ok": False, "error": "공사를 찾을 수 없거나 만료됨"}), 404
-    # 권한 — 시공사는 자기 회사 공사만 (관리자는 전체)
-    if not _is_admin() and data.get("company") != session.get("company"):
-        return jsonify({"ok": False, "error": "권한 없음"}), 403
+    data = request.get_json(silent=True) or {}
+    project_info = data.get("project_info") or {}
+    all_results = data.get("all_results") or {}
+    files_in = data.get("files") or {}
+
+    # base64 → bytes 복원: {doc_id: [(filename, bytes), ...]}
+    uploaded = {}
+    try:
+        for did, flist in files_in.items():
+            uploaded[did] = [
+                (item.get("name") or "", base64.b64decode(item.get("b64") or ""))
+                for item in (flist or [])
+            ]
+    except Exception:
+        return jsonify({"ok": False, "error": "파일 복원 실패"}), 400
 
     # 세션 + 임시 디스크에 복원
-    session["project_info"] = data.get("project_info") or {}
-    session["review_results"] = data.get("all_results") or {}
-    save_uploaded(data.get("files") or {})
-    session["project_id"] = project_id
-    # skips 는 새로 default 로 — 사용자가 다시 체크할 수 있게
+    session["project_info"] = project_info
+    session["review_results"] = all_results
+    save_uploaded(uploaded)
+    # skips 는 새로 default 로, 이전 OK 처리는 초기화
     session["skips"] = {d["id"]: True for d in DOCUMENTS if d.get("default_skip")}
+    session.pop("manual_overrides", None)
 
     # 채팅 컨텍스트 재구축
     try:
         old_chat_id = session.get("chat_id")
         if old_chat_id:
             chat.clear(old_chat_id)
-        if data.get("all_results"):
+        if all_results:
             new_id = chat.new_chat_id()
-            context = chat.build_context(
-                data.get("all_results") or {},
-                data.get("files") or {},
-                data.get("project_info") or {},
-                DOCUMENTS,
-            )
+            context = chat.build_context(all_results, uploaded, project_info, DOCUMENTS)
             chat.save(new_id, context)
             session["chat_id"] = new_id
     except Exception:
         pass
 
     # 검토 결과 있으면 result, 없으면 upload 페이지로
-    target = "result" if data.get("all_results") else "index"
+    target = "result" if all_results else "index"
     return jsonify({"ok": True, "redirect": url_for(target)})
 
 

@@ -257,6 +257,9 @@ button { font-family: inherit; cursor: pointer; }
     text-transform: uppercase;
 }
 .project-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 10px 14px;
     margin: 2px 8px;
     border-radius: 6px;
@@ -265,6 +268,10 @@ button { font-family: inherit; cursor: pointer; }
 }
 .project-row:hover {
     background: #eef0fb;
+}
+.project-row-main {
+    flex: 1;
+    min-width: 0;
 }
 .project-row-name {
     font-size: 13px;
@@ -275,6 +282,24 @@ button { font-family: inherit; cursor: pointer; }
 .project-row-meta {
     font-size: 11px;
     color: #6b6f7a;
+}
+.project-row-del {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #b0b3bd;
+    font-size: 18px;
+    line-height: 1;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+.project-row-del:hover {
+    background: #f6dcdc;
+    color: #c0392b;
 }
 .project-modal-foot {
     padding: 8px 16px 10px;
