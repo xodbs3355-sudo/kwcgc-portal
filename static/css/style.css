@@ -444,30 +444,30 @@ button { font-family: inherit; cursor: pointer; }
 .project-info-field-order-extension {
     flex: 0 0 112px;
 }
-/* 준공일자 — 140px */
+/* 준공일자 — 120px */
 .project-info-field-date {
-    flex: 0 0 140px;
+    flex: 0 0 120px;
 }
-/* 산업안전보건관리비 — 160px */
+/* 산업안전보건관리비 — 120px */
 .project-info-field-safety {
-    flex: 0 0 160px;
+    flex: 0 0 120px;
 }
-/* 일시점용료 — 160px */
+/* 일시점용료 — 120px */
 .project-info-field-fee {
-    flex: 0 0 160px;
+    flex: 0 0 120px;
 }
-/* 영구신청수수료 체크박스 — 140px (PLP와 동일 폭) */
+/* 영구신청수수료 체크박스 — 100px (PLP와 동일 폭) */
 .project-info-field-permit {
-    flex: 0 0 140px;
+    flex: 0 0 100px;
 }
 .project-info-field label {
     font-size: 12px;
     font-weight: 600;
     color: #6b6f7a;
 }
-/* PLP 체크박스 필드 — 140px */
+/* PLP 체크박스 필드 — 100px */
 .project-info-field-check {
-    flex: 0 0 140px;
+    flex: 0 0 100px;
 }
 /* 도로재질 — 120px (드롭다운 옵션 'ASP(절삭포장)' 표시용 확장) */
 .project-info-field-road {
