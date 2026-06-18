@@ -440,13 +440,13 @@ button { font-family: inherit; cursor: pointer; }
     flex: 1;
     min-width: 0;
 }
-/* 준공 연장 — 100px */
+/* 준공 연장 — 105px */
 .project-info-field-extension {
-    flex: 0 0 100px;
+    flex: 0 0 105px;
 }
-/* 발주 연장 — 100px (콤보박스 1~10) */
+/* 발주 연장 — 105px (콤보박스 1~10) */
 .project-info-field-order-extension {
-    flex: 0 0 100px;
+    flex: 0 0 105px;
 }
 /* 준공일자 — 120px */
 .project-info-field-date {
