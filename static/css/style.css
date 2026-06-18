@@ -454,11 +454,14 @@ button { font-family: inherit; cursor: pointer; }
     position: absolute;
     bottom: calc(100% + 9px);      /* 아이콘 상단에 표시 */
     right: -6px;                   /* 아이콘 기준 왼쪽으로 펼침 (우측 잘림 방지) */
+    display: flex;                 /* '*' 칸 + 본문 칸 — 본문 3줄 좌측 정렬 */
+    align-items: flex-start;
+    gap: 0.34em;
     white-space: nowrap;           /* 자동 줄바꿈 차단 — 지정한 <br>만 적용 */
     text-align: left;
     background: #2b2f38;
     color: #fff;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 400;
     line-height: 1.55;
     padding: 8px 11px;
@@ -469,6 +472,12 @@ button { font-family: inherit; cursor: pointer; }
     transition: opacity 0.12s ease;
     pointer-events: none;
     z-index: 60;
+}
+.tip-star {
+    flex: none;                    /* '*' 고정 칸 */
+}
+.tip-lines {
+    white-space: nowrap;           /* 본문 3줄 — 지정한 <br>만 줄바꿈, 모두 같은 위치에서 시작 */
 }
 /* 말풍선 꼬리 — 아이콘 위를 가리키도록 우측에 배치 */
 .help-tip-bubble::after {
