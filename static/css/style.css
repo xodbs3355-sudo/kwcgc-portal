@@ -401,7 +401,7 @@ button { font-family: inherit; cursor: pointer; }
     background: #fff;
     border: 1px solid #e5e5e8;
     border-radius: 8px;
-    padding: 12px 16px 20px 16px;
+    padding: 12px 16px 34px 16px;
     margin-bottom: 14px;
     display: flex;
     flex-wrap: wrap;
@@ -409,20 +409,24 @@ button { font-family: inherit; cursor: pointer; }
     align-items: flex-end;
     position: relative;
 }
-/* 카드 하단 좌측 정렬 힌트 영역 (평면연장 기준 카드 등) */
-.project-info-hint-row {
-    flex-basis: 100%;
-    margin-top: 2px;
-    display: flex;
-    justify-content: flex-start;
+/* 입력 필드 바로 아래에 붙는 힌트 — absolute 배치로 입력 줄 정렬은 흩트리지 않음 */
+.project-info-field-extension,
+.project-info-field-safety,
+.project-info-field-permit {
+    position: relative;
 }
-.fee-hint-absolute {
+.field-hint-below {
     position: absolute;
-    right: 16px;
-    bottom: 3px;
+    top: calc(100% + 5px);
+    left: 0;
+    white-space: nowrap;
+}
+/* 영구신청수수료 힌트 — 필드 우측 끝에 맞춰 오른쪽 정렬 */
+.field-hint-right {
+    left: auto;
+    right: 0;
     font-size: 10px;
     color: #9b9fa8;
-    white-space: nowrap;
 }
 .project-info-field {
     flex: 1;
@@ -436,13 +440,13 @@ button { font-family: inherit; cursor: pointer; }
     flex: 1;
     min-width: 0;
 }
-/* 준공 연장 — 126px (180px → 30% 감소) */
+/* 준공 연장 — 100px */
 .project-info-field-extension {
-    flex: 0 0 126px;
+    flex: 0 0 100px;
 }
-/* 발주 연장 — 112px (160px → 30% 감소, 콤보박스 1~10) */
+/* 발주 연장 — 100px (콤보박스 1~10) */
 .project-info-field-order-extension {
-    flex: 0 0 112px;
+    flex: 0 0 100px;
 }
 /* 준공일자 — 120px */
 .project-info-field-date {

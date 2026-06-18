@@ -45,6 +45,15 @@
       <label for="pi-extension">준공 연장(m)</label>
       <input type="number" step="0.1" id="pi-extension" class="project-info-input"
              data-field="extension" value="{{ project_info.get('extension', '') }}" placeholder="">
+      <span class="field-hint-below hint-card">
+        <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        평면연장 기준
+      </span>
     </div>
     <div class="project-info-field project-info-field-date">
       <label for="pi-date">준공일자</label>
@@ -58,6 +67,15 @@
                data-field="safety_fee" value="{{ project_info.get('safety_fee', '') }}" placeholder="">
         <span class="input-suffix" aria-hidden="true">원</span>
       </div>
+      <span class="field-hint-below hint-card">
+        <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        최종 인정 금액
+      </span>
     </div>
     <div class="project-info-field project-info-field-fee">
       <label for="pi-land-fee">일시점용료</label>
@@ -74,19 +92,8 @@
         <input type="checkbox" id="pi-permit-fee" class="project-plp-check"
                {% if project_info.get('permit_fee') %}checked{% endif %}>
       </div>
+      <span class="field-hint-below field-hint-right">* 영구신청수수료는 910원(병행 신청 시 반영)</span>
     </div>
-    <div class="project-info-hint-row">
-      <span class="hint-card">
-        <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-        준공연장 — 평면연장 기준
-      </span>
-    </div>
-    <div class="fee-hint-absolute">* 영구신청수수료는 910원(병행 신청 시 반영)</div>
   </div>
 
   <form id="review-form" method="post" action="{{ url_for('review') }}">
