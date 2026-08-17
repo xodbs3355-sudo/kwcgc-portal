@@ -35,7 +35,7 @@ def _call_gemini(prompt: str, file_bytes: bytes, mime_type: str,
     """
     import google.generativeai as genai
     genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    model = genai.GenerativeModel(config.model_for(doc_id))
     file_part = {"mime_type": mime_type, "data": file_bytes}
 
     for attempt in range(max_retries + 1):
@@ -821,7 +821,7 @@ def _call_gemini_multifile(prompt: str, file_parts: list[dict],
     """다중 파일을 한 번에 보내는 Gemini 호출. 429 시 재시도."""
     import google.generativeai as genai
     genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    model = genai.GenerativeModel(config.model_for(doc_id))
     content = [prompt] + file_parts
 
     for attempt in range(max_retries + 1):

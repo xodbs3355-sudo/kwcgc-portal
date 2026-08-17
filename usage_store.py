@@ -5,15 +5,15 @@ Gemini API 사용량 / 비용 기록 + 집계.
 - /data/usage.jsonl (Railway Volume) — 한 줄 = 한 호출
 - 로컬: ./data/usage.jsonl
 
-요금 단가 (Flash Lite, 2026년 5월 기준):
-- Input:  $0.075 / 1M tokens
-- Output: $0.30  / 1M tokens
-환율은 1 USD = 1,350 KRW 고정 (대략값 — 정밀 회계 아님)
+요금 단가는 서류별로 실제 적용된 모델(config.model_for)에 따라 계산.
+(대략값 — 정밀 회계 아님. 환율 1 USD = 1,500 KRW 고정)
 """
 import datetime
 import json
 import os
 from collections import defaultdict
+
+import config
 
 
 def _resolve_file() -> str:
@@ -29,15 +29,28 @@ def _resolve_file() -> str:
 
 USAGE_FILE = _resolve_file()
 
-# Flash Lite 단가 (USD per 1M tokens)
-PRICE_INPUT_PER_M = 0.075
-PRICE_OUTPUT_PER_M = 0.30
+# 모델별 단가 (USD per 1M tokens) — (input, output). 대략값(정밀 회계 아님).
+MODEL_PRICING = {
+    "gemini-3.1-flash-lite": (0.25, 1.50),
+    "gemini-3.6-flash":      (0.50, 3.00),
+    "gemini-2.5-flash":      (0.15, 1.25),
+    "gemini-2.5-flash-lite": (0.10, 0.40),
+}
+DEFAULT_PRICING = (0.25, 1.50)   # 미등록 모델 fallback
 USD_TO_KRW = 1500   # 약 1,500원 기준 (사용자 정책)
 
 
-def _calc_cost_krw(prompt_tokens: int, completion_tokens: int) -> float:
-    cost_usd = (prompt_tokens * PRICE_INPUT_PER_M
-                + completion_tokens * PRICE_OUTPUT_PER_M) / 1_000_000
+def _price_for(doc_id: str | None) -> tuple[float, float]:
+    """해당 서류에 실제 적용된 모델의 (input, output) 단가."""
+    model = config.model_for(doc_id)
+    return MODEL_PRICING.get(model, DEFAULT_PRICING)
+
+
+def _calc_cost_krw(prompt_tokens: int, completion_tokens: int,
+                   doc_id: str | None = None) -> float:
+    price_in, price_out = _price_for(doc_id)
+    cost_usd = (prompt_tokens * price_in
+                + completion_tokens * price_out) / 1_000_000
     return round(cost_usd * USD_TO_KRW, 4)
 
 
@@ -48,9 +61,10 @@ def record(company: str, doc_id: str,
         "ts": datetime.datetime.now().isoformat(timespec="seconds"),
         "company": company or "",
         "doc": doc_id or "",
+        "model": config.model_for(doc_id),
         "prompt_tokens": int(prompt_tokens or 0),
         "completion_tokens": int(completion_tokens or 0),
-        "cost_krw": _calc_cost_krw(prompt_tokens or 0, completion_tokens or 0),
+        "cost_krw": _calc_cost_krw(prompt_tokens or 0, completion_tokens or 0, doc_id),
     }
     try:
         with open(USAGE_FILE, "a", encoding="utf-8") as f:
