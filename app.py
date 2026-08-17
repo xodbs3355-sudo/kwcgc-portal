@@ -964,11 +964,16 @@ def admin_usage():
 
     # Gemini 모델 ID → 화면 표시명
     model_display_map = {
+        "gemini-3.6-flash": "Gemini 3.6 Flash",
+        "gemini-3.1-flash-lite": "Gemini 3.1 Flash Lite",
         "gemini-2.5-flash-lite": "Gemini 2.5 Flash Lite",
         "gemini-2.5-flash": "Gemini 2.5 Flash",
         "gemini-2.5-pro": "Gemini 2.5 Pro",
     }
-    model_display = model_display_map.get(config.GEMINI_MODEL, config.GEMINI_MODEL)
+    _disp = lambda m: model_display_map.get(m, m)
+    model_display = _disp(config.GEMINI_MODEL)
+    if config.GEMINI_MODEL_HEAVY != config.GEMINI_MODEL:
+        model_display += f" / {_disp(config.GEMINI_MODEL_HEAVY)}(상세 서류)"
 
     return render_template(
         "admin_usage.html",
